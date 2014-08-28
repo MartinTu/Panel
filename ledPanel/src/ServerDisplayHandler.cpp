@@ -24,10 +24,6 @@
 
 using namespace std;
 
-const uint16_t pwmtable_8D[32] = { 0, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 8, 10, 11,
-		13, 16, 19, 23, 27, 32, 38, 45, 54, 64, 76, 91, 108, 128, 152, 181, 215,
-		255 };
-
 ServerDisplayHandler::ServerDisplayHandler() {
 	int rt;
 	struct sched_param param;
@@ -154,16 +150,12 @@ string ServerDisplayHandler::pulseColor(string command) {
 	if (command.size() == 4) {
 
 		float val = (brightness * brightness) / (255.0 * 255.0);
-//            float val = brightness / 255.0;
-//            float val = pwmtable_8D[brightness] / 255.0;
 
 		color.red = command[1] * val;
 		color.green = command[2] * val;
 		color.blue = command[3] * val;
 
 		if (pulse_getBrighter) {
-
-//                if (31 == ++brightness)
 			if (0xff == ++brightness)
 				pulse_getBrighter = false;
 		} else {
