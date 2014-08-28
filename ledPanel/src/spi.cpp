@@ -117,6 +117,9 @@ static int loadSPI() {
 }
 
 SPI::SPI() {
+	int rt;
+	struct sched_param param;
+
 #ifdef LAPTOP
 	if (!Utile::fileExists("/dev", "null")) // FIXME debug purpose
 #else
@@ -135,6 +138,16 @@ SPI::SPI() {
 		cerr << "can't open device: " << strerror(errno) << endl;
 		throw MyException("can't open device: " + string(strerror(errno)));
 	}
+
+    param.__sched_priority = 51; 	//sched_get_priority_max(SCHED_FIFO);
+    rt = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
+    if (0 != rt)
+    {
+        throw MyException("SPI: unable to change schedule parameters: " + string(strerror(rt)));
+    }
+
+    cout << "SPI thread: ";
+    Utile::display_thread_sched_attr();
 }
 
 SPI::~SPI() {

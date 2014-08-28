@@ -24,19 +24,20 @@ Server::Server(serverType_t type, unsigned int port) :
 				0), type(type), port(port), addr_size(0), close_connection(
 				false) {
 	int rt;
+	struct sched_param param;
 	pthread_attr_t threadAttr;
 
 	rt = pthread_attr_init(&threadAttr);
 	if (0 != rt) {
 		throw MyException(
-				"BusAccessScheduler: thread attribute initialization failed: "
+				"Server: thread attribute initialization failed: "
 						+ string(strerror(rt)));
 	}
 
 	rt = pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
 	if (0 != rt) {
 		throw MyException(
-				"BusAccessScheduler: setting detach state failed: "
+				"Server: setting detach state failed: "
 						+ string(strerror(rt)));
 	}
 
@@ -45,6 +46,16 @@ Server::Server(serverType_t type, unsigned int port) :
 		cout << "unable to create thread: " << strerror(errno) << endl;
 		exit(EXIT_FAILURE);
 	}
+
+    param.__sched_priority = 50; 	//sched_get_priority_max(SCHED_FIFO);
+    rt = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
+    if (0 != rt)
+    {
+        throw MyException("Server: unable to change schedule parameters: " + string(strerror(rt)));
+    }
+
+	cout << "Server thread: ";
+	Utile::display_thread_sched_attr();
 }
 
 /**
@@ -231,7 +242,7 @@ void* Server::serverTask() {
 				while ((!close_connection) && (!shut_down)) {
 					message = this->receiveCommand();
 
-					if (message[4] == 0xff)
+					if (message[5] == 0xff) // close connection
 						break;
 
 					rx.put(message);

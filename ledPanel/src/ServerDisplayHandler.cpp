@@ -29,6 +29,9 @@ const uint16_t pwmtable_8D[32] = { 0, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 8, 10, 11,
 		255 };
 
 ServerDisplayHandler::ServerDisplayHandler() {
+	int rt;
+	struct sched_param param;
+
 //	server = new Server(UDP,0x1936);
 	server = new Server(TCP, 0xaffe);
 	panel = new Display(16, 9, WS2801);
@@ -46,6 +49,17 @@ ServerDisplayHandler::ServerDisplayHandler() {
 	animation_y1 = 0;
 	animation_y2 = 0;
 	animation_delay = 2;
+
+	param.__sched_priority = 50; 	//sched_get_priority_max(SCHED_FIFO);
+	rt = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
+	if (0 != rt) {
+		throw MyException(
+				"ServerDisplayHandler: unable to change schedule parameters: "
+						+ string(strerror(rt)));
+	}
+
+	cout << "ServerDisplayHandler thread: ";
+	Utile::display_thread_sched_attr();
 }
 
 ServerDisplayHandler::~ServerDisplayHandler() {
@@ -55,9 +69,9 @@ ServerDisplayHandler::~ServerDisplayHandler() {
 
 /**
  * adds a header to the given message in the format of:
- *   ___________________________________________
- *  | num_bytes | message_message_message_message |
- *  |0_|1_|2_|3_|______x bytes____________________|
+ *   _____________________________________________________
+ *  |myp-ID | num_bytes | message_message_message_message |
+ *  |_0x42__|0_|1_|2_|3_|______x bytes____________________|
  *
  *  where num_bytes is 4-byte binary and represents the length of the message (excluding num_byte)!
  *
@@ -67,10 +81,11 @@ string ServerDisplayHandler::makeHeader(string message) {
 
 	message = header + message;
 
-	message[0] = ((message.size() - 4) >> 24) & 0xff;
-	message[1] = ((message.size() - 4) >> 16) & 0xff;
-	message[2] = ((message.size() - 4) >> 8) & 0xff;
-	message[3] = (message.size() - 4) & 0xff;
+	message[0] = 0x42;
+	message[1] = ((message.size() - 4) >> 24) & 0xff;
+	message[2] = ((message.size() - 4) >> 16) & 0xff;
+	message[3] = ((message.size() - 4) >> 8) & 0xff;
+	message[4] = (message.size() - 4) & 0xff;
 
 //    cout << "header: " << (int) message[0] << (int) message[1] << (int) message[2] << (int) message[3] << endl;
 
@@ -91,7 +106,7 @@ string ServerDisplayHandler::getCommand() {
 
 	message = server->takeMessage();
 
-	/************************************************************/
+	/************************************************************ /
 	cout << "ServerDisplayHandler: getCommand() received " << message.size()
 			<< "bytes: [" << hex;
 	for (unsigned int i = 0; i < message.size(); i++) {
@@ -432,8 +447,6 @@ string ServerDisplayHandler::verticalFade(string command) {
 					color.green += diff;
 			}
 
-//            cout << (unsigned int) color.red << "," << (unsigned int) color.green << "," << (unsigned int) color.blue << endl;
-
 			/* set new start color */
 			if (x == 1) {
 				lastCommand[7] = color.red;
@@ -567,11 +580,10 @@ string ServerDisplayHandler::checkMyPMessageSize(string message) {
 string ServerDisplayHandler::executeMyProtocol(string command) {
 	uint8_t type;
 	string response = "-OK";
-	response[0] = type;
 
 	command = checkMyPMessageSize(command);
 	type = command[0];
-//	cout << (int) type << endl;
+	response[0] = type;
 
 	switch (type) {
 	case COMMAND_DO_NOTHING:
@@ -647,8 +659,6 @@ void ServerDisplayHandler::run() {
 
 				/* keep 60fps */
 				usleep(16667 - (Utile::getTime() - refTime));
-
-//                cout << "refresh rate: " << 1000000.0 / ((Utile::getTime() - refTime)) << "Hz" << endl;
 			}
 
 			lastCommand = getCommand();
