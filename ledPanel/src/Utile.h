@@ -17,13 +17,21 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+
 class Utile
 {
     public:
+		static int invert(int val, int maxval);
         static unsigned long getTime();
 //        static int round(float val);
+        static int pow(int base, int exp);
         static int absolute(int val);
         static float absolute(float val);
+        static int min(int a, int b);
+        static int max(int a, int b);
+        static bool isOdd(int val);
+        static bool isEven(int val);
         static void display_thread_sched_attr();
         static int resize(int val, int min_val, int max_val);
         static bool fileExists(std::string path, std::string file);

@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>//
 #include <linux/types.h>
 #include <linux/spi/spidev.h>
 #include <fcntl.h>

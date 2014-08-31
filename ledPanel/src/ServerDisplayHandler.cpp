@@ -16,6 +16,7 @@
 #define COMMAND_DRAW_LINE       0x06
 #define COMMAND_DRAW_RECT       0x07
 #define COMMAND_DRAW_CIRCLE     0x08
+#define COMMAND_BOOT_SCREEN		0x09
 
 #define COMMAND_DO_ANIMATION    0xa0
 #define ANIMATION_MOVE_VLINE    0x01
@@ -30,7 +31,16 @@ ServerDisplayHandler::ServerDisplayHandler() {
 
 //	server = new Server(UDP,0x1936);
 	server = new Server(TCP, 0xaffe);
-	panel = new Display(16, 9, WS2801);
+	panel = new Display();
+	lastCommand.resize(7);
+	lastCommand[0] = 0x42;
+	lastCommand[1] = 0x00;
+	lastCommand[2] = 0x00;
+	lastCommand[3] = 0x00;
+	lastCommand[4] = 0x02;
+
+	lastCommand[5] = COMMAND_BOOT_SCREEN;
+	lastCommand[6] = 0x00;
 
 	brightness = 0x01;
 	pulse_getBrighter = false;
@@ -46,7 +56,7 @@ ServerDisplayHandler::ServerDisplayHandler() {
 	animation_y2 = 0;
 	animation_delay = 2;
 
-	param.__sched_priority = 50; 	//sched_get_priority_max(SCHED_FIFO);
+	param.sched_priority = 50; 	//sched_get_priority_max(SCHED_FIFO);
 	rt = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
 	if (0 != rt) {
 		throw MyException(
@@ -102,13 +112,13 @@ string ServerDisplayHandler::getCommand() {
 
 	message = server->takeMessage();
 
-	/************************************************************ /
-	cout << "ServerDisplayHandler: getCommand() received " << message.size()
-			<< "bytes: [" << hex;
-	for (unsigned int i = 0; i < message.size(); i++) {
-		cout << (unsigned int) message[i] << ",";
-	}
-	cout << dec << "]" << endl;
+	/************************************************************/
+//	cout << "ServerDisplayHandler: getCommand() received " << message.size()
+//			<< "bytes: [" << hex;
+//	for (unsigned int i = 0; i < message.size(); i++) {
+//		cout << (unsigned int) message[i] << ",";
+//	}
+//	cout << dec << "]" << endl;
 	/************************************************************/
 
 	return message;
@@ -219,8 +229,7 @@ string ServerDisplayHandler::fadeColor(string command) {
 
 string ServerDisplayHandler::drawPicture(string command) {
 	if (command.size() == 433) {
-		panel->draw(command.size() - 1,
-				reinterpret_cast<const uint8_t*>(&command[1]));
+		//panel->drawFrame(command.size() - 1, reinterpret_cast<const uint8_t*>(&command[1]));
 	} else {
 		stringstream st;
 		st << "DRAW_PICTURE FAILED: wrong command size: received "
@@ -265,9 +274,6 @@ string ServerDisplayHandler::drawLine(string command) {
 	return "OK";
 }
 
-/**
- * draws a circle
- */
 string ServerDisplayHandler::drawCircle(std::string command) {
 	uint8_t x0;
 	uint8_t y0;
@@ -452,6 +458,58 @@ string ServerDisplayHandler::verticalFade(string command) {
 	return "OK";
 }
 
+std::string ServerDisplayHandler::bootScreen(std::string command)
+{
+	color_t color;
+	int invaderOK =panel->getNumFramePix();
+	bool picture;
+	if (command.size() == 2) {
+		uint8_t actWheel = (uint8_t) lastCommand[6];
+		if(actWheel < 128){
+			picture = true;
+		}
+		else{
+			picture = false;
+		}
+		uint8_t pictureWheel;
+		//check resolution of DISPLAY and correct config
+		for(unsigned int y = 0; y < panel->getHeight(); y++){
+			for(unsigned int x = 0; x < panel->getWidth(); x++){
+				pictureWheel = actWheel++;
+				if(invaderOK == 200){//max
+					if(picture){
+						if(invader1_10x20[Utile::invert(y,panel->getHeight())][x*3]){
+							pictureWheel += 128;
+						}
+					}
+					else{
+						if(invader2_10x20[Utile::invert(y,panel->getHeight())][(x-1)*3]){
+							pictureWheel += 128;
+						}
+					}
+				}
+				else if(invaderOK == 144){//martin
+					if(invader[Utile::invert(y,panel->getHeight())][x*3]){
+						pictureWheel += 128;
+					}
+				}
+				color =  ColorMan::wheel(pictureWheel);
+				panel->setPixel(x, y, color);
+
+			}
+		}
+		panel->draw();
+		lastCommand[6] = ++lastCommand[6];
+	} else {
+		stringstream st;
+		st << "BOOT_SCREEN FAILED: wrong command size: received "
+				<< command.size() << " but expected 2";
+		cerr << st.str() << endl;
+		return st.str();
+	}
+	return "OK";
+}
+
 string ServerDisplayHandler::doAnimation(string command) {
 
 	switch (command[1]) {
@@ -515,7 +573,7 @@ string ServerDisplayHandler::executeTPM2Protocol(string command) {
 		return "";
 	}
 
-	panel->draw(command.length() - 4, (uint8_t*) &command.c_str()[3]);
+	//panel->draw(command.length() - 4, (uint8_t*) &command.c_str()[3]);
 
 	return string(1, (char) 0xAC);
 }
@@ -595,7 +653,8 @@ string ServerDisplayHandler::executeMyProtocol(string command) {
 		break;
 
 	case COMMAND_DRAW_PICTURE:
-		response = this->drawPicture(command);
+		//response = this->drawPicture(command);
+		cerr << "COMMAND_DRAW_PICTURE not implemented" << endl;
 		break;
 
 	case COMMAND_DRAW_PIXEL:
@@ -608,6 +667,10 @@ string ServerDisplayHandler::executeMyProtocol(string command) {
 
 	case COMMAND_DRAW_CIRCLE:
 		response = this->drawCircle(command);
+		break;
+
+	case COMMAND_BOOT_SCREEN:
+		response = this->bootScreen(command);
 		break;
 
 	case COMMAND_DRAW_RECT:
@@ -635,7 +698,7 @@ void ServerDisplayHandler::run() {
 	string rt;
 
 	try {
-		panel->showBootLogo();
+		//panel->showBootLogo();
 
 		while (1) {
 			while (1) {

@@ -9,6 +9,11 @@
 
 using namespace std;
 
+int Utile::invert(int val, int maxval)
+{
+	return maxval -val -1;
+}
+
 unsigned long Utile::getTime() {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
@@ -27,12 +32,64 @@ unsigned long Utile::getTime() {
 //    return rt;
 //}
 
+int Utile::pow(const int base,const int exp)
+{
+
+	if (base == 0)
+		return 0;
+	int res = 1;
+	if (exp > 0)
+	{
+		for(int i = exp; i >0; i--)
+		{
+			res *= base;
+		}
+		return res;
+	}
+	if (exp < 0)
+	{
+		for(int i = exp; i <0; i++)
+		{
+			res /= base;
+		}
+		return res;
+	}
+	else
+		return 1;
+}
+
 int Utile::absolute(int val) {
 	return ((val < 0) ? val * (-1) : val);
 }
 
 float Utile::absolute(float val) {
 	return ((val < 0) ? val * (-1) : val);
+}
+
+int Utile::min(int a, int b)
+{
+	if (a > b)
+		return b;
+	else
+		return a;
+}
+
+int Utile::max(int a, int b)
+{
+	if (a < b)
+		return b;
+	else
+		return a;
+}
+
+bool Utile::isOdd(int val)
+{
+	return val % 2;
+}
+
+bool Utile::isEven(int val)
+{
+	return !(val % 2);
 }
 
 int Utile::resize(int val, int min_val, int max_val) {
@@ -44,6 +101,7 @@ int Utile::resize(int val, int min_val, int max_val) {
 
 	return val;
 }
+
 
 bool Utile::fileExists(string path, string file) {
 	DIR *dir;

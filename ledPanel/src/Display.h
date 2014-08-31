@@ -11,38 +11,34 @@
 #include <vector>
 #include <cmath>
 #include <pthread.h>
+#include <fstream>
+#include <iostream>
+#include <iomanip>
 
-#include "spi.h"
-#include "BlockingQueue.h"
 #include "Utile.h"
+#include "spi.h"
+#include "DisplayModul.h"
+#include "BlockingQueue.h"
+#include "colorManipulation.h"
 
 #include "bitmaps.h"
 
-struct color_t
-{
-        uint8_t red;
-        uint8_t green;
-        uint8_t blue;
-};
-
-enum chip_t
-{
-    LDP6803 = 0, WS2801
-};
-
-static const color_t color_black = { 0, 0, 0 };
-static const color_t color_dark_blue = { 0, 0, 20 };
+using namespace std;
 
 class Display
 {
     public:
-        Display(unsigned int width, unsigned int height, chip_t chip);
+        Display();
         virtual ~Display();
 
         unsigned int getWidth();
         unsigned int getHeight();
+        unsigned int getNumFramePix();
+        unsigned int getNumPix();
+        unsigned int getNumModules();
 
-        void pulseColor(struct color_t color, unsigned long delay, uint8_t minValue = 0x00, uint8_t maxValue = 0xff);
+        unsigned int getModule(uint8_t x, uint8_t y);
+
         void turnLEDsOff();
         void drawRandom();
 
@@ -50,8 +46,13 @@ class Display
         void setColor(struct color_t color);
         void drawLine(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, color_t color, uint8_t width);
         void drawCircle(uint8_t x0, uint8_t y0, uint8_t radius, color_t color, uint8_t width);
+
+        //void drawFrame(uint32_t dataLength, const uint8_t * data);
+
         void draw();
-        void draw(uint32_t dataLength, const uint8_t * data);
+
+
+        //void draw(uint32_t dataLength, const uint8_t * data);
 
         void showBootLogo();
 
@@ -61,16 +62,25 @@ class Display
         void drawLDP6803();
         void drawWS2801();
 
-        SPI *spi;
-        chip_t chip;
-        unsigned int width;
-        unsigned int height;
-        unsigned int orientation;
-        pthread_t spiThread;
-        bool spiThreadIsRunning;
-        BlockingQueue<std::vector<uint8_t> > q;
-        std::vector<std::vector<struct color_t> > pixel;
+        int width;//display width
+        int height;//display height
+        orientation_t orientation;
 
+
+        int numModules;
+        unsigned int buffersize;
+        unsigned int buffoffset;
+        int actModul;
+
+
+        bool spiThreadIsRunning;
+        pthread_t spiThread;
+        SPI *spi;
+
+        std::vector<DisplayModul *> modul;
+        BlockingQueue<std::vector<uint8_t > > q;
+        std::vector<std::vector<struct color_t > > pixel;//x/y Display picture
+        std::vector<uint8_t > buffer;//hardware Display picture
 };
 
 #endif /* DISPLAY_H_ */

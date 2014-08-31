@@ -10,7 +10,10 @@
 
 #include "Server.h"
 #include "Display.h"
+#include "colorManipulation.h"
 #include <sstream>
+#include "Utile.h"
+
 
 
     class ServerDisplayHandler
@@ -37,6 +40,7 @@
             std::string drawPicture(std::string command);
             std::string drawLine(std::string command);
             std::string drawCircle(std::string command);
+            std::string bootScreen(std::string command);
 
             std::string doAnimation(std::string command);
 
@@ -58,8 +62,8 @@
             uint8_t animation_x2;
             uint8_t animation_y1;
             uint8_t animation_y2;
-            unsigned int animation_delay;
 
+            unsigned int animation_delay;
 
     };
 #endif /* SERVERDISPLAYHANDLER_H_ */

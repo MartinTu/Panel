@@ -6,7 +6,7 @@
  */
 
 #include "spi.h"
-#include <sys/time.h>
+
 
 using namespace std;
 
@@ -139,7 +139,7 @@ SPI::SPI() {
 		throw MyException("can't open device: " + string(strerror(errno)));
 	}
 
-    param.__sched_priority = 51; 	//sched_get_priority_max(SCHED_FIFO);
+    param.sched_priority = 51; 	//sched_get_priority_max(SCHED_FIFO);
     rt = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
     if (0 != rt)
     {
