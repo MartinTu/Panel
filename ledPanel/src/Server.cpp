@@ -47,14 +47,14 @@ Server::Server(serverType_t type, unsigned int port) :
 		exit(EXIT_FAILURE);
 	}
 
-    param.__sched_priority = 50; 	//sched_get_priority_max(SCHED_FIFO);
+    param.sched_priority = 50; 	//sched_get_priority_max(SCHED_FIFO);
     rt = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
     if (0 != rt)
     {
         throw MyException("Server: unable to change schedule parameters: " + string(strerror(rt)));
     }
-
-	cout << "Server thread: ";
+    Utile::printStars();
+	cout << "* Server thread:" << endl;
 	Utile::display_thread_sched_attr();
 }
 
@@ -79,10 +79,10 @@ void Server::init() {
 	/* create socket*/
 	if (type == TCP) {
 		listenSocket = socket(AF_INET, SOCK_STREAM, 0); // TCP
-		cout << "create TCP socket" << endl;
+		cout << "* create TCP socket" << endl;
 	} else {
 		listenSocket = socket(AF_INET, SOCK_DGRAM, 0);	// UDP
-		cout << "create UDP socket" << endl;
+		cout << "* create UDP socket" << endl;
 	}
 
 	if (-1 == listenSocket) {
@@ -95,7 +95,7 @@ void Server::init() {
 		throw MyException("unable to bind socket: " + string(strerror(errno)));
 	}
 
-	cout << "Server listens on port " << this->port << endl;
+	cout << "* Server listens on port " << this->port << endl;
 
 	/*listen for connection (not necessary for UDP)*/
 	if (type == TCP) {
@@ -218,8 +218,8 @@ void* Server::serverTask() {
 
 		while (!shut_down) {
 			close_connection = false;
-
-			cout << "\n\n\n[INFO] wait for connection ..." << endl;
+			Utile::printStars();
+			cout << "[INFO] wait for connection ..." << endl;
 
 			if (type == TCP) {
 				/*establish connection with client (blocks until a client is connected)*/

@@ -142,6 +142,10 @@ void Utile::split(const string& message, const string& delimeter,
 	}
 }
 
+void Utile::printStars(){
+	cout << "***********************************" << endl;
+}
+
 /**
  * display linux-process-scheduler attributes of the thread
  */
@@ -156,11 +160,11 @@ void Utile::display_thread_sched_attr() {
 		return;
 	}
 
-	cout << "Thread attributes: " << endl;
-	cout << "    policy = "
+	//cout << "* Thread attributes: " << endl;
+	cout << "*    policy = "
 			<< ((policy == SCHED_FIFO) ? "SCHED_FIFO" :
 				(policy == SCHED_RR) ? "SCHED_RR" :
-				(policy == SCHED_OTHER) ? "SCHED_OTHER" : "???");
-	cout << " priority = " << (int) param.sched_priority << endl;
+				(policy == SCHED_OTHER) ? "SCHED_OTHER" : "???") << endl;
+	cout << "*    priority = " << (int) param.sched_priority << endl;
 }
 

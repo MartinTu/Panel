@@ -145,8 +145,8 @@ SPI::SPI() {
     {
         throw MyException("SPI: unable to change schedule parameters: " + string(strerror(rt)));
     }
-
-    cout << "SPI thread: ";
+    Utile::printStars();
+    cout << "* SPI thread:" << endl;
     Utile::display_thread_sched_attr();
 }
 

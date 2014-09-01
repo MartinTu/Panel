@@ -7,8 +7,6 @@
 
 #include "Share.h"
 
-#include <errno.h>
-#include <cstdlib>
 
 using namespace std;
 

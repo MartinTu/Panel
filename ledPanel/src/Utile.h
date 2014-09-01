@@ -32,6 +32,7 @@ class Utile
         static int max(int a, int b);
         static bool isOdd(int val);
         static bool isEven(int val);
+        static void printStars();
         static void display_thread_sched_attr();
         static int resize(int val, int min_val, int max_val);
         static bool fileExists(std::string path, std::string file);

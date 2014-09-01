@@ -10,6 +10,8 @@
 
 #include <string>
 #include "MyException.h"
+#include <errno.h>
+#include <cstdlib>
 
 unsigned long long parseULongLong(std::string str, std::string errorName);
 unsigned long parseULong(std::string str, std::string errorName);

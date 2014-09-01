@@ -63,8 +63,8 @@ ServerDisplayHandler::ServerDisplayHandler() {
 				"ServerDisplayHandler: unable to change schedule parameters: "
 						+ string(strerror(rt)));
 	}
-
-	cout << "ServerDisplayHandler thread: ";
+	Utile::printStars();
+	cout << "* ServerDisplayHandler thread: " << endl;
 	Utile::display_thread_sched_attr();
 }
 
@@ -483,7 +483,11 @@ std::string ServerDisplayHandler::bootScreen(std::string command)
 						}
 					}
 					else{
-						if(invader2_10x20[Utile::invert(y,panel->getHeight())][(x-1)*3]){
+						int nx = x-1;
+						if(nx < 0) {
+							nx = nx + panel->getWidth();
+						}
+						if(invader2_10x20[Utile::invert(y,panel->getHeight())][nx*3]){
 							pictureWheel += 128;
 						}
 					}

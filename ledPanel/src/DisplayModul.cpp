@@ -17,7 +17,8 @@ DisplayModul::DisplayModul(struct modul_t &modul)
 		 	addressing(modul.addressing),
 		 	orientation(modul.orientation),
 		 	flip(modul.flip),
-		 	chip(modul.chip)
+		 	chip(modul.chip),
+		 	correction(modul.correction)
 {
 
 }
@@ -62,6 +63,10 @@ flip_t 	DisplayModul::getFlip()
 chip_t 			DisplayModul::getChip()
 {
 	return this->chip;
+}
+correction_t	DisplayModul::getCorrection()
+{
+	return this->correction;
 }
 
 void DisplayModul::reOrder(const int x, const int y, position_t &newPos)

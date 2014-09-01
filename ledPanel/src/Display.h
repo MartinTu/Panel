@@ -13,6 +13,8 @@
 #include <pthread.h>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <sstream>
 #include <iomanip>
 
 #include "Utile.h"
@@ -20,6 +22,7 @@
 #include "DisplayModul.h"
 #include "BlockingQueue.h"
 #include "colorManipulation.h"
+#include "rapidxml.hpp"
 
 #include "bitmaps.h"
 
@@ -61,6 +64,7 @@ class Display
     protected:
         void drawLDP6803();
         void drawWS2801();
+        int initModulesWithConfigFile();
 
         int width;//display width
         int height;//display height

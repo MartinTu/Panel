@@ -7,6 +7,7 @@
 
 #include "Display.h"
 
+using namespace rapidxml;
 using namespace std;
 
 static void* spiThreadTaskStatic(void* o)
@@ -27,10 +28,10 @@ void *Display::spiThreadTask()
 }
 
 Display::Display()
-        :  width(0),
-           height(0),
+        :  width(1),
+           height(1),
            orientation(rotateNo),
-           numModules(0),
+           numModules(1),
            buffersize(0),
            buffoffset(0),
            actModul(0),
@@ -39,42 +40,11 @@ Display::Display()
     this->spi = new SPI();
     this->spi->init();
 
-    //file read
-    numModules = 2;
-    this->modul.resize(numModules);
+    initModulesWithConfigFile();
 
-    modul_t par;
-    for(int k = 0; k < numModules; k++)
-    {
-    	//find next module depending on NumWireing and fill struct
-    	par.addressing = snakeVBL;
-    	par.chip = WS2801;
-    	par.flip = flipNo;
-    	par.orientation = rotateNo;
-    	par.height = 10;
-    	par.width = 10;
-    	par.xOffset = k*10;
-    	par.yOffset = 0;
-
-    	this->modul[k] = new DisplayModul(par);
-    	switch(par.chip)
-    	{
-    	case WS2801:
-    		this->buffersize += par.width * par.height * 3;
-    		break;
-    	case LDP6803:
-    	    /* there are 8 bytes necessary for the LDP6803 chip: 4 header bytes, 2 additional for
-    	     * the first led (of 25) which is black and 2 additional at the end for LDP6803*/
-    		this->buffersize += par.width * par.height * 2 + 8;
-    		break;
-    	}
-
-    	width = Utile::max(width ,par.width +par.xOffset);
-    	height= Utile::max(height,par.height+par.yOffset);
-    }
     //cout << "buffer size: " << buffersize << endl;
     buffer.resize(buffersize);
-    cout << "pixel: " << width * height << endl;
+    //cout << "pixel: " << width * height << endl;
     pixel.resize(width);
     for (int i = 0; i < width; i++)
     {
@@ -94,6 +64,10 @@ Display::~Display()
 {
     this->turnLEDsOff();
     usleep(200);
+    //is this the correct deletion?
+    for(int i = numModules; i > numModules; i--){
+    	delete modul[i];
+    }
 
     this->spiThreadIsRunning = false;
     pthread_cancel(spiThread);
@@ -442,4 +416,447 @@ void Display::drawRandom()
     this->draw();
 }
 
+int Display::initModulesWithConfigFile(){
+	//file read
 
+	modul_t par;
+
+	xml_document<> doc;    // character type defaults to char
+	xml_node<> * root_node;
+	string fileName("panel_config.xml");
+	ifstream myFile (fileName);
+
+	//++fileParsing
+	if(myFile.good()){
+		Utile::printStars();
+		cout << "* reading: " << fileName << endl;
+		vector<char> myFileBuffer((istreambuf_iterator<char>(myFile)), istreambuf_iterator<char>());
+		myFileBuffer.push_back('\0');
+		// Parse the buffer using the xml file parsing library into doc
+		doc.parse<0>(&myFileBuffer[0]);
+		// Find our root node
+		root_node = doc.first_node("panel");
+		if(!root_node){
+			cerr << "* can not find <panel> tag" << endl;
+		}
+		else{
+			xml_node<> * section_node;
+			xml_node<> * key_node;
+
+			section_node = root_node->first_node("version");
+			if (!section_node){
+				cout << "* can not find <version> tag" << endl;
+			}
+			else{
+				cout << "* file version: " << section_node->value() << endl;
+			}
+			section_node = root_node->first_node("display");
+			if (!section_node){
+				cerr << "* can not find <display> tag" << endl;
+			}
+			else
+			{
+				//++read numModules
+				key_node = section_node->first_node("numModules");
+				if(!key_node){
+					cout << "* can not find <numModules> tag" << endl;
+				}
+				else{
+					stringstream ss(key_node->value());
+					if ( !(ss >> numModules) ){
+						numModules = 1;
+					}
+					if(numModules < 1){
+						numModules = 1;
+					}
+					cout << "* number of modules: " << key_node->value() << endl;
+				}
+				//--read numModules
+
+				this->modul.resize(numModules);
+				list<int> wireingOrder;
+				list<string> idOrder;
+				//++get wireingOrder
+
+				//iterate through all wireingOrder Tags
+				for(key_node = section_node->first_node("wireingModule"); key_node; key_node = key_node->next_sibling()){
+					int actual = 0x7FFFFFFF;
+					stringstream ss(key_node->value());
+					if( !(ss >> actual) ){
+						cerr << "* wireingModule value is not a number" << endl;
+					}
+					wireingOrder.push_back(actual);
+				}
+				if(wireingOrder.size() < (unsigned int) numModules){
+					cerr << "* not at least "<< numModules << "wireingModule tag(s) found" << endl;
+				}
+				else{
+					wireingOrder.sort();
+					//--get wireingOrder
+
+					//++get idOrder
+					for(int i = 0; i < numModules; i++){
+						int neededVal = wireingOrder.front();
+						wireingOrder.pop_front();
+						for(key_node = section_node->first_node("wireingModule"); key_node; key_node = key_node->next_sibling()){
+							int actual = 0x7FFFFFFF;
+							stringstream ss(key_node->value());
+							if( !(ss >> actual) ){
+								cerr << "* wireingModule value is not a number" << endl;
+							}
+							if (neededVal == actual){
+								string actualId = "";
+								//find next in order Module
+								stringstream ss(key_node->first_attribute("id")->value());
+								if( !(ss >> actualId) ){
+									cerr << "* \"id\" value is not a string" << endl;
+								}
+								idOrder.push_back(actualId);
+								cout << "* module " << i << ": " << actualId << endl;
+								break;
+							}
+						}
+					}
+					//--get idOrder
+
+					//++read module definitions
+					int checker = 0;
+					for(int i = 0; i < numModules; i++){
+						Utile::printStars();
+						string neededVal = idOrder.front();
+						idOrder.pop_front();
+						for(section_node = root_node->first_node("module"); section_node; section_node = section_node->next_sibling()){
+							string actual = "";
+							stringstream ss(section_node->first_attribute("id")->value());
+							if( !(ss >> actual) ){
+								cerr << "* \"id\" value is not a string" << endl;
+							}
+							if (neededVal == actual){
+								cout << "* reading module " << actual << endl;
+								//++read moduleData
+
+								//width
+								par.width = 1;
+								key_node = section_node->first_node("width");
+								if(!key_node){
+									cerr << "* can not find <width> tag" << endl;
+								}
+								else{
+									stringstream ss(key_node->value());
+									if( !(ss >> par.width) ){
+										cerr << "* width value is not a number" << endl;
+									}
+									if(par.width < 1){
+										par.width = 1;
+									}
+								}
+								cout << "* width " << par.width << endl;
+								//height
+								par.height = 1;
+								key_node = section_node->first_node("height");
+								if(!key_node){
+									cerr << "* can not find <height> tag" << endl;
+								}
+								else{
+									stringstream ss(key_node->value());
+									if( !(ss >> par.height) ){
+										cerr << "* height value is not a number" << endl;
+									}
+									if(par.height < 1){
+										par.height = 1;
+									}
+								}
+								cout << "* height " << par.height << endl;
+								//xOffset
+								par.xOffset = 0;
+								key_node = section_node->first_node("xOffset");
+								if(!key_node){
+									cerr << "* can not find <xOffset> tag" << endl;
+								}
+								else{
+									stringstream ss(key_node->value());
+									if( !(ss >> par.xOffset) ){
+										cerr << "* xOffset value is not a number" << endl;
+									}
+									if(par.xOffset < 0){
+										par.xOffset = 0;
+									}
+								}
+								cout << "* xOffset " << par.xOffset << endl;
+								//yOffset
+								par.yOffset = 0;
+								key_node = section_node->first_node("yOffset");
+								if(!key_node){
+									cerr << "* can not find <yOffset> tag" << endl;
+								}
+								else{
+									stringstream ss(key_node->value());
+									if( !(ss >> par.yOffset) ){
+										cerr << "* yOffset value is not a number" << endl;
+									}
+									if(par.yOffset < 0){
+										par.yOffset = 0;
+									}
+								}
+								cout << "* yOffset " << par.yOffset << endl;
+
+								//addressing
+								par.addressing = undef;
+								key_node = section_node->first_node("addressing");
+								if(!key_node){
+									cerr << "* can not find <addressing> tag" << endl;
+								}
+								else{
+									string val = key_node->value();
+									if( !(val.compare("xyVBL")) ){
+										par.addressing = xyVBL;
+									}
+									else
+									if( !(val.compare("xyVBR")) ){
+										par.addressing = xyVBR;
+									}
+									else
+									if( !(val.compare("xyVTL")) ){
+										par.addressing = xyVTL;
+									}
+									else
+									if( !(val.compare("xyVTR")) ){
+										par.addressing = xyVTR;
+									}
+									else
+									if( !(val.compare("xyHBL")) ){
+										par.addressing = xyHBL;
+									}
+									else
+									if( !(val.compare("xyHBR")) ){
+										par.addressing = xyHBR;
+									}
+									else
+									if( !(val.compare("xyHTL")) ){
+										par.addressing = xyHTL;
+									}
+									else
+									if( !(val.compare("xyHTR")) ){
+										par.addressing = xyHTR;
+									}
+									else
+									//snake
+									if( !(val.compare("snakeVBL")) ){
+										par.addressing = snakeVBL;
+									}
+									else
+									if( !(val.compare("snakeVBR")) ){
+										par.addressing = snakeVBR;
+									}
+									else
+									if( !(val.compare("snakeVTL")) ){
+										par.addressing = snakeVTL;
+									}
+									else
+									if( !(val.compare("snakeVTR")) ){
+										par.addressing = snakeVTR;
+									}
+									else
+									if( !(val.compare("snakeHBL")) ){
+										par.addressing = snakeHBL;
+									}
+									else
+									if( !(val.compare("snakeHBR")) ){
+										par.addressing = snakeHBR;
+									}
+									else
+									if( !(val.compare("snakeHTL")) ){
+										par.addressing = snakeHTL;
+									}
+									else
+									if( !(val.compare("snakeHTR")) ){
+										par.addressing = snakeHTR;
+									}
+									else{
+										cerr << "* addressing value is not correct" << endl;
+									}
+								}
+								cout << "* addressing " << par.addressing << endl;
+
+								//orientation
+								par.orientation = rotateNo;
+								key_node = section_node->first_node("orientation");
+								if(!key_node){
+									cerr << "* can not find <orientation> tag" << endl;
+								}
+								else{
+									string val = key_node->value();
+									if( !(val.compare("rotateNo")) ){
+										par.orientation = rotateNo;
+									}
+									else
+									if( !(val.compare("rotateLeft")) ){
+										par.orientation = rotateLeft;
+									}
+									else
+									if( !(val.compare("rotateHalf")) ){
+										par.orientation = rotateHalf;
+									}
+									else
+									if( !(val.compare("rotateRight")) ){
+										par.orientation = rotateRight;
+									}
+									else{
+										cerr << "* orientation value is not correct" << endl;
+									}
+								}
+								cout << "* orientation " << par.orientation << endl;
+
+								//flip
+								par.flip = flipNo;
+								key_node = section_node->first_node("flip");
+								if(!key_node){
+									cerr << "* can not find <flip> tag" << endl;
+								}
+								else{
+									string val = key_node->value();
+									if( !(val.compare("flipNo")) ){
+										par.flip = flipNo;
+									}
+									else
+									if( !(val.compare("flipX")) ){
+										par.flip = flipX;
+									}
+									else
+									if( !(val.compare("flipY")) ){
+										par.flip = flipY;
+									}
+									else{
+										cerr << "* flip value is not correct" << endl;
+									}
+								}
+								cout << "* flip " << par.flip << endl;
+
+								//chip
+								par.chip = WS2801;
+								key_node = section_node->first_node("chip");
+								if(!key_node){
+									cerr << "* can not find <chip> tag" << endl;
+								}
+								else{
+									string val = key_node->value();
+									if( !(val.compare("WS2801")) ){
+										par.chip = WS2801;
+									}
+									else
+									if( !(val.compare("LDP6803")) ){
+										par.chip = LDP6803;
+									}
+									else{
+										cerr << "* chip value is not correct" << endl;
+									}
+								}
+								cout << "* chip " << par.chip << endl;
+
+								//correction
+								par.correction = corrNo;
+								key_node = section_node->first_node("correction");
+								if(!key_node){
+									cerr << "* can not find <correction> tag" << endl;
+								}
+								else{
+									string val = key_node->value();
+									if( !(val.compare("corrNo")) ){
+										par.correction = corrNo;
+									}
+									else
+									if( !(val.compare("corrGamma")) ){
+										par.correction = corrGamma;
+									}
+									else
+									if( !(val.compare("corrPixel")) ){
+										par.correction = corrPixel;
+									}
+									else
+									if( !(val.compare("corrAll")) ){
+										par.correction = corrAll;
+									}
+									else{
+										cerr << "* correction value is not correct" << endl;
+									}
+								}
+								cout << "* correction " << par.correction << endl;
+
+								//--read moduleData
+
+								//append new module
+								this->modul[i] = new DisplayModul(par);
+								checker++;
+								switch(par.chip)
+								{
+								case WS2801:
+									// get memory for 3 byte per pixel
+									this->buffersize += par.width * par.height * 3;
+									break;
+								case LDP6803:
+									// get memory for 2 byte per pixel
+									// there are 8 bytes necessary for the LDP6803 chip: 4 header bytes, 2 additional for
+									// the first led (of 25) which is black and 2 additional at the end for LDP6803
+									this->buffersize += par.width * par.height * 2 + 8;
+									break;
+								}
+
+								width = Utile::max(width ,par.width +par.xOffset);
+								height= Utile::max(height,par.height+par.yOffset);
+
+								break;//next module
+							}
+						}
+					}
+					if(numModules == checker){
+						return 0;
+					}
+					else{
+						cerr << "* did not found every wired module" << endl;
+					}
+					//--read module definitions
+				}
+			}
+		}
+	}
+	else{
+		cerr << "Unable to find file"<< fileName << endl;
+	}
+	//--fileParsing
+	for(int i = numModules; i > numModules; i--){
+		delete modul[i];
+	}
+	numModules = 1;
+	this->modul.resize(numModules);
+
+	//fill struct with default parameters
+	par.addressing = xyVBL;
+	par.chip = WS2801;
+	par.flip = flipNo;
+	par.orientation = rotateNo;
+	par.correction = corrNo;
+	par.height = 1;
+	par.width = 1;
+	par.xOffset = 0;
+	par.yOffset = 0;
+
+	this->modul[0] = new DisplayModul(par);
+	switch(par.chip)
+	{
+	case WS2801:
+		// get memory for 3 byte per pixel
+		this->buffersize += par.width * par.height * 3;
+		break;
+	case LDP6803:
+		// get memory for 2 byte per pixel
+		// there are 8 bytes necessary for the LDP6803 chip: 4 header bytes, 2 additional for
+		// the first led (of 25) which is black and 2 additional at the end for LDP6803
+		this->buffersize += par.width * par.height * 2 + 8;
+		break;
+	}
+
+	width = Utile::max(width ,par.width +par.xOffset);
+	height= Utile::max(height,par.height+par.yOffset);
+
+	return 1;
+}

@@ -22,7 +22,7 @@
 
 using namespace std;
 
-enum corrections_t
+enum correction_t
 {
 	corrNo		= 0x00,
 	corrGamma	= 0x01,
@@ -96,6 +96,7 @@ struct modul_t
 	orientation_t 	orientation;
 	flip_t			flip;
 	chip_t 			chip;
+	correction_t	correction;
 };
 
 struct position_t
@@ -119,6 +120,7 @@ class DisplayModul
 		orientation_t 	getOrientation();
 		flip_t			getFlip();
 		chip_t 			getChip();
+		correction_t	getCorrection();
 
 		void 			reOrder(const int x, const int y, position_t &newPos);
 
@@ -136,6 +138,7 @@ class DisplayModul
 		orientation_t 	orientation;
 		flip_t			flip;
 		chip_t 			chip;
+		correction_t	correction;
 };
 
 

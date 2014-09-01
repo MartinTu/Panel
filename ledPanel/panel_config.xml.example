@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--correct name: panel_config.xml-->
+<panel>
+	<version>1.0</version>
+	<display>
+		<numModules>2</numModules>
+		<wireingModule id="max10x10_1">0</wireingModule>
+		<wireingModule id="max10x10_2">1</wireingModule>
+		<wireingModule id="martin16x9">2</wireingModule>
+	</display>
+
+	<module id="max10x10_1">
+		<width>10</width>
+		<height>10</height>
+		<xOffset>0</xOffset>
+		<yOffset>0</yOffset>
+		<!--	undef,
+				xyVBL,xyVBR,xyVTL,xyVTR,
+				xyHBL,xyHBR,xyHTL,xyHTR,
+				snakeVBL,snakeVBR,snakeVTL,snakeVTR,
+				snakeHBL,snakeHBR,snakeHTL,snakeHTR-->
+		<addressing>snakeVBL</addressing>
+		<!--rotateNo,rotateLeft,rotateHalf,rotateRight-->
+		<orientation>rotateNo</orientation>
+		<!--flipNo,flipX,flipY-->
+		<flip>flipNo</flip>
+		<!--LDP6803,WS2801-->
+		<chip>WS2801</chip>
+		<!--corrNo,corrGamma,corrPixel,corrAll-->
+		<correction>corrNo</correction>
+	</module>
+
+	<module id="max10x10_2">
+		<width>10</width>
+		<height>10</height>
+		<xOffset>10</xOffset>
+		<yOffset>0</yOffset>
+		<addressing>snakeVBL</addressing>
+		<orientation>rotateNo</orientation>
+		<flip>flipNo</flip>
+		<chip>WS2801</chip>
+		<correction>corrNo</correction>
+	</module>
+
+	<module id="martin16x9">
+		<width>16</width>
+		<height>9</height>
+		<xOffset>0</xOffset>
+		<yOffset>0</yOffset>
+		<addressing>snakeVBL</addressing>
+		<orientation>rotateNo</orientation>
+		<flip>flipNo</flip>
+		<chip>WS2801</chip>
+		<correction>corrNo</correction>
+	</module>
+</panel>

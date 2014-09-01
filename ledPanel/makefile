@@ -6,6 +6,7 @@ LIBS = -lpthread
 CFLAGS = -g3 -Wall -D__GXX_EXPERIMENTAL_CXX0X__=1 -std=c++0x -pedantic
 BINDIR = $(DESTDIR)/usr/bin
 NAME = ledPanel
+INSTALL = ledPanel panel_config.xml
 
 TESTOBJECTS = $(patsubst %.o,obj/%.o,$(OBJECTS))
 
@@ -22,15 +23,16 @@ obj/%.o: src/%.cpp
 	@echo ' '
 
 install:
-	@echo 'Installing: $(NAME)'
-	@install --mode=755 $(NAME) $(BINDIR)/
-	@echo 'Finished Installation: $(NAME)'
+	@echo 'Installing: $(INSTALL)'
+	@install --mode=555 $(INSTALL) $(BINDIR)/
+	@chmod u+x $(BINDIR)/$(NAME)
+	@echo 'Finished Installation: $(INSTALL)'
 	@echo ' '
 
 uninstall:
-	@echo 'Uninstalling: $(NAME) in $(BINDIR)/'
-	@rm $(BINDIR)/$(NAME)
-	@echo 'Finished: Uninstalling $(NAME)'
+	@echo 'Uninstalling: $(INSTALL) in $(BINDIR)/'
+	@rm $(BINDIR)/$(INSTALL)
+	@echo 'Finished: Uninstalling $(INSTALL)'
 	@echo ' '
 
 clean:
