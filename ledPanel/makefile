@@ -4,7 +4,10 @@ CC = g++
 OBJECTS = main.o Utile.o Server.o ServerDisplayHandler.o Display.o MyException.o Share.o spi.o  DisplayModul.o colorManipulation.o
 LIBS = -lpthread
 CFLAGS = -g3 -Wall -D__GXX_EXPERIMENTAL_CXX0X__=1 -std=c++0x -pedantic
-BINDIR = $(DESTDIR)/usr/bin
+PROGRAMDIR = led/
+BINDIR = /usr/bin/$(PROGRAMDIR)
+
+RUNLVLSCRIPT = /etc/init.d/autoLedPanel
 NAME = ledPanel
 INSTALL = ledPanel panel_config.xml
 
@@ -22,21 +25,35 @@ obj/%.o: src/%.cpp
 	@echo 'Finished: $@'
 	@echo ' '
 
-install:
-	@echo 'Installing: $(INSTALL)'
-	@install --mode=555 $(INSTALL) $(BINDIR)/
-	@chmod u+x $(BINDIR)/$(NAME)
-	@echo 'Finished Installation: $(INSTALL)'
-	@echo ' '
-
-uninstall:
-	@echo 'Uninstalling: $(INSTALL) in $(BINDIR)/'
-	@rm $(BINDIR)/$(INSTALL)
-	@echo 'Finished: Uninstalling $(INSTALL)'
-	@echo ' '
-
 clean:
 	@echo 'Cleaning: obj/*.o $(NAME)'
 	@rm obj/*.o $(NAME) 
 	@echo 'Finished: Cleaning'
 	@echo ' '
+	
+start:
+	@echo 'Starting: $(Name)'
+	@$(RUNLVLSCRIPT) start
+	
+stop:
+	@echo 'Stopping: $(Name)'
+	@$(RUNLVLSCRIPT) stop
+
+restart:
+	@echo 'Restarting: $(Name)'
+	@$(RUNLVLSCRIPT) restart
+
+install:
+	@echo 'Installing: $(INSTALL) to $(BINDIR)'	
+	@if [ ! -d $(BINDIR) ] ; then \
+    @mkdir $(BINDIR) ; fi;
+	@install --mode=755 $(INSTALL) $(BINDIR)
+	@echo 'Finished Installation: $(NAME)'
+	@echo ' '
+
+uninstall:
+	@echo 'Uninstalling: $(NAME) from $(BINDIR)'
+	@rm $(BINDIR)$(NAME)
+	@echo 'Finished: Uninstalling $(NAME)'
+	@echo ' '
+

@@ -22,7 +22,8 @@
 #include "DisplayModul.h"
 #include "BlockingQueue.h"
 #include "colorManipulation.h"
-#include "rapidxml.hpp"
+
+#include "rapidxml.hpp"//xml file reading
 
 #include "bitmaps.h"
 

@@ -16,6 +16,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <unistd.h>//file path with "proc/self/exe"
 
 using namespace std;
 
@@ -35,6 +36,7 @@ class Utile
         static void printStars();
         static void display_thread_sched_attr();
         static int resize(int val, int min_val, int max_val);
+        static string getSelfPath();
         static bool fileExists(std::string path, std::string file);
         static void split(const std::string& message, const std::string& delimeter, std::vector<std::string> &tokens);
 };

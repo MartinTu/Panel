@@ -329,10 +329,28 @@ void Display::drawWS2801()
 //			pixel[x][y].red = x*20;
 //			pixel[x][y].green = y*10;
 //			pixel[x][y].blue = actModul *255;
+			switch(modul[actModul]->getCorrection())
+			{
+//			case corrPixel:
+//				buffer[buffoffset++] = round(pixel[pos.x][pos.y].red	* corrPixMatrix[numModul][pos.x][pos.y].[0]);
+//				buffer[buffoffset++] = round(pixel[pos.x][pos.y].green	* corrPixMatrix[numModul][pos.x][pos.y].[1]);
+//				buffer[buffoffset++] = round(pixel[pos.x][pos.y].blue	* corrPixMatrix[numModul][pos.x][pos.y].[2]);
+//				break;
+//			case corrGamma:
+//
+//				break;
+//
+//			case corrAll:
+//
+//				break;
+			default:
+				// corrNo
+				buffer[buffoffset++] = pixel[pos.x][pos.y].red;
+				buffer[buffoffset++] = pixel[pos.x][pos.y].green;
+				buffer[buffoffset++] = pixel[pos.x][pos.y].blue;
+				break;
+			}
 
-			buffer[buffoffset++] = pixel[pos.x][pos.y].red;
-			buffer[buffoffset++] = pixel[pos.x][pos.y].green;
-			buffer[buffoffset++] = pixel[pos.x][pos.y].blue;
 		}
 	}
 }
@@ -416,6 +434,8 @@ void Display::drawRandom()
     this->draw();
 }
 
+
+
 int Display::initModulesWithConfigFile(){
 	//file read
 
@@ -423,13 +443,18 @@ int Display::initModulesWithConfigFile(){
 
 	xml_document<> doc;    // character type defaults to char
 	xml_node<> * root_node;
-	string fileName("panel_config.xml");
-	ifstream myFile (fileName);
+
+
+	string filePath = Utile::getSelfPath();
+	string file("panel_config.xml");
+	ifstream myFile (filePath + file);
 
 	//++fileParsing
 	if(myFile.good()){
 		Utile::printStars();
-		cout << "* reading: " << fileName << endl;
+		cout << "* program started from: \n* " << filePath << endl;
+		cout << "* reading: " << file << endl;
+		Utile::printStars();
 		vector<char> myFileBuffer((istreambuf_iterator<char>(myFile)), istreambuf_iterator<char>());
 		myFileBuffer.push_back('\0');
 		// Parse the buffer using the xml file parsing library into doc
@@ -820,7 +845,7 @@ int Display::initModulesWithConfigFile(){
 		}
 	}
 	else{
-		cerr << "Unable to find file"<< fileName << endl;
+		cerr << "Unable to find file: " << file << ", in dir: " << filePath <<  endl;
 	}
 	//--fileParsing
 	for(int i = numModules; i > numModules; i--){

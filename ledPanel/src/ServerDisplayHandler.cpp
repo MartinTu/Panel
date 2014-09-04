@@ -32,6 +32,9 @@ ServerDisplayHandler::ServerDisplayHandler() {
 //	server = new Server(UDP,0x1936);
 	server = new Server(TCP, 0xaffe);
 	panel = new Display();
+
+
+	//muss geändert werden!!
 	lastCommand.resize(7);
 	lastCommand[0] = 0x42;
 	lastCommand[1] = 0x00;
@@ -42,6 +45,7 @@ ServerDisplayHandler::ServerDisplayHandler() {
 	lastCommand[5] = COMMAND_BOOT_SCREEN;
 	lastCommand[6] = 0x00;
 
+	//ok :)
 	brightness = 0x01;
 	pulse_getBrighter = false;
 

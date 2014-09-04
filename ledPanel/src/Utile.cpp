@@ -103,6 +103,30 @@ int Utile::resize(int val, int min_val, int max_val) {
 }
 
 
+
+string Utile::getSelfPath()
+{
+    char buff[256];
+    //terminate buff
+    buff[256] = 0;
+	//readlink from: #include <unistd.h>
+    ssize_t len = readlink("/proc/self/exe", buff, sizeof(buff)-1) -1;
+    if (len > 0) {
+    	//readlink retuns the path of the program with "$PROGRAMPATH+"/"+$PROGRAMNAME"
+    	//find the last "/" and end the sting there to cut of $PROGRAMNAME
+		while (buff[len] != '/') {
+			buff[len] = 0;
+			--len;
+		}
+		return string(buff);
+    }
+    else {
+    	/* handle error condition */
+    	cerr << "can not get my own path" << endl;
+    	return string("");
+    }
+}
+
 bool Utile::fileExists(string path, string file) {
 	DIR *dir;
 	struct dirent *ent;
