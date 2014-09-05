@@ -20,9 +20,15 @@ void* Server::serverTaskStatic(void* o) {
  * CTOR
  */
 Server::Server(serverType_t type, unsigned int port) :
-		stop(false), alive(true), mySocket(0), shut_down(false), listenSocket(
-				0), type(type), port(port), addr_size(0), close_connection(
-				false) {
+		stop(false),
+		alive(true),
+		mySocket(0),
+		shut_down(false),
+		listenSocket(0),
+		type(type),
+		port(port),
+		clientAddrLen(0),
+		close_connection(false) {
 	int rt;
 	struct sched_param param;
 	pthread_attr_t threadAttr;
@@ -71,27 +77,30 @@ Server::~Server() {
  */
 void Server::init() {
 	/*prepare settings*/
-	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(this->port);
-	memset(&(my_addr.sin_zero), 0, 8);
-	my_addr.sin_addr.s_addr = INADDR_ANY;
+	//bzero((char *) &serverAddr, sizeof(serverAddr));
+	serverAddr.sin_family = AF_INET;//
+	serverAddr.sin_port = htons(this->port);//set port number
+	memset(&(serverAddr.sin_zero), 0, 8);
+	serverAddr.sin_addr.s_addr = INADDR_ANY;//my ip adress
 
 	/* create socket*/
 	if (type == TCP) {
 		listenSocket = socket(AF_INET, SOCK_STREAM, 0); // TCP
 		cout << "* create TCP socket" << endl;
 	} else {
-		listenSocket = socket(AF_INET, SOCK_DGRAM, 0);	// UDP
+		listenSocket = socket(AF_INET, SOCK_DGRAM, 0); //UDP
 		cout << "* create UDP socket" << endl;
+
 	}
 
 	if (-1 == listenSocket) {
-		throw MyException(
-				"unable to create socket: " + string(strerror(errno)));
+		shutdown();
+		throw MyException("unable to create socket: " + string(strerror(errno)));
 	}
 
 	/*bind socket*/
-	if (-1 == bind(listenSocket, (sockaddr*) &my_addr, sizeof(my_addr))) {
+	if (-1 == bind(listenSocket, (sockaddr*) &serverAddr, sizeof(serverAddr))) {
+		shutdown();
 		throw MyException("unable to bind socket: " + string(strerror(errno)));
 	}
 
@@ -99,7 +108,8 @@ void Server::init() {
 
 	/*listen for connection (not necessary for UDP)*/
 	if (type == TCP) {
-		if (-1 == listen(listenSocket, 1)) {
+		if (-1 == listen(listenSocket,5)) {
+			shutdown();
 			throw MyException(
 					"unable to listen socket: " + string(strerror(errno)));
 		}
@@ -110,8 +120,8 @@ void Server::init() {
  * receives a message
  */
 string Server::receiveCommand() {
-	int bufferLength = 1024;
-	char buffer[1024];
+	const int bufferLength = 1024;
+	char buffer[bufferLength];
 	int rc;
 
 	memset(buffer, 0, bufferLength);
@@ -119,12 +129,11 @@ string Server::receiveCommand() {
 	/*receive*/
 	if (type == TCP)
 		rc = recv(mySocket, buffer, bufferLength, 0);
-	else
-		rc = recv(mySocket, buffer, bufferLength, MSG_WAITALL);
-
+	else{
+		clientAddrLen = (socklen_t) sizeof(clientAddr);
+		rc = recvfrom(mySocket, buffer, bufferLength, 0, (sockaddr *) &clientAddr, &clientAddrLen);
+	}
 	if (-1 == rc) {
-		cerr << "[ERROR] receive failed: " << strerror(errno) << "(" << errno
-				<< ")" << endl;
 		throw MyException("receive failed: " + string(strerror(errno)));
 	} else if (0 == rc) {
 		cerr << "[ERROR] receive failed: " << strerror(errno) << "(" << errno
@@ -142,12 +151,21 @@ void Server::sendResponse(string response) {
 	int bufferLength = response.size();
 
 //    cout << "socket send response: " << response << endl;
-
-	if (-1 == send(mySocket, response.c_str(), bufferLength, 0)) {
-		cerr << "[ERROR] send failed: " << strerror(errno) << "(" << errno
-				<< ")" << endl;
-		throw MyException("send failed: " + string(strerror(errno)));
+	if (type == TCP){
+		if (-1 == send(mySocket, response.c_str(), bufferLength, 0)) {
+			throw MyException("send failed: " + string(strerror(errno)));
+		}
 	}
+	else{
+		int len;
+		if (-1 == (len = sendto(mySocket, response.c_str(), bufferLength, 0, (sockaddr *) &clientAddr, sizeof(clientAddr)))) {
+			throw MyException("sendto failed: " + string(strerror(errno)));
+		}
+		else if(bufferLength != len){
+			throw MyException("sendto() sent a different number of bytes than expected");
+		}
+	}
+
 }
 
 /**
@@ -223,16 +241,14 @@ void* Server::serverTask() {
 
 			if (type == TCP) {
 				/*establish connection with client (blocks until a client is connected)*/
-				mySocket = accept(listenSocket, (sockaddr*) &sadr, &addr_size);
+				mySocket = accept(listenSocket, (sockaddr*) &clientAddr, &clientAddrLen);
 				if (-1 == mySocket) {
 					cerr << "[ERROR] socket accept failed: " << strerror(errno)
 							<< "(" << errno << ")" << endl;
 					break;
 				}
 
-				// TODO ip bei erster Verbindung falsch!!
-				cout << "[INFO] connected with " << inet_ntoa(sadr.sin_addr)
-						<< " on port " << sadr.sin_port << endl;
+
 			} else {
 				mySocket = listenSocket;
 			}
@@ -242,22 +258,30 @@ void* Server::serverTask() {
 				while ((!close_connection) && (!shut_down)) {
 					message = this->receiveCommand();
 
-					if (message[5] == 0xff) // close connection
+					if ((message[5] == 0xff) && type==TCP) // close connection
 						break;
 
+					//put received message in que
 					rx.put(message);
-
+					//get a response from que
 					response = tx.take();
-
+					//send response
 					if (!response.empty())
 						this->sendResponse(response);
+					//abort, if it is a UDP connection
+					if (type == UDP)
+						break;
 				}
+				// TODO ip bei erster Verbindung falsch!!
+				cout 	<< "[INFO] connected with " << inet_ntoa(clientAddr.sin_addr)
+						<< " on port " << clientAddr.sin_port << endl;
 			} catch (MyException &e) {
 				cerr << "[ERROR] " << e.what() << endl;
 			}
-
-			cout << "[INFO] close connection" << endl;
-			closeSocket(this->mySocket);
+			if (type == TCP){
+				cout << "[INFO] close connection" << endl;
+				closeSocket(this->mySocket);
+			}
 		}
 	} catch (MyException &e) {
 		cerr << "[ERROR] " << e.what() << endl;

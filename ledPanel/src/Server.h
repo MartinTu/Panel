@@ -67,13 +67,16 @@ class Server
         int mySocket;
         bool shut_down;
         int listenSocket;
-        sockaddr_in sadr;
         serverType_t type;
         unsigned int port;
-        socklen_t addr_size;
+        socklen_t clientAddrLen;
         bool close_connection;
+
+
         pthread_t serverThread;
-        struct sockaddr_in my_addr;
+        sockaddr_in clientAddr;
+
+        sockaddr_in serverAddr;
         BlockingQueue<std::string> rx;
         BlockingQueue<std::string> tx;
 };

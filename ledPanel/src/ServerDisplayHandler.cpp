@@ -29,8 +29,8 @@ ServerDisplayHandler::ServerDisplayHandler() {
 	int rt;
 	struct sched_param param;
 
-//	server = new Server(UDP,0x1936);
-	server = new Server(TCP, 0xaffe);
+	server = new Server(UDP, 0xFFE2);
+//	server = new Server(TCP, 0xaffe);
 	panel = new Display();
 
 
