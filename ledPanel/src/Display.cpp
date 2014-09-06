@@ -51,6 +51,9 @@ Display::Display()
         pixel[i].resize(height);
     }
 
+    modulDrawn.resize(numModules);
+    resetModulDrawn();
+
     int rt = pthread_create(&spiThread, NULL, &spiThreadTaskStatic, this);
     if (rt != 0)
     {
@@ -73,22 +76,22 @@ Display::~Display()
     pthread_cancel(spiThread);
 }
 
-unsigned int Display::getWidth()
+int Display::getWidth()
 {
     return this->width;
 }
 
-unsigned int Display::getHeight()
+int Display::getHeight()
 {
     return this->height;
 }
 
-unsigned int Display::getNumFramePix()
+int Display::getNumFramePix()
 {
 	return (this->width * this->height);
 }
 
-unsigned int Display::getNumPix()
+int Display::getNumPix()
 {
 	unsigned int num = 0;
 	for(int i = 0; i < numModules; i++)
@@ -98,9 +101,43 @@ unsigned int Display::getNumPix()
 	return num;
 }
 
-unsigned int Display::getNumModules()
+int Display::getNumModules()
 {
 	return this->numModules;
+}
+
+bool Display::getModulDrawn(){
+	for(int i = 0; i < numModules; i++){
+			if(false == modulDrawn[i]){
+				return false;
+			}
+		}
+	return true;
+}
+
+
+void Display::resetModulDrawn(){
+	for(int i = 0; i < numModules; i++){
+		modulDrawn[i] = false;
+	}
+}
+
+
+/*
+ * turns the lights off
+ */
+void Display::turnLEDsOff()
+{
+    for (int i = 0; i < this->width; i++)
+    {
+        for (int j = 0; j < this->height; j++)
+        {
+            this->pixel[i][j].red = 0;
+            this->pixel[i][j].green = 0;
+            this->pixel[i][j].blue = 0;
+        }
+    }
+    this->draw();
 }
 
 void Display::setPixel(uint8_t x, uint8_t y, struct color_t color)
@@ -249,6 +286,120 @@ void Display::drawCircle(uint8_t x0, uint8_t y0, uint8_t radius, color_t color, 
     }
 }
 
+void Display::drawRandom()
+{
+    //seed
+    srand((unsigned int) Utile::getTime());
+
+    for (int i = 0; i < this->height; i++)
+    {
+        for (int j = 0; j < this->width; j++)
+        {
+            this->pixel[j][i].red = (uint8_t) rand() & 0xff;
+            this->pixel[j][i].green = (uint8_t) rand() & 0xff;
+            this->pixel[j][i].blue = (uint8_t) rand() & 0xff;
+        }
+    }
+    this->draw();
+}
+
+//void Display::showBootLogo()
+//{
+//    float brightness = 0;
+//    for (unsigned int k = 0; k < 100; k++)
+//    {
+//        for (int i = 0; i < height; i++)
+//        {
+//            for (int j = 0; j < width; j++)
+//            {
+//                pixel[j][i].red = (invader[i][j * 3] * brightness);
+//                pixel[j][i].green = (invader[i][j * 3 + 1] * brightness);
+//                pixel[j][i].blue = (invader[i][j * 3 + 2] * brightness);
+//            }
+//        }
+//
+//        this->draw();
+//
+//        brightness = (k * k) / (100.0 * 100.0);
+//        usleep(40e3);
+//    }
+//}
+
+
+
+void Display::drawFrame(int dataLength, const uint8_t * data){
+	if(dataLength == getNumFramePix()*3){
+		int i = 0;
+		//0-0 = topleft
+		for(int y = 0; y < height; y++){
+			for(int x = 0; x < width; x++){
+				pixel[x][y].red   = data[i++];
+				pixel[x][y].green = data[i++];
+				pixel[x][y].blue  = data[i++];
+			}
+		}
+	}
+	else
+		cerr << "drawFrame() does not got correct data length" << endl;
+}
+
+void Display::drawFrameModule(int moduleNum, int dataLength, const uint8_t * data){
+	if((moduleNum >= 0) && (moduleNum < numModules)){
+		if(dataLength == modul[moduleNum]->getNumPix()*3){
+
+			int i = 0;
+			//0-0 = topleft
+			int x0 = modul[moduleNum]->getXOffset();
+			int y0 = modul[moduleNum]->getYOffset();
+			for(int y = 0; y < modul[moduleNum]->getWidth(); y++){
+				for(int x = 0; x < modul[moduleNum]->getWidth(); x++){
+					pixel[x+x0][y+y0].red   = data[i++];
+					pixel[x+x0][y+y0].green = data[i++];
+					pixel[x+x0][y+y0].blue  = data[i++];
+				}
+			}
+			setModulDrawn(moduleNum);
+		}
+		else{
+			cerr << "drawModuleFrame() does not got correct data length" << endl;
+		}
+	}
+	else{
+		cerr << "drawModuleFrame() moduleNum does not exist" << endl;
+	}
+}
+
+
+/**
+ * draw the internal pixel data
+ */
+void Display::draw()
+{
+	buffoffset = 0;
+	for (actModul = 0; actModul < numModules; actModul++)
+	{
+		switch(modul[actModul]->getChip())
+		{
+		case WS2801:
+			this->drawWS2801();
+			break;
+		case LDP6803:
+			this->drawLDP6803();
+			break;
+		default:
+			break;
+		}
+	}
+	q.put(buffer);
+}
+
+
+void Display::setModulDrawn(int modulNum){
+	if((modulNum >= 0) && (modulNum < numModules)){
+		modulDrawn[modulNum]= true;
+	}
+}
+
 /**
  * draw to the LDP6801 register
  * UNTESTED!!
@@ -270,7 +421,8 @@ void Display::drawLDP6803()
     // convert pixel information to an LDP6803 conform byte array
     position_t pos;
     int x,y;
-	for (int i = 0; i < modul[actModul]->getHeight(); i++)
+    //pixel[0][0] = topleft corner
+	for (int i =  0; i < modul[actModul]->getHeight() ; i++)
 	{
 		for (int j = 0; j < modul[actModul]->getWidth(); j++)
 		{
@@ -290,8 +442,6 @@ void Display::drawLDP6803()
 
     buffer[buffoffset++] = 0x80; // 2 additional "black" bytes for LDP6803
     buffer[buffoffset++] = 0x0;
-
-    q.put(buffer);
 }
 
 /**
@@ -313,7 +463,9 @@ void Display::drawWS2801()
 	// convert pixel information to an WS2801 conform byte array
 	position_t pos;
 	int x,y;
-	for (int i = 0; i < modul[actModul]->getHeight(); i++)
+	//pixel[0][0] = topleft corner
+	//buffer starts at bottomleft corner
+	for (int i =  0; i < modul[actModul]->getHeight() ; i++)
 	{
 		for (int j = 0; j < modul[actModul]->getWidth(); j++)
 		{
@@ -355,85 +507,6 @@ void Display::drawWS2801()
 	}
 }
 
-/**
- * draw the internal pixel data
- */
-void Display::draw()
-{
-	buffoffset = 0;
-	for (actModul = 0; actModul < numModules; actModul++)
-	{
-		switch(modul[actModul]->getChip())
-		{
-		case WS2801:
-			this->drawWS2801();
-			break;
-		case LDP6803:
-			this->drawLDP6803();
-			break;
-		default:
-			break;
-		}
-	}
-	q.put(buffer);
-}
-
-/*
- * turns the lights off
- */
-void Display::turnLEDsOff()
-{
-    for (int i = 0; i < this->width; i++)
-    {
-        for (int j = 0; j < this->height; j++)
-        {
-            this->pixel[i][j].red = 0;
-            this->pixel[i][j].green = 0;
-            this->pixel[i][j].blue = 0;
-        }
-    }
-    this->draw();
-}
-
-void Display::showBootLogo()
-{
-    float brightness = 0;
-    for (unsigned int k = 0; k < 100; k++)
-    {
-        for (int i = 0; i < height; i++)
-        {
-            for (int j = 0; j < width; j++)
-            {
-                pixel[j][i].red = (invader[i][j * 3] * brightness);
-                pixel[j][i].green = (invader[i][j * 3 + 1] * brightness);
-                pixel[j][i].blue = (invader[i][j * 3 + 2] * brightness);
-            }
-        }
-
-        this->draw();
-
-        brightness = (k * k) / (100.0 * 100.0);
-        usleep(40e3);
-    }
-}
-
-void Display::drawRandom()
-{
-    //seed
-    srand((unsigned int) Utile::getTime());
-
-    for (int i = 0; i < this->height; i++)
-    {
-        for (int j = 0; j < this->width; j++)
-        {
-            this->pixel[j][i].red = (uint8_t) rand() & 0xff;
-            this->pixel[j][i].green = (uint8_t) rand() & 0xff;
-            this->pixel[j][i].blue = (uint8_t) rand() & 0xff;
-        }
-    }
-    this->draw();
-}
-
 
 
 int Display::initModulesWithConfigFile(){
@@ -443,8 +516,6 @@ int Display::initModulesWithConfigFile(){
 
 	xml_document<> doc;    // character type defaults to char
 	xml_node<> * root_node;
-
-
 	string filePath = Utile::getSelfPath();
 	string file("panel_config.xml");
 	ifstream myFile (filePath + file);
@@ -701,7 +772,7 @@ int Display::initModulesWithConfigFile(){
 										cerr << "* addressing value is not correct" << endl;
 									}
 								}
-								cout << "* addressing " << par.addressing << endl;
+								cout << "* addressing 0x" << hex << (int) par.addressing << endl;
 
 								//orientation
 								par.orientation = rotateNo;
@@ -730,7 +801,7 @@ int Display::initModulesWithConfigFile(){
 										cerr << "* orientation value is not correct" << endl;
 									}
 								}
-								cout << "* orientation " << par.orientation << endl;
+								cout << "* orientation 0x" << hex << (int) par.orientation << endl;
 
 								//flip
 								par.flip = flipNo;
@@ -755,7 +826,7 @@ int Display::initModulesWithConfigFile(){
 										cerr << "* flip value is not correct" << endl;
 									}
 								}
-								cout << "* flip " << par.flip << endl;
+								cout << "* flip 0x" << hex << (int) par.flip << endl;
 
 								//chip
 								par.chip = WS2801;
@@ -776,7 +847,7 @@ int Display::initModulesWithConfigFile(){
 										cerr << "* chip value is not correct" << endl;
 									}
 								}
-								cout << "* chip " << par.chip << endl;
+								cout << "* chip 0x" << hex << (int) par.chip << endl;
 
 								//correction
 								par.correction = corrNo;
@@ -805,7 +876,7 @@ int Display::initModulesWithConfigFile(){
 										cerr << "* correction value is not correct" << endl;
 									}
 								}
-								cout << "* correction " << par.correction << endl;
+								cout << "* correction 0x" << hex << (int) par.correction << endl;
 
 								//--read moduleData
 

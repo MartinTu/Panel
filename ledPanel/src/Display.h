@@ -35,34 +35,38 @@ class Display
         Display();
         virtual ~Display();
 
-        unsigned int getWidth();
-        unsigned int getHeight();
-        unsigned int getNumFramePix();
-        unsigned int getNumPix();
-        unsigned int getNumModules();
+        int getWidth();
+        int getHeight();
+        int getNumFramePix();
+        int getNumPix();
+        int getNumModules();
+        //int getModule(uint8_t x, uint8_t y);
 
-        unsigned int getModule(uint8_t x, uint8_t y);
+        bool getModulDrawn();
+        void resetModulDrawn();
+
 
         void turnLEDsOff();
-        void drawRandom();
-
         void setPixel(uint8_t x, uint8_t y, struct color_t);
         void setColor(struct color_t color);
         void drawLine(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, color_t color, uint8_t width);
         void drawCircle(uint8_t x0, uint8_t y0, uint8_t radius, color_t color, uint8_t width);
+        void drawRandom();
+        //void showBootLogo();
 
-        //void drawFrame(uint32_t dataLength, const uint8_t * data);
+        void drawFrame(int dataLength, const uint8_t * data);
+        void drawFrameModule(int moduleNum, int dataLength, const uint8_t * data);
 
         void draw();
 
 
         //void draw(uint32_t dataLength, const uint8_t * data);
 
-        void showBootLogo();
-
         void *spiThreadTask();
 
     protected:
+
+        void setModulDrawn(int modulNum);
         void drawLDP6803();
         void drawWS2801();
         int initModulesWithConfigFile();
@@ -73,6 +77,7 @@ class Display
 
 
         int numModules;
+
         unsigned int buffersize;
         unsigned int buffoffset;
         int actModul;
@@ -81,7 +86,7 @@ class Display
         bool spiThreadIsRunning;
         pthread_t spiThread;
         SPI *spi;
-
+        std::vector<bool> modulDrawn;
         std::vector<DisplayModul *> modul;
         BlockingQueue<std::vector<uint8_t > > q;
         std::vector<std::vector<struct color_t > > pixel;//x/y Display picture

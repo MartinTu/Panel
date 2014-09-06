@@ -477,12 +477,12 @@ std::string ServerDisplayHandler::bootScreen(std::string command)
 		}
 		uint8_t pictureWheel;
 		//check resolution of DISPLAY and correct config
-		for(unsigned int y = 0; y < panel->getHeight(); y++){
-			for(unsigned int x = 0; x < panel->getWidth(); x++){
+		for(int y = 0; y < panel->getHeight(); y++){
+			for(int x = 0; x < panel->getWidth(); x++){
 				pictureWheel = actWheel++;
 				if(invaderOK == 200){//max
 					if(picture){
-						if(invader1_10x20[Utile::invert(y,panel->getHeight())][x*3]){
+						if(invader1_10x20[y][x*3]){
 							pictureWheel += 128;
 						}
 					}
@@ -491,19 +491,21 @@ std::string ServerDisplayHandler::bootScreen(std::string command)
 						if(nx < 0) {
 							nx = nx + panel->getWidth();
 						}
-						if(invader2_10x20[Utile::invert(y,panel->getHeight())][nx*3]){
+						if(invader2_10x20[y][nx*3]){
 							pictureWheel += 128;
 						}
 					}
 				}
 				else if(invaderOK == 144){//martin
-					if(invader[Utile::invert(y,panel->getHeight())][x*3]){
+					if(invader[y][x*3]){
 						pictureWheel += 128;
 					}
 				}
 				color =  ColorMan::wheel(pictureWheel);
+				if((y == 0) && ((x == 0) || (x == 10) || (x == 11))){
+					color = color_dark_grey;
+				}
 				panel->setPixel(x, y, color);
-
 			}
 		}
 		panel->draw();
@@ -542,14 +544,14 @@ string ServerDisplayHandler::doAnimation(string command) {
  */
 string ServerDisplayHandler::executeCommand(string command) {
 	switch ((uint8_t) command[0]) {
-	case 0xC9:
-		return executeTPM2Protocol(
+	case 0x9C:
+		return executeTPM2NetProtocol(
 				string(command.c_str() + 1, command.length() - 1));
 	case 0x42:
 		return executeMyProtocol(
 				string(command.c_str() + 1, command.length() - 1));
 	default:
-		return "unknown protocol";
+		return "";
 	}
 }
 
@@ -557,14 +559,29 @@ string ServerDisplayHandler::executeCommand(string command) {
  *  Pixel matrix protocol
  *  see: http://www.ledstyles.de/ftopic18969.html for more information (german)
  */
-string ServerDisplayHandler::executeTPM2Protocol(string command) {
+string ServerDisplayHandler::executeTPM2NetProtocol(string command) {
 
 	unsigned int size;
 
-	cout << "TPM2 frame received" << endl;
+//	cout << "TPM2NET frame received" << endl;
 
-	if (command[0] != 0xDA) {
-		cerr << "unknown TPM2 frame type: " << hex << command[0] << dec << endl;
+	switch ((uint8_t) command[0])
+	{
+	case 0xDA:
+//		cout << "data"<< endl;
+		break;
+	case 0xC0:
+		cout << "command"<< endl;
+		break;
+	case 0xAA:
+		cout << "ack req"<< endl;
+		break;
+	case 0xAD:
+		cout << "antwort data"<< endl;
+		break;
+	default:
+		cerr << "unknown TPM2NET frame type: " << hex << command[0] << dec << endl;
+		lastCommand[0] = 0x0; // stop doing anything
 		return "";
 	}
 
@@ -575,15 +592,41 @@ string ServerDisplayHandler::executeTPM2Protocol(string command) {
 	}
 
 	size = (((unsigned int) command[1]) << 8) | command[2];
-	if (size < command.length() + 4) {
-		cerr << "ServerDisplayHandler: tmp2 frame is too short" << endl;
+	if (size != command.length() - 6) {
+		cerr << "ServerDisplayHandler: TPM2NET frame is too short: " << size << " " << command.length() << endl;
 		lastCommand[0] = 0x0; // stop doing anything
 		return "";
 	}
 
-	//panel->draw(command.length() - 4, (uint8_t*) &command.c_str()[3]);
+	switch ((uint8_t) command[0])
+		{
+		case 0xDA:
+		//	cout << "Block-Art: " << hex << (int)command[0] << "\n";
+		//	cout << "Framesize: " << size << "\n";
+		//	cout << "Packetnumber: " <<(int) command[3] << "\n";
+		//	cout << "num Packets: " <<(int) command[4] << endl;
 
-	return string(1, (char) 0xAC);
+			panel->drawFrameModule((int)command[3],size,(uint8_t *) (command.c_str() + 5));
+			if(panel->getModulDrawn()){
+				panel->resetModulDrawn();
+				panel->draw();
+			}
+			lastCommand[0] = 0x0; // stop doing anything
+			return "";
+			break;
+		case 0xC0:
+			break;
+		case 0xAA:
+			break;
+		case 0xAD:
+			break;
+		default:
+			lastCommand[0] = 0x0; // stop doing anything
+			return "";
+		}
+
+	lastCommand[0] = 0x0; // stop doing anything
+	return "";
 }
 
 /**
@@ -723,6 +766,7 @@ void ServerDisplayHandler::run() {
 				/* keep 60fps */
 				usleep(16667 - (Utile::getTime() - refTime));
 			}
+			//get new command
 
 			lastCommand = getCommand();
 			rt = executeCommand(lastCommand);

@@ -76,90 +76,81 @@ void DisplayModul::reOrder(const int x, const int y, position_t &newPos)
 
 	switch (addressing)
 	{
-	case undef:
-		break;
-
-	//vertical
-	//bottom
-	//left
-	case snakeVBL:
-		if(Utile::isOdd(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyVBL:
-		break;
-	//right
-	case snakeVBR:
-		if(Utile::isEven(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyVBR:
-		newPos.x = Utile::invert(newPos.x, width);
-		break;
-	//top
-	//left
-	case snakeVTL:
-		newPos.y = Utile::invert(newPos.y, height);
-		//like snakeVBR
-		if(Utile::isOdd(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyVTL:
-		newPos.y = Utile::invert(newPos.y, height);
-		break;
-	//right
-	case snakeVTR:
-		newPos.y = Utile::invert(newPos.y, height);
-		//like snakeVBR
-		if(Utile::isEven(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyVTR:
-		newPos.y = Utile::invert(newPos.y, height);
-		newPos.x = Utile::invert(newPos.x, width);
-		break;
 	//horizontal
-	case snakeHBL:
-		rotate90(newPos,Grad90);
-		//like snakeVBR
-		if(Utile::isEven(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyHBL:
-		rotate90(newPos,Grad90);
-		//like xyVBR
-		newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case snakeHBR:
-		rotate90(newPos,Grad270);
-		//like snakeVBL
-		if(Utile::isOdd(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyHBR:
-		rotate90(newPos,Grad270);
-		//like xyVBL
+	case xyHTL:
 		break;
 	case snakeHTL:
-		rotate90(newPos,Grad90);
-		//like snakeVBL
-		if(Utile::isOdd(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyHTL:
-		rotate90(newPos,Grad90);
-		//like xyVBL
-		break;
-	case snakeHTR:
-		rotate90(newPos,Grad270);
-		//like snakeVBR
 		if(Utile::isEven(newPos.y))
 			newPos.x = Utile::invert(newPos.x, width);
 		break;
 	case xyHTR:
-		rotate90(newPos,Grad270);
-		//like xyVBR
 		newPos.x = Utile::invert(newPos.x, width);
+		break;
+	case snakeHTR:
+		if(Utile::isOdd(newPos.y))
+			newPos.x = Utile::invert(newPos.x, width);
+		break;
+	case xyHBL:
+		newPos.y = Utile::invert(newPos.y, height);
+		break;
+	case snakeHBL:
+		newPos.y = Utile::invert(newPos.y, height);
+		//like snakeHTL
+		if(Utile::isEven(newPos.y))
+			newPos.x = Utile::invert(newPos.x, width);
+		break;
+	case xyHBR:
+		newPos.y = Utile::invert(newPos.y, height);
+		newPos.x = Utile::invert(newPos.x, width);
+		break;
+	case snakeHBR:
+		newPos.y = Utile::invert(newPos.y, height);
+		//like snakeHTR
+		if(Utile::isOdd(newPos.y))
+			newPos.x = Utile::invert(newPos.x, width);
+		break;
+	//vertical
+	case xyVTL:
+		rotate90(newPos,Grad270);
+		//like xyHTR
+		newPos.x = Utile::invert(newPos.x, width);
+		break;
+	case snakeVTL:
+		rotate90(newPos,Grad270);
+		//like snakeHTR
+		if(Utile::isOdd(newPos.y))
+			newPos.x = Utile::invert(newPos.x, width);
+		break;
+	case xyVTR:
+		rotate90(newPos,Grad90);
+		//like xyHTL
+		break;
+	case snakeVTR:
+		rotate90(newPos,Grad90);
+		//like snakeHTL
+		if(Utile::isEven(newPos.y))
+			newPos.x = Utile::invert(newPos.x, width);
+		break;
+	case xyVBL:
+		rotate90(newPos,Grad270);
+		//like xyHTL
+		break;
+	case snakeVBL:
+		rotate90(newPos,Grad270);
+		//like snakeHTL
+		if(Utile::isEven(newPos.y))
+			newPos.x = Utile::invert(newPos.x, width);
+		break;
+	case xyVBR:
+		rotate90(newPos,Grad90);
+		//like xyHTR
+		newPos.x = Utile::invert(newPos.x, width);
+		break;
+	case snakeVBR:
+		rotate90(newPos,Grad90);
+		//like snakeHTR
+		if(Utile::isOdd(newPos.y))
+			newPos.x = Utile::invert(newPos.x, width);
 		break;
 	default:
 		cerr << "addressing has a wrong id: "<< addressing << endl;

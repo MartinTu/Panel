@@ -19,7 +19,7 @@
 				xyHBL,xyHBR,xyHTL,xyHTR,
 				snakeVBL,snakeVBR,snakeVTL,snakeVTR,
 				snakeHBL,snakeHBR,snakeHTL,snakeHTR-->
-		<addressing>snakeVBL</addressing>
+		<addressing>snakeHBL</addressing>
 		<!--rotateNo,rotateLeft,rotateHalf,rotateRight-->
 		<orientation>rotateNo</orientation>
 		<!--flipNo,flipX,flipY-->
@@ -35,7 +35,7 @@
 		<height>10</height>
 		<xOffset>10</xOffset>
 		<yOffset>0</yOffset>
-		<addressing>snakeVBL</addressing>
+		<addressing>snakeHBL</addressing>
 		<orientation>rotateNo</orientation>
 		<flip>flipNo</flip>
 		<chip>WS2801</chip>
@@ -47,7 +47,7 @@
 		<height>9</height>
 		<xOffset>0</xOffset>
 		<yOffset>0</yOffset>
-		<addressing>snakeVBL</addressing>
+		<addressing>snakeHBL</addressing>
 		<orientation>rotateNo</orientation>
 		<flip>flipNo</flip>
 		<chip>WS2801</chip>

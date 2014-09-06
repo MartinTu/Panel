@@ -104,7 +104,7 @@ void Server::init() {
 		throw MyException("unable to bind socket: " + string(strerror(errno)));
 	}
 
-	cout << "* Server listens on port " << this->port << endl;
+	cout << "* Server listens on port 0x" << hex << this->port << endl;
 
 	/*listen for connection (not necessary for UDP)*/
 	if (type == TCP) {
@@ -140,6 +140,11 @@ string Server::receiveCommand() {
 				<< ")" << endl;
 		throw MyException("client disconnected");
 	}
+//	cout << "new BUFFER:" << endl;
+//	for (int i = 0 ; i < rc; i++){
+//		cout << hex << (int) buffer[i];
+//	}
+//	cout << endl;
 
 	return string(buffer, rc);
 }
@@ -238,7 +243,8 @@ void* Server::serverTask() {
 			close_connection = false;
 			Utile::printStars();
 			cout << "[INFO] wait for connection ..." << endl;
-
+			string actClient("");
+			int actPort = 0;
 			if (type == TCP) {
 				/*establish connection with client (blocks until a client is connected)*/
 				mySocket = accept(listenSocket, (sockaddr*) &clientAddr, &clientAddrLen);
@@ -247,9 +253,8 @@ void* Server::serverTask() {
 							<< "(" << errno << ")" << endl;
 					break;
 				}
-
-
-			} else {
+			}
+			else {
 				mySocket = listenSocket;
 			}
 
@@ -258,7 +263,7 @@ void* Server::serverTask() {
 				while ((!close_connection) && (!shut_down)) {
 					message = this->receiveCommand();
 
-					if ((message[5] == 0xff) && type==TCP) // close connection
+					if (message[5] == 0xff) // close connection
 						break;
 
 					//put received message in que
@@ -269,12 +274,21 @@ void* Server::serverTask() {
 					if (!response.empty())
 						this->sendResponse(response);
 					//abort, if it is a UDP connection
-					if (type == UDP)
-						break;
+					//if (type == UDP)
+					//	break;
+					if(type == TCP){
+						cout 	<< "[INFO] connected with " << inet_ntoa(clientAddr.sin_addr)
+								<< " on port 0x" << clientAddr.sin_port << endl;
+					}
+					else{
+						if((0 != actClient.compare(inet_ntoa(clientAddr.sin_addr))) || (actPort != clientAddr.sin_port)){
+							actClient = inet_ntoa(clientAddr.sin_addr);
+							actPort = clientAddr.sin_port;
+							cout 	<< "[INFO] connected with " << actClient
+								    << " on port 0x" << actPort << endl;
+						}
+					}
 				}
-				// TODO ip bei erster Verbindung falsch!!
-				cout 	<< "[INFO] connected with " << inet_ntoa(clientAddr.sin_addr)
-						<< " on port " << clientAddr.sin_port << endl;
 			} catch (MyException &e) {
 				cerr << "[ERROR] " << e.what() << endl;
 			}

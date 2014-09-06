@@ -30,7 +30,7 @@ protected:
 
 	string executeCommand(string command);
 	string executeMyProtocol(string command);
-	string executeTPM2Protocol(string command);
+	string executeTPM2NetProtocol(string command);
 	string checkMyPMessageSize(string command);
 
 	string drawColor(string command);

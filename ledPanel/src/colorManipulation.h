@@ -17,8 +17,9 @@ struct color_t
         uint8_t blue;
 };
 
-static const color_t color_black 		= { 0, 0, 0  };
-static const color_t color_dark_blue 	= { 0, 0, 20 };
+static const color_t color_black 		= {  0,  0,  0};
+static const color_t color_dark_grey	= { 20, 20, 20};
+static const color_t color_dark_blue 	= {  0,  0, 20};
 
 class ColorMan
 {
