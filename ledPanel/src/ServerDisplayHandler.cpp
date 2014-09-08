@@ -7,58 +7,24 @@
 
 #include "ServerDisplayHandler.h"
 
-#define COMMAND_DO_NOTHING      0x00
-#define COMMAND_DRAW_COLOR      0x01
-#define COMMAND_FADE_COLOR      0x02
-#define COMMAND_PULSE_COLOR     0x03
-#define COMMAND_DRAW_PICTURE    0x04
-#define COMMAND_DRAW_PIXEL      0x05
-#define COMMAND_DRAW_LINE       0x06
-#define COMMAND_DRAW_RECT       0x07
-#define COMMAND_DRAW_CIRCLE     0x08
-#define COMMAND_BOOT_SCREEN		0x09
 
-#define COMMAND_DO_ANIMATION    0xa0
-#define ANIMATION_MOVE_VLINE    0x01
-#define ANIMATION_MOVE_HLINE    0x02
-#define ANIMATION_ROTATE_LINE   0x03
+
 
 using namespace std;
 
 ServerDisplayHandler::ServerDisplayHandler() {
+	Utile::ledInit();
+	Utile::ledOn();
 	int rt;
 	struct sched_param param;
 
 	server = new Server(UDP, 0xFFE2);
 //	server = new Server(TCP, 0xaffe);
+	cout << "Server done" << endl;
 	panel = new Display();
-
-
-	//muss geändert werden!!
-	lastCommand.resize(7);
-	lastCommand[0] = 0x42;
-	lastCommand[1] = 0x00;
-	lastCommand[2] = 0x00;
-	lastCommand[3] = 0x00;
-	lastCommand[4] = 0x02;
-
-	lastCommand[5] = COMMAND_BOOT_SCREEN;
-	lastCommand[6] = 0x00;
-
-	//ok :)
-	brightness = 0x01;
-	pulse_getBrighter = false;
-
-	fade_color.red = 0xff;
-	fade_color.green = 0;
-	fade_color.blue = 0;
-	fade_status = 0x0;
-
-	animation_x1 = 0;
-	animation_x2 = 0;
-	animation_y1 = 0;
-	animation_y2 = 0;
-	animation_delay = 2;
+	cout << "Display done" << endl;
+	animation = new Animation(panel->getWidth(),panel->getHeight());
+	cout << "Animation done" << endl;
 
 	param.sched_priority = 50; 	//sched_get_priority_max(SCHED_FIFO);
 	rt = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
@@ -75,46 +41,56 @@ ServerDisplayHandler::ServerDisplayHandler() {
 ServerDisplayHandler::~ServerDisplayHandler() {
 	delete server;
 	delete panel;
+	delete animation;
 }
 
-/**
- * adds a header to the given message in the format of:
- *   _____________________________________________________
- *  |myp-ID | num_bytes | message_message_message_message |
- *  |_0x42__|0_|1_|2_|3_|______x bytes____________________|
- *
- *  where num_bytes is 4-byte binary and represents the length of the message (excluding num_byte)!
- *
- */
-string ServerDisplayHandler::makeHeader(string message) {
-	string header = "xxxx";
 
-	message = header + message;
+void ServerDisplayHandler::run() {
+	unsigned long long refTime;
+	string rt;
 
-	message[0] = 0x42;
-	message[1] = ((message.size() - 4) >> 24) & 0xff;
-	message[2] = ((message.size() - 4) >> 16) & 0xff;
-	message[3] = ((message.size() - 4) >> 8) & 0xff;
-	message[4] = (message.size() - 4) & 0xff;
+	try {
 
-//    cout << "header: " << (int) message[0] << (int) message[1] << (int) message[2] << (int) message[3] << endl;
+		while (1) {
+			while (1) {
+				refTime = Utile::getTime();
 
-	return message;
+				if (server->hasMessage()){
+					//get new command
+					getCommand();//getCommand sets lastCommand
+					rt = executeCommand(lastCommand);
+					if(!rt.empty()){
+						cout << "response:" << rt << endl;
+					}
+					server->putMessage(rt);
+				}
+				if (!server->isAlive())
+					throw MyException("Server is dead");
+
+				if(animation->isAnimationRunning()){
+					if(animation->nextStep()){
+						panel->getCanvas()->drawFrame(animation->getCanvas()->getPicture());
+						panel->draw();
+					}
+				}
+				usleep(16667 - (Utile::getTime() - refTime));
+				Utile::ledOff();
+			}
+
+
+
+		}
+	} catch (MyException &e) {
+		cerr << e.what() << endl;
+	}
+
+	cout << "shutdown" << endl;
+	server->shutdown();
 }
 
-/**
- * returns a command out of various server message in the format of:
- *   ___________________________________________
- *  | num_bytes | message_message_message_message |
- *  |0_|1_|2_|3_|______x bytes____________________|
- *
- *  where num_bytes is 4-byte binary and represents the length of the message (excluding num_byte)!
- *
- */
-string ServerDisplayHandler::getCommand() {
-	string message = "";
+void ServerDisplayHandler::getCommand() {
 
-	message = server->takeMessage();
+	lastCommand = server->takeMessage();
 
 	/************************************************************/
 //	cout << "ServerDisplayHandler: getCommand() received " << message.size()
@@ -125,432 +101,28 @@ string ServerDisplayHandler::getCommand() {
 //	cout << dec << "]" << endl;
 	/************************************************************/
 
-	return message;
+	return;
 }
 
-/**
- * parses the given command string and sets the specified color to all pixels
- */
-string ServerDisplayHandler::drawColor(string command) {
-	if (command.size() == 4) {
-		color_t color;
-		color.red = command[1];
-		color.green = command[2];
-		color.blue = command[3];
 
-		panel->setColor(color);
-		panel->draw();
 
-		lastCommand[0] = 0x0; // stop doing anything
-	} else {
-		stringstream st;
-		st << "DRAW_COLOR FAILED: wrong command size: received "
-				<< command.size() << " but expected 4";
-		return st.str();
-	}
-	return "OK";
-}
 
-/**
- * parses the given command string and pulses in the specified color
- */
-string ServerDisplayHandler::pulseColor(string command) {
-	color_t color;
 
-//        if (animation_delay-- == 0)
-//        {
-//            animation_delay = 1;
 
-	if (command.size() == 4) {
-
-		float val = (brightness * brightness) / (255.0 * 255.0);
-
-		color.red = command[1] * val;
-		color.green = command[2] * val;
-		color.blue = command[3] * val;
-
-		if (pulse_getBrighter) {
-			if (0xff == ++brightness)
-				pulse_getBrighter = false;
-		} else {
-			if (0 == --brightness)
-				pulse_getBrighter = true;
-		}
-
-		panel->setColor(color);
-		panel->draw();
-	} else {
-		stringstream st;
-		st << "PULSE_COLOR FAILED: wrong command size: received "
-				<< command.size() << " but expected 4";
-		return st.str();
-	}
-//    }
-	return "OK";
-}
-
-/**
- * parses the given command string and fades through all colors
- */
-string ServerDisplayHandler::fadeColor(string command) {
-	if (command.size() == 2) {
-		float maxBrightness = command[1] / 255.0;
-		color_t color = { (uint8_t) (fade_color.red * maxBrightness),
-				(uint8_t) (fade_color.green * maxBrightness),
-				(uint8_t) (fade_color.blue * maxBrightness) };
-
-		panel->setColor(color);
-		panel->draw();
-
-		if (0x0 == fade_status) {
-			fade_color.red--;
-			fade_color.green++;
-
-			if (0 == fade_color.red)
-				fade_status++;
-		} else if (0x01 == fade_status) {
-			fade_color.green--;
-			fade_color.blue++;
-
-			if (0 == fade_color.green)
-				fade_status++;
-		} else if (0x02 == fade_status) {
-			fade_color.blue--;
-			fade_color.red++;
-
-			if (0 == fade_color.blue)
-				fade_status = 0;
-		}
-	} else {
-		stringstream st;
-		st << "FADE_COLOR FAILED: wrong command size: received "
-				<< command.size() << " but expected 2";
-		return st.str();
-	}
-
-	return "OK";
-}
-
-string ServerDisplayHandler::drawPicture(string command) {
-	if (command.size() == 433) {
-		//panel->drawFrame(command.size() - 1, reinterpret_cast<const uint8_t*>(&command[1]));
-	} else {
-		stringstream st;
-		st << "DRAW_PICTURE FAILED: wrong command size: received "
-				<< command.size() << " but expected 433";
-		return st.str();
-	}
-	return "OK";
-}
-
-string ServerDisplayHandler::drawLine(string command) {
-	color_t color;
-	uint8_t reset;
-	uint8_t x1;
-	uint8_t x2;
-	uint8_t y1;
-	uint8_t y2;
-
-	if (command.size() == 9) {
-		x1 = command[1];
-		y1 = command[2];
-		x2 = command[3];
-		y2 = command[4];
-		color.red = command[5];
-		color.green = command[6];
-		color.blue = command[7];
-		reset = command[8];
-
-		if (reset)
-			this->panel->setColor(color_black);
-
-		this->panel->drawLine(x1, y1, x2, y2, color, 1);
-		this->panel->draw();
-
-		lastCommand[0] = 0;
-	} else {
-		stringstream st;
-		st << "DRAW_LINE FAILED: wrong command size: received "
-				<< command.size() << " but expected 9";
-		cerr << st.str() << endl;
-		return st.str();
-	}
-	return "OK";
-}
-
-string ServerDisplayHandler::drawCircle(std::string command) {
-	uint8_t x0;
-	uint8_t y0;
-	uint8_t radius;
-	color_t color;
-	uint8_t reset;
-
-	if (command.size() == 8) {
-		x0 = command[1];
-		y0 = command[2];
-		radius = command[3];
-		color.red = command[4];
-		color.green = command[5];
-		color.blue = command[6];
-		reset = command[7];
-
-		if (reset)
-			this->panel->setColor(color_black);
-
-		this->panel->drawCircle(x0, y0, radius, color, 1);
-		this->panel->draw();
-
-		lastCommand[0] = 0;
-	} else {
-		stringstream st;
-		st << "DRAW_CIRCLE FAILED: wrong command size: received "
-				<< command.size() << " but expected 8";
-		cerr << st.str() << endl;
-		return st.str();
-	}
-	return "OK";
-}
-
-string ServerDisplayHandler::rotateLine(std::string command) {
-	color_t color;
-
-	if (animation_delay-- == 0) {
-		animation_delay = 2;
-
-		if (command.size() != 5) {
-			lastCommand[0] = 0x0;
-			stringstream st;
-			st << "ROTATE_LINE: wrong command size: received " << command.size()
-					<< " but expected 5";
-			return st.str();
-		}
-
-		color.red = command[2];
-		color.green = command[3];
-		color.blue = command[4];
-
-		// TODO start koordinaten, animation_delay, strich breite, color reset? !!
-		if (animation_x1 == this->panel->getWidth() - 1)
-			animation_y1++;
-
-		if (animation_x1 < this->panel->getWidth() - 1)
-			animation_x1++;
-
-		if (animation_y1 == this->panel->getHeight() - 1) {
-			animation_x1 = 0;
-			animation_y1 = 0;
-		}
-
-		animation_x2 = panel->getWidth() - 1 - animation_x1;
-		animation_y2 = panel->getHeight() - 1 - animation_y1;
-
-		panel->setColor(color_black); /* color reset */
-		panel->drawLine(animation_x1, animation_y1, animation_x2, animation_y2,
-				color, 1);
-		panel->draw();
-	}
-	return "OK";
-}
-
-std::string ServerDisplayHandler::waterdrop(std::string command) {
-	color_t color;
-
-	if (animation_delay-- == 0) {
-		animation_delay = 3;
-
-		if (command.size() != 8) {
-			lastCommand[0] = 0x0;
-			stringstream st;
-			st << "WATERDROP: wrong command size: received " << command.size()
-					<< " but expected 8";
-			return st.str();
-		}
-
-		uint8_t x = command[2];
-		uint8_t y = command[3];
-		uint8_t radius = command[4];
-
-		color.red = command[5]
-				* ((panel->getWidth() - ((radius == 0) ? 1 : radius))
-						/ (float) (panel->getWidth() + 1));
-		color.green = command[6]
-				* ((panel->getWidth() - ((radius == 0) ? 1 : radius))
-						/ (float) (panel->getWidth() + 1));
-		color.blue = command[7]
-				* ((panel->getWidth() - ((radius == 0) ? 1 : radius))
-						/ (float) (panel->getWidth() + 1));
-
-		this->panel->setColor(color_black);
-		this->panel->drawCircle(x, y, radius, color, 1);
-		this->panel->draw();
-
-		if (radius < panel->getWidth()) {
-			lastCommand[9]++;
-		} else {
-			lastCommand[7] = rand() % (panel->getWidth() - 1);
-			lastCommand[8] = rand() % (panel->getHeight() - 1);
-			lastCommand[9] = 0;
-		}
-	}
-	return "OK";
-}
-
-string ServerDisplayHandler::verticalFade(string command) {
-	color_t color;
-	uint8_t diff = 4;
-
-	if (animation_delay-- == 0) {
-		animation_delay = 3;
-
-		if (command.size() != 5) {
-			lastCommand[0] = 0x0;
-			stringstream st;
-			st << "VERTICAL_FADE: wrong command size: received "
-					<< command.size() << " but expected 5";
-			return st.str();
-		}
-
-		color.red = command[2];
-		color.green = command[3];
-		color.blue = command[4];
-
-		for (uint8_t x = 0; x < panel->getWidth(); x++) {
-			for (uint8_t y = 0; y < panel->getHeight(); y++) {
-				panel->setPixel(x, y, color);
-			}
-
-			if (color.blue < diff) {
-				if (color.green <= (255 - diff))
-					color.green += diff;
-
-				if (color.red >= diff)
-					color.red -= diff;
-				else
-					color.blue += diff;
-			}
-
-			if (color.red < diff) {
-				if (color.blue <= (255 - diff))
-					color.blue += diff;
-
-				if (color.green >= diff)
-					color.green -= diff;
-				else
-					color.red += diff;
-			}
-
-			if (color.green < diff) {
-				if (color.red <= (255 - diff))
-					color.red += diff;
-
-				if (color.blue >= diff)
-					color.blue -= diff;
-				else
-					color.green += diff;
-			}
-
-			/* set new start color */
-			if (x == 1) {
-				lastCommand[7] = color.red;
-				lastCommand[8] = color.green;
-				lastCommand[9] = color.blue;
-			}
-		}
-		panel->draw();
-	}
-
-	return "OK";
-}
-
-std::string ServerDisplayHandler::bootScreen(std::string command)
-{
-	color_t color;
-	int invaderOK =panel->getNumFramePix();
-	bool picture;
-	if (command.size() == 2) {
-		uint8_t actWheel = (uint8_t) lastCommand[6];
-		if(actWheel < 128){
-			picture = true;
-		}
-		else{
-			picture = false;
-		}
-		uint8_t pictureWheel;
-		//check resolution of DISPLAY and correct config
-		for(int y = 0; y < panel->getHeight(); y++){
-			for(int x = 0; x < panel->getWidth(); x++){
-				pictureWheel = actWheel++;
-				if(invaderOK == 200){//max
-					if(picture){
-						if(invader1_10x20[y][x*3]){
-							pictureWheel += 128;
-						}
-					}
-					else{
-						int nx = x-1;
-						if(nx < 0) {
-							nx = nx + panel->getWidth();
-						}
-						if(invader2_10x20[y][nx*3]){
-							pictureWheel += 128;
-						}
-					}
-				}
-				else if(invaderOK == 144){//martin
-					if(invader[y][x*3]){
-						pictureWheel += 128;
-					}
-				}
-				color =  ColorMan::wheel(pictureWheel);
-				if((y == 0) && ((x == 0) || (x == 10) || (x == 11))){
-					color = color_dark_grey;
-				}
-				panel->setPixel(x, y, color);
-			}
-		}
-		panel->draw();
-		lastCommand[6] = ++lastCommand[6];
-	} else {
-		stringstream st;
-		st << "BOOT_SCREEN FAILED: wrong command size: received "
-				<< command.size() << " but expected 2";
-		cerr << st.str() << endl;
-		return st.str();
-	}
-	return "OK";
-}
-
-string ServerDisplayHandler::doAnimation(string command) {
-
-	switch (command[1]) {
-	case 0x01:
-		return this->rotateLine(command);
-
-	case 0x02:
-		return this->waterdrop(command);
-
-	case 0x03:
-		return this->verticalFade(command);
-
-	default:
-		return "unknown animation";
-	}
-
-	return "OK"; /* compiler placebo */
-}
 
 /**
  * interprets the protocol and executes it
  */
-string ServerDisplayHandler::executeCommand(string command) {
+string ServerDisplayHandler::executeCommand(string &command) {
 	switch ((uint8_t) command[0]) {
 	case 0x9C:
-		return executeTPM2NetProtocol(
-				string(command.c_str() + 1, command.length() - 1));
-	case 0x42:
-		return executeMyProtocol(
-				string(command.c_str() + 1, command.length() - 1));
+		return executeTPM2NetProtocol(command);
 	default:
+		cerr << "unknown Protocol; frame: 0x" << endl;
+		for(unsigned int i = 0; i < command.length(); i++){
+			cerr << hex <<setw(3)<< (int)command[i];
+		}
+		cerr << endl;
 		return "";
 	}
 }
@@ -559,223 +131,355 @@ string ServerDisplayHandler::executeCommand(string command) {
  *  Pixel matrix protocol
  *  see: http://www.ledstyles.de/ftopic18969.html for more information (german)
  */
-string ServerDisplayHandler::executeTPM2NetProtocol(string command) {
-
-	unsigned int size;
+string ServerDisplayHandler::executeTPM2NetProtocol(string &command) {
 
 //	cout << "TPM2NET frame received" << endl;
 
-	switch ((uint8_t) command[0])
+	uint8_t blockType = command[TPM2_BLOCK_TYPE_P];
+	switch (blockType)
 	{
-	case 0xDA:
+	case TPM2_BLOCK_TYPE_DATA:
 //		cout << "data"<< endl;
 		break;
-	case 0xC0:
-		cout << "command"<< endl;
+	case TPM2_BLOCK_TYPE_CMD:
+//		cout << "command"<< endl;
 		break;
-	case 0xAA:
+	case TPM2_BLOCK_TYPE_ACK:
 		cout << "ack req"<< endl;
 		break;
-	case 0xAD:
-		cout << "antwort data"<< endl;
+	case TPM2_BLOCK_TYPE_ACK_DATA:
+		cout << "ack data"<< endl;
 		break;
 	default:
-		cerr << "unknown TPM2NET frame type: " << hex << command[0] << dec << endl;
-		lastCommand[0] = 0x0; // stop doing anything
-		return "";
+		cerr << "unknown TPM2 frame type: " << hex << blockType  << endl;
+		return ""; //no tpm2 ack
 	}
 
-	if (command[command.length() - 1] != 0x36) {
+	//test on block-end byte
+	if (command[command.length() - 1] != TPM2_BLOCK_END_BYTE) {
 		cerr << "ServerDisplayHandler: wrong TPM2 end byte" << endl;
-		lastCommand[0] = 0x0; // stop doing anything
-		return "";
+		return ""; //no tpm2 ack
 	}
 
-	size = (((unsigned int) command[1]) << 8) | command[2];
-	if (size != command.length() - 6) {
-		cerr << "ServerDisplayHandler: TPM2NET frame is too short: " << size << " " << command.length() << endl;
-		lastCommand[0] = 0x0; // stop doing anything
-		return "";
+	unsigned int dataSize = (((unsigned int) command[TPM2_FRAME_SIZE_HIGH_P]) << 8) | command[TPM2_FRAME_SIZE_LOW_P];
+
+	if (dataSize != command.length() - TPM2_NET_HEADER_SIZE - TPM2_FOOTER_SIZE) {
+		cerr << "ServerDisplayHandler: TPM2 frame is too short: " << dataSize << " " << command.length() << endl;
+		return ""; //no tpm2 ack
 	}
 
-	switch ((uint8_t) command[0])
+	uint8_t packetNum = command[TPM2_NET_PACKET_NUM_P];
+	uint8_t numPackets = command[TPM2_NET_PACKET_TOTAL_PACK_NUM_P];
+
+	if(packetNum > numPackets){
+		cout << "packetNum/numPackets: " << packetNum << "/" << numPackets << endl;
+	}
+
+//	cout << "Block-Art: " << hex << blockType << "\n";
+//	cout << "Framesize: " << size << "\n";
+//	cout << "Packetnumber: " << packetNum << "\n";
+//	cout << "num Packets: " << numPackets << endl;
+
+	switch (blockType)
+	{
+		case TPM2_BLOCK_TYPE_DATA:
 		{
-		case 0xDA:
-		//	cout << "Block-Art: " << hex << (int)command[0] << "\n";
-		//	cout << "Framesize: " << size << "\n";
-		//	cout << "Packetnumber: " <<(int) command[3] << "\n";
-		//	cout << "num Packets: " <<(int) command[4] << endl;
-
-			panel->drawFrameModule((int)command[3],size,(uint8_t *) (command.c_str() + 5));
+			//FIXME muss besser gelöst werden
+			animation->reset();
+			uint8_t* data = (uint8_t*) (command.c_str() + TPM2_NET_DATA_P);
+			panel->drawFrameModule(packetNum,dataSize,data);
 			if(panel->getModulDrawn()){
 				panel->resetModulDrawn();
 				panel->draw();
 			}
-			lastCommand[0] = 0x0; // stop doing anything
-			return "";
+			return ""; //no tpm2 ack
+		}
+		case TPM2_BLOCK_TYPE_CMD:
+		{
+			uint8_t cmdCtl = command[TPM2_NET_CMD_CONTROL_P];
+			uint8_t cmdType = command[TPM2_NET_CMD_TYPE_P];
+			unsigned int paramSize = 0;
+			if(cmdType == TPM2_CMD_SPECIAL_CMD){
+				uint8_t cmdSpType = command[TPM2_NET_SP_CMD_P];
+				uint8_t cmdSpSubType = command[TPM2_NET_SP_CMD_P +1];
+				paramSize = dataSize - 4;
+				string cmdParam(command.substr(TPM2_NET_SP_CMD_DATA_P +1,command.length()-2));
+				return executeTpm2SpecialCmd(cmdCtl,cmdSpType, cmdSpSubType,cmdParam,paramSize);
+			}
+			else{
+				string cmdParam(command.substr(TPM2_NET_CMD_DATA_P,command.length()-1));
+				paramSize = dataSize - 2;
+				return executeTpm2Cmd(cmdCtl,cmdType,cmdParam,paramSize);
+			}
+		}
+
+		case TPM2_BLOCK_TYPE_ACK:
+		{
 			break;
-		case 0xC0:
+		}
+
+		case TPM2_BLOCK_TYPE_ACK_DATA:
+		{
 			break;
-		case 0xAA:
-			break;
-		case 0xAD:
-			break;
+		}
+
 		default:
-			lastCommand[0] = 0x0; // stop doing anything
+		{
 			return "";
 		}
 
-	lastCommand[0] = 0x0; // stop doing anything
+	}
 	return "";
 }
 
-/**
- * Reads the header of MyProtocol, checks the size and returns the pure command.
- *
- *  message format:
- *   ___________________________________________
- *  | num_bytes | message_message_message_message |
- *  |0_|1_|2_|3_|______x bytes____________________|
- *
- *  where num_bytes is 4-byte binary and represents the length of the message (excluding num_byte)!
- *
- */
-string ServerDisplayHandler::checkMyPMessageSize(string message) {
-	unsigned long num_bytes = 0L;
 
-	if (4 > message.size()) {
-		cerr << "ServerDisplayHandler: invalid myp message received" << endl;
-		lastCommand[0] = 0x0; // stop doing anything
-		return "";
+string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uint8_t subCmd, string &param, unsigned int paramLen){
+	uint8_t ackBit = (ctl >> TPM2_CMD_ACK_BIT) & 0x01;
+	uint8_t response = TPM2_ACK_OK;
+
+	switch(cmd)
+	{
+	case SPCMD_DRAW:
+	{
+		//FIXME muss besser gelöst werden
+		animation->reset();
+		cout << "draw: ";
+		switch(subCmd)
+		{
+		case SPCMD__COLOR:
+		{
+			cout << "Color";
+			cout << ": param(0x";
+			for(unsigned int i = 0; i < param.length(); i++){
+				cout << hex <<setw(3)<< (int) param[i];
+			}
+			cout<< ")" << endl;
+
+			if (paramLen == 3){
+				color_t color;
+				color.red   = param[0];
+				color.green = param[1];
+				color.blue  = param[2];
+				panel->getCanvas()->setColor(color);
+				panel->draw();
+			}
+			else{
+				cerr << "paramLen out of bounds(3) " << paramLen << endl;
+			}
+			break;
+		}
+		case SPCMD__SET_PIXEL:
+		{
+			cout << "Pixel";
+			cout << ": param(0x";
+			for(unsigned int i = 0; i < param.length(); i++){
+				cout << hex <<setw(3)<< (int) param[i];
+			}
+			cout<< ")" << endl;
+
+			if (paramLen == 5){
+				color_t color;
+				color.red   = param[2];
+				color.green = param[3];
+				color.blue  = param[4];
+				panel->getCanvas()->setPixel(param[0],param[1],color);
+				panel->draw();
+			}
+			else{
+				cerr << "paramLen out of bounds(5) " << paramLen << endl;
+			}
+			break;
+		}
+		case SPCMD__DRAW_LINE:
+		{
+			cout << "Line";
+			cout << ": param(0x";
+			for(unsigned int i = 0; i < param.length(); i++){
+				cout << hex <<setw(3)<< (int) param[i];
+			}
+			cout<< ")" << endl;
+
+			if (paramLen == 7){
+				color_t color;
+				color.red   = param[4];
+				color.green = param[5];
+				color.blue  = param[6];
+				//FIXME line width
+				panel->getCanvas()->drawLine(param[0],param[1],param[2],param[3],color,1);
+				panel->draw();
+			}
+			else{
+				cerr << "paramLen out of bounds(7) " << paramLen << endl;
+			}
+			break;
+		}
+		case SPCMD__DRAW_RECT:
+		{
+			cerr << "SPCMD__DRAW_RECT not supported" << endl;
+			break;
+		}
+		case SPCMD__DRAW_CIRC:
+		{
+			cout << "Circle";
+			cout << ": param(0x";
+			for(unsigned int i = 0; i < param.length(); i++){
+				cout << hex <<setw(3)<< (int) param[i];
+			}
+			cout<< ")" << endl;
+
+			if (paramLen == 6){
+			color_t color;
+			color.red   = param[3];
+			color.green = param[4];
+			color.blue  = param[5];
+			//FIXME circle width
+			panel->getCanvas()->drawCircle(param[0],param[1],param[2],color,1);
+			panel->draw();
+			}
+			else{
+				cerr << "paramLen out of bounds(6) " << paramLen << endl;
+			}
+			break;
+		}
+		default:
+		{
+			cerr << "SpSubCommand 0x"<< hex << subCmd << "not supported" << endl;
+			break;
+		}
+		}
+		break;//spCmd
+
+	}
+	case SPCMD_ANI_SET:
+	{
+		cout << "set animation: ";
+		animation->set(subCmd,param,paramLen);
+		break;
+	}
+	case SPCMD_ANI_MIXER:
+	{
+		cout << "animation mixer" << endl;
+		animation->setMixer(subCmd);
+		break;
+	}
+	case SPCMD_ANI_DELAY:
+	{
+		cout << "animation delay" << endl;
+		if (paramLen == 4){
+			unsigned int delay = (param[0] << 24) | (param[1] << 16) | (param[2] << 8) | param[3];
+			animation->setAniDelay(delay);
+		}
+		else{
+			cerr << "paramLen out of bounds(4) " << paramLen << endl;
+		}
+
+		break;
+	}
+	default:
+	{
+		cerr << "SpCommand 0x"<< hex << cmd << "not supported" << endl;
+		break;
+	}
 	}
 
-	num_bytes = (message[0] << 24) | (message[1] << 16) | (message[2] << 8)
-			| (message[3]);
-
-//	cout << "num_bytes: " << num_bytes << " - message[0|1|2|3]: "
-//			<< (int) message[0] << "|" << (int) message[1] << "|"
-//			<< (int) message[2] << "|" << (int) message[3] << "|" << endl;
-
-	if (message.size() == num_bytes + 4) {
-		string rt = string(message.c_str() + 4, message.size() - 4);
-		return rt;
+	if(ackBit){
+		return makeTpm2NetACPacket(response);
 	}
+	return "";
+}
+string ServerDisplayHandler::executeTpm2Cmd(uint8_t ctl, uint8_t cmd, string &param, unsigned int paramLen){
+	cout << "tpm2 Commands not yet supported" << endl;
+	return "";
+}
 
-	if (message.size() > num_bytes + 4) {
-		cerr << "ServerDisplayHandler: myp message is too long!!"
-				<< message.size() << " vs " << num_bytes + 4 << endl;
-		lastCommand[0] = 0x0; // stop doing anything
-		return string(message.c_str() + 4);
-	}
+string ServerDisplayHandler::makeTpm2NetACPacket(uint8_t response){
+	string ret("");
+	ret.append((char)TPM2_NET_BLOCK_START_BYTE+ (char)TPM2_BLOCK_TYPE_ACK_DATA,2);
+	ret.append((char)0x00+ (char)0x01,2);
+	ret.append((char)0x00+ (char)0x01,2);
+	ret.append((char)response,1);
+	ret.append((char)TPM2_BLOCK_END_BYTE,1);
+	return ret;
+}
 
-	cerr << "ServerDisplayHandler: myp message incomplete: received "
-			<< message.size() - 4 << " - expected " << num_bytes << endl;
-	lastCommand[0] = 0x0; // stop doing anything
-	string rt = string(message.c_str() + 4, message.size() - 4);
-	return rt;
+string ServerDisplayHandler::makeTpm2NetADPacket(uint8_t response, string &data, unsigned int dataLen){
+	string ret("");
+	ret.append((char)TPM2_NET_BLOCK_START_BYTE+ (char)TPM2_BLOCK_TYPE_ACK_DATA,2);
+	ret.append((char)((dataLen>> 3) & 0xff)+ (char)((dataLen    ) & 0xff),2);
+	ret.append((char)0x00 + (char)0x01,2);
+	ret.append((char)response,1);
+	ret+= data;
+	ret.append((char)TPM2_BLOCK_END_BYTE,1);
+	return ret;
 }
 
 /**
  * interprets a command of the MyProtocol
  */
-string ServerDisplayHandler::executeMyProtocol(string command) {
-	uint8_t type;
-	string response = "-OK";
+//string ServerDisplayHandler::executeMyProtocol(string &command) {
+//	uint8_t type;
+//	string response = "-OK";
+//
+//	command = checkMyPMessageSize(command);
+//	type = command[0];
+//	response[0] = type;
+//
+//	switch (type) {
+//	case COMMAND_DO_NOTHING:
+//		/* do nothing (in case of an error occurred ) */
+//		break;
+//
+//	case COMMAND_DRAW_COLOR:
+//		response = this->drawColor(command);
+//		break;
+//
+//	case COMMAND_FADE_COLOR:
+//		response = this->fadeColor(command);
+//		break;
+//
+//	case COMMAND_PULSE_COLOR:
+//		response = this->pulseColor(command);
+//		break;
+//
+//	case COMMAND_DRAW_PICTURE:
+//		//response = this->drawPicture(command);
+//		cerr << "COMMAND_DRAW_PICTURE not implemented" << endl;
+//		break;
+//
+//	case COMMAND_DRAW_PIXEL:
+//		cerr << "COMMAND_DRAW_PIXEL not implemented" << endl;
+//		break;
+//
+//	case COMMAND_DRAW_LINE:
+//		response = this->drawLine(command);
+//		break;
+//
+//	case COMMAND_DRAW_CIRCLE:
+//		response = this->drawCircle(command);
+//		break;
+//
+//	case COMMAND_BOOT_SCREEN:
+//		response = this->bootScreen(command);
+//		break;
+//
+//	case COMMAND_DRAW_RECT:
+//		cerr << "COMMAND_DRAW_RECT not implemented" << endl;
+//		break;
+//
+////	case COMMAND_DO_ANIMATION:
+//		response = this->doAnimation(command);
+//		break;
+//
+//	default:
+//		cerr << "[ERROR] unknown command: 0x'" << hex
+//				<< (unsigned int) command[0] << dec << "'" << endl;
+//		response = "-unknown command";
+//		response[0] = 0xff;
+//
+//		command[0] = 0;
+//	}
+//
+//	return makeHeader(response);
+//}
 
-	command = checkMyPMessageSize(command);
-	type = command[0];
-	response[0] = type;
 
-	switch (type) {
-	case COMMAND_DO_NOTHING:
-		/* do nothing (in case of an error occurred ) */
-		break;
-
-	case COMMAND_DRAW_COLOR:
-		response = this->drawColor(command);
-		break;
-
-	case COMMAND_FADE_COLOR:
-		response = this->fadeColor(command);
-		break;
-
-	case COMMAND_PULSE_COLOR:
-		response = this->pulseColor(command);
-		break;
-
-	case COMMAND_DRAW_PICTURE:
-		//response = this->drawPicture(command);
-		cerr << "COMMAND_DRAW_PICTURE not implemented" << endl;
-		break;
-
-	case COMMAND_DRAW_PIXEL:
-		cerr << "COMMAND_DRAW_PIXEL not implemented" << endl;
-		break;
-
-	case COMMAND_DRAW_LINE:
-		response = this->drawLine(command);
-		break;
-
-	case COMMAND_DRAW_CIRCLE:
-		response = this->drawCircle(command);
-		break;
-
-	case COMMAND_BOOT_SCREEN:
-		response = this->bootScreen(command);
-		break;
-
-	case COMMAND_DRAW_RECT:
-		cerr << "COMMAND_DRAW_RECT not implemented" << endl;
-		break;
-
-	case COMMAND_DO_ANIMATION:
-		response = this->doAnimation(command);
-		break;
-
-	default:
-		cerr << "[ERROR] unknown command: 0x'" << hex
-				<< (unsigned int) command[0] << dec << "'" << endl;
-		response = "-unknown command";
-		response[0] = 0xff;
-
-		command[0] = 0;
-	}
-
-	return makeHeader(response);
-}
-
-void ServerDisplayHandler::run() {
-	unsigned long long refTime;
-	string rt;
-
-	try {
-		//panel->showBootLogo();
-
-		while (1) {
-			while (1) {
-				refTime = Utile::getTime();
-
-				if (server->hasMessage())
-					break;
-
-				if (!server->isAlive())
-					throw MyException("Server is dead");
-
-				executeCommand(lastCommand);
-
-				/* keep 60fps */
-				usleep(16667 - (Utile::getTime() - refTime));
-			}
-			//get new command
-
-			lastCommand = getCommand();
-			rt = executeCommand(lastCommand);
-			server->putMessage(makeHeader(rt));
-		}
-	} catch (MyException &e) {
-		cerr << e.what() << endl;
-	}
-
-	cout << "shutdown" << endl;
-	server->shutdown();
-}

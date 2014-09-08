@@ -1,8 +1,8 @@
 CC = g++
 #SOURCES = $(shell find $(SOURCEDIR) -name '*.c')
 #OBJECTS = $(SOURCES:%.c=%.o)
-OBJECTS = main.o Utile.o Server.o ServerDisplayHandler.o Display.o MyException.o Share.o spi.o  DisplayModul.o colorManipulation.o
-LIBS = -lpthread
+OBJECTS = main.o Utile.o Server.o ServerDisplayHandler.o Display.o MyException.o Share.o spi.o  DisplayModul.o colorManipulation.o Canvas.o Animation.o
+LIBS = -lpthread -lwiringPi
 CFLAGS = -g3 -Wall -D__GXX_EXPERIMENTAL_CXX0X__=1 -std=c++0x -pedantic
 PROGRAMDIR = led/
 BINDIR = /usr/bin/$(PROGRAMDIR)
@@ -14,16 +14,14 @@ INSTALL = ledPanel panel_config.xml
 TESTOBJECTS = $(patsubst %.o,obj/%.o,$(OBJECTS))
 
 all: $(TESTOBJECTS)
-	@echo 'Linking: $@'
+	@echo "[Link  ] $(NAME)"
 	@$(CC) -o $(NAME) $(TESTOBJECTS) $(LIBS)
 	@echo 'Finished: $@'
 	@echo ' '
 
 obj/%.o: src/%.cpp
-	@echo 'Compiling: $@'
+	@echo "[Compile] $@"
 	@$(CC) -c $(CFLAGS) $< -o $@
-	@echo 'Finished: $@'
-	@echo ' '
 
 clean:
 	@echo 'Cleaning: obj/*.o $(NAME)'

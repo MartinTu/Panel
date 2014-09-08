@@ -162,13 +162,13 @@ void Server::sendResponse(string response) {
 		}
 	}
 	else{
-		int len;
-		if (-1 == (len = sendto(mySocket, response.c_str(), bufferLength, 0, (sockaddr *) &clientAddr, sizeof(clientAddr)))) {
-			throw MyException("sendto failed: " + string(strerror(errno)));
-		}
-		else if(bufferLength != len){
-			throw MyException("sendto() sent a different number of bytes than expected");
-		}
+//		int len;
+//		if (-1 == (len = sendto(mySocket, response.c_str(), bufferLength, 0, (sockaddr *) &clientAddr, sizeof(clientAddr)))) {
+//			throw MyException("sendto failed: " + string(strerror(errno)));
+//		}
+//		else if(bufferLength != len){
+//			throw MyException("sendto() sent a different number of bytes than expected");
+//		}
 	}
 
 }
@@ -262,20 +262,7 @@ void* Server::serverTask() {
 				/*connection established. ready for receiving data*/
 				while ((!close_connection) && (!shut_down)) {
 					message = this->receiveCommand();
-
-					if (message[5] == 0xff) // close connection
-						break;
-
-					//put received message in que
-					rx.put(message);
-					//get a response from que
-					response = tx.take();
-					//send response
-					if (!response.empty())
-						this->sendResponse(response);
-					//abort, if it is a UDP connection
-					//if (type == UDP)
-					//	break;
+					Utile::ledOn();
 					if(type == TCP){
 						cout 	<< "[INFO] connected with " << inet_ntoa(clientAddr.sin_addr)
 								<< " on port 0x" << clientAddr.sin_port << endl;
@@ -288,6 +275,20 @@ void* Server::serverTask() {
 								    << " on port 0x" << actPort << endl;
 						}
 					}
+
+					if ((message[5] == 0xff) && (type == TCP)) // close connection
+						break;
+					//put received message in que
+					rx.put(message);
+					//get a response from que
+					response = tx.take();
+					//send response
+					if (!response.empty())
+						this->sendResponse(response);
+					//abort, if it is a UDP connection
+					//if (type == UDP)
+					//	break;
+
 				}
 			} catch (MyException &e) {
 				cerr << "[ERROR] " << e.what() << endl;

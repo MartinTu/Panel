@@ -35,6 +35,7 @@ Display::Display()
            buffersize(0),
            buffoffset(0),
            actModul(0),
+           gamma(2.2),
            spiThreadIsRunning(true)
 {
     this->spi = new SPI();
@@ -45,11 +46,7 @@ Display::Display()
     //cout << "buffer size: " << buffersize << endl;
     buffer.resize(buffersize);
     //cout << "pixel: " << width * height << endl;
-    pixel.resize(width);
-    for (int i = 0; i < width; i++)
-    {
-        pixel[i].resize(height);
-    }
+    this->master = new Canvas(width,height);
 
     modulDrawn.resize(numModules);
     resetModulDrawn();
@@ -65,13 +62,14 @@ Display::Display()
 
 Display::~Display()
 {
-    this->turnLEDsOff();
+    master->setColor(color_black);
+    draw();
     usleep(200);
     //is this the correct deletion?
     for(int i = numModules; i > numModules; i--){
     	delete modul[i];
     }
-
+    delete master;
     this->spiThreadIsRunning = false;
     pthread_cancel(spiThread);
 }
@@ -84,6 +82,10 @@ int Display::getWidth()
 int Display::getHeight()
 {
     return this->height;
+}
+
+Canvas* Display::getCanvas(){
+	return master;
 }
 
 int Display::getNumFramePix()
@@ -122,240 +124,21 @@ void Display::resetModulDrawn(){
 	}
 }
 
-
-/*
- * turns the lights off
- */
-void Display::turnLEDsOff()
-{
-    for (int i = 0; i < this->width; i++)
-    {
-        for (int j = 0; j < this->height; j++)
-        {
-            this->pixel[i][j].red = 0;
-            this->pixel[i][j].green = 0;
-            this->pixel[i][j].blue = 0;
-        }
-    }
-    this->draw();
-}
-
-void Display::setPixel(uint8_t x, uint8_t y, struct color_t color)
-{
-	x = (uint8_t) Utile::resize(x,0,width);
-	y = (uint8_t) Utile::resize(y,0,height);
-    pixel[x][y] = color;
-}
-
-/**
- * set all pixel to the given color
- */
-void Display::setColor(struct color_t color)
-{
-    for (int i = 0; i < width; i++)
-        for (int j = 0; j < height; j++)
-            pixel[i][j] = color;
-}
-
-void Display::drawLine(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, color_t color, uint8_t width)
-{
-    int x_diff;
-    int y_diff;
-    int start;
-    int end;
-
-    int n;
-    float m;
-
-//    cout << "draw line: (" << (unsigned int) x_start << "," << (unsigned int) y_start << ") (" << (unsigned int) x_end << ","
-//            << (unsigned int) y_end << ") " << (unsigned int) color.red << " " << (unsigned int) color.green << " "
-//            << (unsigned int) color.blue << " " << endl;
-
-    x_diff = x_end - x_start;
-    y_diff = y_end - y_start;
-
-    /* don't draw anything if the 2 points are equal */
-    if ((x_diff == 0) && (y_diff == 0))
-        return;
-
-    if (Utile::absolute(x_diff) >= Utile::absolute(y_diff))
-    {
-        uint8_t y;
-
-        m = y_diff / ((float) x_diff);
-        n = round(y_start - (m * x_start));
-
-        if (x_start < x_end)
-        {
-            start = Utile::resize(x_start, 0, this->width - 1);
-            end = Utile::resize(x_end, 0, this->width - 1);
-        }
-        else
-        {
-            end = Utile::resize(x_start, 0, this->width - 1);
-            start = Utile::resize(x_end, 0, this->width - 1);
-        }
-
-//        cout << "m " << m << " n " << n << endl;
-//        cout << "loop start: " << start << "; loop end: " << end << endl;
-
-        for (uint8_t x = start; x <= end; x++)
-        {
-            y = round(m * x + n);
-
-            if ((y < this->width) && (y >= 0))
-                pixel[x][y] = color;
-
-//            cout << "x " << (unsigned int) x << " y " << (unsigned int) y << endl;
-        }
-    }
-    else /* y_diff > x_diff */
-    {
-        uint8_t x;
-
-        m = x_diff / ((float) y_diff);
-        n = round(x_start - (m * y_start));
-
-        if (y_start < y_end)
-        {
-            start = Utile::resize(y_start, 0, this->width - 1);
-            end = Utile::resize(y_end, 0, this->width - 1);
-        }
-        else
-        {
-            end = Utile::resize(y_start, 0, this->width - 1);
-            start = Utile::resize(y_end, 0, this->width - 1);
-        }
-
-//        cout << "m " << m << " n " << n << endl;
-
-        for (uint8_t y = y_start; y <= y_end; y++)
-        {
-            x = round(m * y + n);
-
-            if ((x < this->width) && (x >= 0))
-                pixel[x][y] = color;
-
-//            cout << "x " << (unsigned int) x << " y " << (unsigned int) y << endl;
-        }
-    }
-}
-
-/**
- * draws a cricle
- */
-void Display::drawCircle(uint8_t x0, uint8_t y0, uint8_t radius, color_t color, uint8_t width)
-{
-    int y;
-
-    uint8_t start = Utile::resize(x0 - radius, 0, this->width - 1);
-    uint8_t end = Utile::resize(x0 + radius, 0, this->width - 1);
-
-    for (uint8_t x = start; x <= end; x++)
-    {
-        /* lower half circle */
-        y = round(sqrt(Utile::pow(radius, 2) - Utile::pow(x - x0, 2))) + y0;
-//        cout << x << " " << y << endl;
-
-        if ((y < (int) this->height) && (y >= 0) && (x < (int) this->width) && (x >= 0))
-            pixel[x][y] = color;
-
-        /* upper half circle */
-        y = round(-sqrt(Utile::pow(radius, 2) - Utile::pow(x - x0, 2))) + y0;
-
-        if ((y < (int) this->height) && (y >= 0) && (x < (int) this->width) && (x >= 0))
-            pixel[x][y] = color;
-    }
-
-    start = Utile::resize(y0 - radius, 0, this->height - 1);
-    end = Utile::resize(y0 + radius, 0, this->height - 1);
-
-    for (uint8_t x = start; x <= end; x++)
-    {
-        /* right half circle */
-        y = round(sqrt(Utile::pow(radius, 2) - Utile::pow(x - y0, 2))) + x0;
-
-        if ((y < (int) this->width) && (y >= 0) && (x < (int) this->height) && (x >= 0))
-            pixel[y][x] = color;
-
-        /* left half circle */
-        y = round(-sqrt(Utile::pow(radius, 2) - Utile::pow(x - y0, 2))) + x0;
-
-        if ((y < (int) this->width) && (y >= 0) && (x < (int) this->height) && (x >= 0))
-            pixel[y][x] = color;
-    }
-}
-
-void Display::drawRandom()
-{
-    //seed
-    srand((unsigned int) Utile::getTime());
-
-    for (int i = 0; i < this->height; i++)
-    {
-        for (int j = 0; j < this->width; j++)
-        {
-            this->pixel[j][i].red = (uint8_t) rand() & 0xff;
-            this->pixel[j][i].green = (uint8_t) rand() & 0xff;
-            this->pixel[j][i].blue = (uint8_t) rand() & 0xff;
-        }
-    }
-    this->draw();
-}
-
-//void Display::showBootLogo()
-//{
-//    float brightness = 0;
-//    for (unsigned int k = 0; k < 100; k++)
-//    {
-//        for (int i = 0; i < height; i++)
-//        {
-//            for (int j = 0; j < width; j++)
-//            {
-//                pixel[j][i].red = (invader[i][j * 3] * brightness);
-//                pixel[j][i].green = (invader[i][j * 3 + 1] * brightness);
-//                pixel[j][i].blue = (invader[i][j * 3 + 2] * brightness);
-//            }
-//        }
-//
-//        this->draw();
-//
-//        brightness = (k * k) / (100.0 * 100.0);
-//        usleep(40e3);
-//    }
-//}
-
-
-
-void Display::drawFrame(int dataLength, const uint8_t * data){
-	if(dataLength == getNumFramePix()*3){
-		int i = 0;
-		//0-0 = topleft
-		for(int y = 0; y < height; y++){
-			for(int x = 0; x < width; x++){
-				pixel[x][y].red   = data[i++];
-				pixel[x][y].green = data[i++];
-				pixel[x][y].blue  = data[i++];
-			}
-		}
-	}
-	else
-		cerr << "drawFrame() does not got correct data length" << endl;
-}
-
-void Display::drawFrameModule(int moduleNum, int dataLength, const uint8_t * data){
+void Display::drawFrameModule(int moduleNum, int dataLength, uint8_t* data){
 	if((moduleNum >= 0) && (moduleNum < numModules)){
 		if(dataLength == modul[moduleNum]->getNumPix()*3){
 
 			int i = 0;
+			color_t color;
 			//0-0 = topleft
 			int x0 = modul[moduleNum]->getXOffset();
 			int y0 = modul[moduleNum]->getYOffset();
 			for(int y = 0; y < modul[moduleNum]->getWidth(); y++){
 				for(int x = 0; x < modul[moduleNum]->getWidth(); x++){
-					pixel[x+x0][y+y0].red   = data[i++];
-					pixel[x+x0][y+y0].green = data[i++];
-					pixel[x+x0][y+y0].blue  = data[i++];
+					color.red   = data[i++];
+					color.green = data[i++];
+					color.blue  = data[i++];
+					master->setPixel(x+x0,y+y0,color);
 				}
 			}
 			setModulDrawn(moduleNum);
@@ -368,7 +151,6 @@ void Display::drawFrameModule(int moduleNum, int dataLength, const uint8_t * dat
 		cerr << "drawModuleFrame() moduleNum does not exist" << endl;
 	}
 }
-
 
 /**
  * draw the internal pixel data
@@ -421,6 +203,7 @@ void Display::drawLDP6803()
     // convert pixel information to an LDP6803 conform byte array
     position_t pos;
     int x,y;
+    color_t color;
     //pixel[0][0] = topleft corner
 	for (int i =  0; i < modul[actModul]->getHeight() ; i++)
 	{
@@ -431,9 +214,10 @@ void Display::drawLDP6803()
 			// bit width conversion
 
 			modul[actModul]->reOrder(x,y,pos);
-			red   = pixel[pos.x][pos.y].red   / 256.0 * 32.0;
-			blue  = pixel[pos.x][pos.y].blue  / 256.0 * 32.0;
-			green = pixel[pos.x][pos.y].green / 256.0 * 32.0;
+			color = master->getPixel(pos.x,pos.y);
+			red   = color.red   / 256.0 * 32.0;
+			blue  = color.blue  / 256.0 * 32.0;
+			green = color.green / 256.0 * 32.0;
 
 			buffer[buffoffset++] = 0x80 |((red   & 0x1f) << 2) | ((green & 0x18) >> 3);
 			buffer[buffoffset++] =       ((green & 0x07) << 5) | ((blue  & 0x1f));
@@ -465,10 +249,8 @@ void Display::drawWS2801()
 	int x,y;
 	//pixel[0][0] = topleft corner
 	//buffer starts at bottomleft corner
-	for (int i =  0; i < modul[actModul]->getHeight() ; i++)
-	{
-		for (int j = 0; j < modul[actModul]->getWidth(); j++)
-		{
+	for (int i =  0; i < modul[actModul]->getHeight() ; i++){
+		for (int j = 0; j < modul[actModul]->getWidth(); j++){
 			x = j + modul[actModul]->getXOffset();
 			y = i + modul[actModul]->getYOffset();
 
@@ -477,10 +259,6 @@ void Display::drawWS2801()
 //			cout << setw(4) << y;
 //			cout << setw(4) << pos->x;
 //			cout << setw(4) << pos->y << endl;
-
-//			pixel[x][y].red = x*20;
-//			pixel[x][y].green = y*10;
-//			pixel[x][y].blue = actModul *255;
 			switch(modul[actModul]->getCorrection())
 			{
 //			case corrPixel:
@@ -497,12 +275,11 @@ void Display::drawWS2801()
 //				break;
 			default:
 				// corrNo
-				buffer[buffoffset++] = pixel[pos.x][pos.y].red;
-				buffer[buffoffset++] = pixel[pos.x][pos.y].green;
-				buffer[buffoffset++] = pixel[pos.x][pos.y].blue;
+				buffer[buffoffset++] = master->getPixel(pos.x,pos.y).red;
+				buffer[buffoffset++] = master->getPixel(pos.x,pos.y).green;
+				buffer[buffoffset++] = master->getPixel(pos.x,pos.y).blue;
 				break;
 			}
-
 		}
 	}
 }

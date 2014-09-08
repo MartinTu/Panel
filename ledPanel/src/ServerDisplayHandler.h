@@ -8,11 +8,27 @@
 #ifndef SERVERDISPLAYHANDLER_H_
 #define SERVERDISPLAYHANDLER_H_
 
+#define SPCMD_DRAW 			0x01
+#define SPCMD__COLOR   		0x01
+#define SPCMD__SET_PIXEL	0x02
+#define SPCMD__DRAW_LINE	0x03
+#define SPCMD__DRAW_RECT	0x04
+#define SPCMD__DRAW_CIRC	0x05
+
+#define SPCMD_ANI_SET		0x03
+//      SPCMD__ANI_SET_ANIMATION
+#define SPCMD_ANI_MIXER		0x04
+#define SPCMD_ANI_DELAY		0x05
+
+
+#include <sstream>
+#include <string>
 #include "Server.h"
 #include "Display.h"
 #include "colorManipulation.h"
-#include <sstream>
 #include "Utile.h"
+#include "tpm2.h"
+#include "Animation.h"
 
 using namespace std;
 
@@ -25,44 +41,21 @@ public:
 	void run();
 
 protected:
-	string makeHeader(string message);
-	string getCommand();
+	void getCommand();
 
-	string executeCommand(string command);
-	string executeMyProtocol(string command);
-	string executeTPM2NetProtocol(string command);
-	string checkMyPMessageSize(string command);
+	string executeCommand(string &command);
 
-	string drawColor(string command);
-	string pulseColor(string command);
-	string fadeColor(string command);
-	string drawPicture(string command);
-	string drawLine(string command);
-	string drawCircle(string command);
-	string bootScreen(string command);
+	string executeTPM2NetProtocol(string &command);
+	string executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uint8_t subCmd, string &param, unsigned int paramLen);
+	string executeTpm2Cmd(uint8_t ctl, uint8_t cmd, string &param, unsigned int paramLen);
+	string makeTpm2NetACPacket(uint8_t response);
+	string makeTpm2NetADPacket(uint8_t response, string &data, unsigned int dataLen);
 
-	string doAnimation(string command);
-
-	string rotateLine(string command);
-	string waterdrop(string command);
-	string verticalFade(string command);
-
+	Animation* animation;
 	Server* server;
 	Display* panel;
 
 	string lastCommand;
-
-	int32_t brightness;
-	bool pulse_getBrighter;
-	color_t fade_color;
-	uint8_t fade_status;
-
-	uint8_t animation_x1;
-	uint8_t animation_x2;
-	uint8_t animation_y1;
-	uint8_t animation_y2;
-
-	unsigned int animation_delay;
 
 };
 #endif /* SERVERDISPLAYHANDLER_H_ */

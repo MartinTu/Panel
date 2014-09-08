@@ -9,14 +9,17 @@
 #define UTILE_H_
 
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <string.h>
 #include <dirent.h>
 #include <iostream>
 #include <cstdlib>
 #include <sstream>
-#include <string>
 #include <vector>
 #include <unistd.h>//file path with "proc/self/exe"
+#include <stdio.h>
+#include <wiringPi.h>
 
 using namespace std;
 
@@ -39,6 +42,9 @@ class Utile
         static string getSelfPath();
         static bool fileExists(std::string path, std::string file);
         static void split(const std::string& message, const std::string& delimeter, std::vector<std::string> &tokens);
+        static void ledInit();
+        static void ledOn();
+        static void ledOff();
 };
 
 #endif /* UTILE_H_ */

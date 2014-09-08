@@ -12,9 +12,9 @@
 
 struct color_t
 {
-        uint8_t red;
-        uint8_t green;
-        uint8_t blue;
+	uint8_t red;
+	uint8_t green;
+	uint8_t blue;
 };
 
 static const color_t color_black 		= {  0,  0,  0};

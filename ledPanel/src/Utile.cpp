@@ -192,3 +192,17 @@ void Utile::display_thread_sched_attr() {
 	cout << "*    priority = " << (int) param.sched_priority << endl;
 }
 
+static int led = 0;
+void Utile::ledInit(){
+	// Starte die WiringPi-Api (wichtig)
+	  if (wiringPiSetup() == -1){
+	  }
+	  led = 1;
+	  pinMode(7, OUTPUT);
+}
+void Utile::ledOn(){
+	if(led) digitalWrite(7, 1);
+}
+void Utile::ledOff(){
+	if(led) digitalWrite(7, 0);
+}
