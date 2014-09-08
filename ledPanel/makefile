@@ -14,44 +14,46 @@ INSTALL = ledPanel panel_config.xml
 TESTOBJECTS = $(patsubst %.o,obj/%.o,$(OBJECTS))
 
 all: $(TESTOBJECTS)
-	@echo "[Link  ] $(NAME)"
+	@echo -n "[ ][Link   ] $(NAME)"
 	@$(CC) -o $(NAME) $(TESTOBJECTS) $(LIBS)
-	@echo 'Finished: $@'
-	@echo ' '
+	@echo -n "\r[x][Link   ] $(NAME)\n"
 
 obj/%.o: src/%.cpp
-	@echo "[Compile] $@"
+	@echo -n "[ ][Compile] $<"
 	@$(CC) -c $(CFLAGS) $< -o $@
+	@echo -n "\r[x][Compile] $<\n"
 
 clean:
-	@echo 'Cleaning: obj/*.o $(NAME)'
+	@echo -n "[ ][Clean  ] obj/*.o $(NAME)"
 	@rm obj/*.o $(NAME) 
-	@echo 'Finished: Cleaning'
-	@echo ' '
-	
+	@echo -n "\r[x][Clean  ] obj/*.o $(NAME)\n"
+
 start:
-	@echo 'Starting: $(Name)'
+	@echo -n "[ ][Start  ] $(NAME)"
 	@$(RUNLVLSCRIPT) start
-	
+	@echo -n "\r[x][Start  ] $(NAME)                                                 \n"
+
 stop:
-	@echo 'Stopping: $(Name)'
+	@echo -n "[ ][Stop   ] $(NAME)"
 	@$(RUNLVLSCRIPT) stop
+	@echo -n "\r[x][Stop   ] $(NAME)                                                  \n"
 
 restart:
-	@echo 'Restarting: $(Name)'
+	@echo -n "[ ][Restart] $(NAME)"
 	@$(RUNLVLSCRIPT) restart
+	@echo -n "\r[x][Restart] $(NAME)                                                  \n"
 
 install:
-	@echo 'Installing: $(INSTALL) to $(BINDIR)'	
+	@echo -n "[ ][Install] $(INSTALL) to $(BINDIR)"
 	@if [ ! -d $(BINDIR) ] ; then \
     @mkdir $(BINDIR) ; fi;
 	@install --mode=755 $(INSTALL) $(BINDIR)
-	@echo 'Finished Installation: $(NAME)'
-	@echo ' '
+	@echo -n "\r[x][Install] $(INSTALL) to $(BINDIR)\n"
+
 
 uninstall:
-	@echo 'Uninstalling: $(NAME) from $(BINDIR)'
+	@echo -n "[ ][Uninst ] $(INSTALL) from $(BINDIR)"
 	@rm $(BINDIR)$(NAME)
-	@echo 'Finished: Uninstalling $(NAME)'
-	@echo ' '
+	@echo -n "\r[x][Uninst ] $(INSTALL) from $(BINDIR)\n"
+
 

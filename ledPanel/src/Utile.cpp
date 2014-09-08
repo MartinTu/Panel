@@ -110,7 +110,9 @@ string Utile::getSelfPath()
     //terminate buff
     buff[256] = 0;
 	//readlink from: #include <unistd.h>
+#ifndef LAPTOP
     ssize_t len = readlink("/proc/self/exe", buff, sizeof(buff)-1) -1;
+
     if (len > 0) {
     	//readlink retuns the path of the program with "$PROGRAMPATH+"/"+$PROGRAMNAME"
     	//find the last "/" and end the sting there to cut of $PROGRAMNAME
@@ -125,6 +127,8 @@ string Utile::getSelfPath()
     	cerr << "can not get my own path" << endl;
     	return string("");
     }
+#endif
+    return string("");
 }
 
 bool Utile::fileExists(string path, string file) {
@@ -192,17 +196,26 @@ void Utile::display_thread_sched_attr() {
 	cout << "*    priority = " << (int) param.sched_priority << endl;
 }
 
+#ifndef LAPTOP
 static int led = 0;
+#endif
+
 void Utile::ledInit(){
+#ifndef LAPTOP
 	// Starte die WiringPi-Api (wichtig)
 	  if (wiringPiSetup() == -1){
 	  }
 	  led = 1;
 	  pinMode(7, OUTPUT);
+#endif
 }
 void Utile::ledOn(){
+#ifndef LAPTOP
 	if(led) digitalWrite(7, 1);
+#endif
 }
 void Utile::ledOff(){
+#ifndef LAPTOP
 	if(led) digitalWrite(7, 0);
+#endif
 }
