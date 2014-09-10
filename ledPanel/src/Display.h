@@ -56,8 +56,8 @@ class Display
         void drawWS2801();
         int initModulesWithConfigFile();
 
-        int width;//display width
-        int height;//display height
+        int width;  //display width
+        int height;  //display height
         orientation_t orientation;
 
         int numModules;
@@ -73,8 +73,8 @@ class Display
         Canvas* master;
         std::vector<bool> modulDrawn;
         std::vector<DisplayModul *> modul;
-        BlockingQueue<std::vector<uint8_t > > q;
-        std::vector<uint8_t > buffer;//hardware Display picture
+        BlockingQueue<std::vector<uint8_t> > q;
+        std::vector<uint8_t> buffer;  //hardware Display picture
 };
 
 #endif /* DISPLAY_H_ */

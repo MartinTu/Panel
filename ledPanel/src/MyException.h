@@ -10,15 +10,15 @@
 
 #include <string>
 
-    class MyException
-    {
-        public:
-            MyException(std::string message);
-            virtual ~MyException();
-            std::string what();
+class MyException
+{
+    public:
+        MyException(std::string message);
+        virtual ~MyException();
+        std::string what();
 
-        private:
-            std::string message;
-    };
+    private:
+        std::string message;
+};
 
 #endif /* MYEXCEPTION_H_ */

@@ -7,15 +7,14 @@
 
 #include "Share.h"
 
-
 using namespace std;
 
 unsigned long long parseULongLong(string str, string errorName)
 {
     char *end;
 
-    unsigned long long value = strtoull(str.c_str(), &end,10);
-    if((end == str)|| ( *end != '\0' ) || (errno == ERANGE))
+    unsigned long long value = strtoull(str.c_str(), &end, 10);
+    if ((end == str) || (*end != '\0') || (errno == ERANGE))
     {
         throw MyException("unable to parse " + errorName);
     }
@@ -27,27 +26,25 @@ unsigned long parseULong(string str, string errorName)
 {
     char *end;
 
-    unsigned long value = strtoul(str.c_str(), &end,10);
-    if((end == str)|| ( *end != '\0' ) || (errno == ERANGE))
+    unsigned long value = strtoul(str.c_str(), &end, 10);
+    if ((end == str) || (*end != '\0') || (errno == ERANGE))
     {
         throw MyException("unable to parse " + errorName);
     }
 
     return value;
 }
-
 
 long parseLong(string str, string errorName)
 {
     char *end;
 
-    long value = strtol(str.c_str(), &end,10);
-    if((end == str)|| ( *end != '\0' ) || (errno == ERANGE))
+    long value = strtol(str.c_str(), &end, 10);
+    if ((end == str) || (*end != '\0') || (errno == ERANGE))
     {
         throw MyException("unable to parse " + errorName);
     }
 
     return value;
 }
-
 

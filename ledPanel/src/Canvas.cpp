@@ -9,94 +9,110 @@
 
 using namespace std;
 
-Canvas::Canvas(int _width,int _height):
-		width(_width),
-		height(_width)
+Canvas::Canvas(int _width, int _height) :
+        width(_width), height(_width)
 {
-	pixel.resize(width);
-	for (int i = 0; i < width; i++)
-	{
-		pixel[i].resize(height);
-	}
-	setColor(color_black);
-	//seed
-	srand((unsigned int) Utile::getTime());
+    pixel.resize(width);
+    for (int i = 0; i < width; i++)
+    {
+        pixel[i].resize(height);
+    }
+    setColor(color_black);
+    //seed
+    srand((unsigned int) Utile::getTime());
 }
 
-Canvas::~Canvas(){
+Canvas::~Canvas()
+{
 }
 
-void Canvas::setPixel(int x, int y, color_t color){
-	if((x < 0) || (x >= width)){
-		cerr << "setPixel() x out of bounds" << endl;
-		return;
-	}
-	if((y < 0) || (x >= height)){
-		cerr << "setPixel() y out of bounds" << endl;
-		return;
-	}
-	pixel[x][y] = color;
+void Canvas::setPixel(int x, int y, color_t color)
+{
+    if ((x < 0) || (x >= width))
+    {
+        cerr << "setPixel() x out of bounds" << endl;
+        return;
+    }
+    if ((y < 0) || (x >= height))
+    {
+        cerr << "setPixel() y out of bounds" << endl;
+        return;
+    }
+    pixel[x][y] = color;
 }
 
-void Canvas::setColor(color_t color){
-	for(int x = 0; x < width; x++)
-		for(int y = 0; y < height; y++)
-			pixel[x][y] = color;
+void Canvas::setColor(color_t color)
+{
+    for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
+            pixel[x][y] = color;
 }
 
-
-void Canvas::drawFrame(const vector<vector<color_t > >& vec){
-	if ((vec.size() == pixel.size()) && (vec[0].size() == pixel[0].size())){
-		//copy first
-		vector<vector<color_t > > neu(vec);
-		pixel.swap(neu);
-	}
-	else{
-		cerr << "drawFrame() does not got correct vector size" << endl;
-	}
+void Canvas::drawFrame(const vector<vector<color_t> >& vec)
+{
+    if ((vec.size() == pixel.size()) && (vec[0].size() == pixel[0].size()))
+    {
+        //copy first
+        vector<vector<color_t> > neu(vec);
+        pixel.swap(neu);
+    } else
+    {
+        cerr << "drawFrame() does not got correct vector size" << endl;
+    }
 }
 
-void Canvas::drawFrame(int dataLength, const uint8_t * data){
-	if(dataLength == width * height * 3){
-		int i = 0;
-		//0-0 = topleft
-		for(int y = 0; y < height; y++){
-			for(int x = 0; x < width; x++){
-				pixel[x][y].red   = data[i++];
-				pixel[x][y].green = data[i++];
-				pixel[x][y].blue  = data[i++];
-			}
-		}
-	}
-	else{
-		cerr << "drawFrame() does not got correct data length" << endl;
-	}
+void Canvas::drawFrame(int dataLength, const uint8_t * data)
+{
+    if (dataLength == width * height * 3)
+    {
+        int i = 0;
+        //0-0 = topleft
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                pixel[x][y].red = data[i++];
+                pixel[x][y].green = data[i++];
+                pixel[x][y].blue = data[i++];
+            }
+        }
+    } else
+    {
+        cerr << "drawFrame() does not got correct data length" << endl;
+    }
 }
 
-void Canvas::drawSector(int dataLength, const uint8_t* data, int width, int heigth, int xOffset, int yOffset){
+void Canvas::drawSector(int dataLength, const uint8_t* data, int width, int heigth, int xOffset, int yOffset)
+{
 
 }
 
-void Canvas::drawRandomPixel(int x, int y){
-	if((x < 0) || (x >= width)){
-		cerr << "drawRandomPixel() x out of bounds" << endl;
-		return;
-	}
-	if((y < 0) || (x >= height)){
-		cerr << "drawRandomPixel() y out of bounds" << endl;
-		return;
-	}
-	this->pixel[x][y].red   = (uint8_t) rand() & 0xff;
-	this->pixel[x][y].green = (uint8_t) rand() & 0xff;
-	this->pixel[x][y].blue  = (uint8_t) rand() & 0xff;
+void Canvas::drawRandomPixel(int x, int y)
+{
+    if ((x < 0) || (x >= width))
+    {
+        cerr << "drawRandomPixel() x out of bounds" << endl;
+        return;
+    }
+    if ((y < 0) || (x >= height))
+    {
+        cerr << "drawRandomPixel() y out of bounds" << endl;
+        return;
+    }
+    this->pixel[x][y].red = (uint8_t) rand() & 0xff;
+    this->pixel[x][y].green = (uint8_t) rand() & 0xff;
+    this->pixel[x][y].blue = (uint8_t) rand() & 0xff;
 }
 
-void Canvas::drawRandomPicture(){
-    for (int y = 0; y < this->height; y++){
-        for (int x = 0; x < this->width; x++){
-        	this->pixel[x][y].red   = (uint8_t) rand() & 0xff;
-        	this->pixel[x][y].green = (uint8_t) rand() & 0xff;
-        	this->pixel[x][y].blue  = (uint8_t) rand() & 0xff;
+void Canvas::drawRandomPicture()
+{
+    for (int y = 0; y < this->height; y++)
+    {
+        for (int x = 0; x < this->width; x++)
+        {
+            this->pixel[x][y].red = (uint8_t) rand() & 0xff;
+            this->pixel[x][y].green = (uint8_t) rand() & 0xff;
+            this->pixel[x][y].blue = (uint8_t) rand() & 0xff;
         }
     }
 }
@@ -133,8 +149,7 @@ void Canvas::drawLine(int x_start, int y_start, int x_end, int y_end, color_t co
         {
             start = Utile::resize(x_start, 0, this->width - 1);
             end = Utile::resize(x_end, 0, this->width - 1);
-        }
-        else
+        } else
         {
             end = Utile::resize(x_start, 0, this->width - 1);
             start = Utile::resize(x_end, 0, this->width - 1);
@@ -152,8 +167,7 @@ void Canvas::drawLine(int x_start, int y_start, int x_end, int y_end, color_t co
 
 //            cout << "x " << (unsigned int) x << " y " << (unsigned int) y << endl;
         }
-    }
-    else /* y_diff > x_diff */
+    } else /* y_diff > x_diff */
     {
         uint8_t x;
 
@@ -164,8 +178,7 @@ void Canvas::drawLine(int x_start, int y_start, int x_end, int y_end, color_t co
         {
             start = Utile::resize(y_start, 0, this->width - 1);
             end = Utile::resize(y_end, 0, this->width - 1);
-        }
-        else
+        } else
         {
             end = Utile::resize(y_start, 0, this->width - 1);
             start = Utile::resize(y_end, 0, this->width - 1);
@@ -184,7 +197,6 @@ void Canvas::drawLine(int x_start, int y_start, int x_end, int y_end, color_t co
         }
     }
 }
-
 
 void Canvas::drawCircle(int x0, int y0, int radius, color_t color, uint8_t width)
 {
@@ -228,29 +240,33 @@ void Canvas::drawCircle(int x0, int y0, int radius, color_t color, uint8_t width
     }
 }
 
-
-
-color_t Canvas::getPixel(int x, int y){
-	if((x < 0) || (x >= width)){
-		cerr << "getPixel() x out of bounds" << endl;
-		return color_black;
-	}
-	if((y < 0) || (x >= height)){
-		cerr << "getPixel() y out of bounds" << endl;
-		return color_black;
-	}
-	return pixel[x][y];
+color_t Canvas::getPixel(int x, int y)
+{
+    if ((x < 0) || (x >= width))
+    {
+        cerr << "getPixel() x out of bounds" << endl;
+        return color_black;
+    }
+    if ((y < 0) || (x >= height))
+    {
+        cerr << "getPixel() y out of bounds" << endl;
+        return color_black;
+    }
+    return pixel[x][y];
 }
 
-vector<vector<color_t > >& Canvas::getPicture(){
-	vector<vector<color_t > >& pr = pixel;
-	return pr;
+vector<vector<color_t> >& Canvas::getPicture()
+{
+    vector<vector<color_t> >& pr = pixel;
+    return pr;
 }
 
-int Canvas::getWidth(){
-	return width;
+int Canvas::getWidth()
+{
+    return width;
 }
 
-int Canvas::getHeight(){
-	return height;
+int Canvas::getHeight()
+{
+    return height;
 }

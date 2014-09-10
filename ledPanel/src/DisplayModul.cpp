@@ -5,20 +5,12 @@
  *      Author: keKs
  */
 
-
 #include "DisplayModul.h"
 
-
-DisplayModul::DisplayModul(struct modul_t &modul)
-		:	width(modul.width),
-		 	height(modul.height),
-		 	xOffset(modul.xOffset),
-		 	yOffset(modul.yOffset),
-		 	addressing(modul.addressing),
-		 	orientation(modul.orientation),
-		 	flip(modul.flip),
-		 	chip(modul.chip),
-		 	correction(modul.correction)
+DisplayModul::DisplayModul(struct modul_t &modul) :
+        width(modul.width), height(modul.height), xOffset(modul.xOffset), yOffset(modul.yOffset), addressing(
+                modul.addressing), orientation(modul.orientation), flip(modul.flip), chip(modul.chip), correction(
+                modul.correction)
 {
 
 }
@@ -28,215 +20,211 @@ DisplayModul::~DisplayModul()
 
 }
 
-int 	DisplayModul::getWidth()
+int DisplayModul::getWidth()
 {
-	return this->width;
+    return this->width;
 }
-int 	DisplayModul::getHeight()
+int DisplayModul::getHeight()
 {
-	return this->height;
+    return this->height;
 }
-int 	DisplayModul::getNumPix()
+int DisplayModul::getNumPix()
 {
-	return (this->width*this->height);
+    return (this->width * this->height);
 }
-int 	DisplayModul::getXOffset()
+int DisplayModul::getXOffset()
 {
-	return this->xOffset;
+    return this->xOffset;
 }
-int 	DisplayModul::getYOffset()
+int DisplayModul::getYOffset()
 {
-	return this->yOffset;
+    return this->yOffset;
 }
-addressing_t 	DisplayModul::getAddressing()
+addressing_t DisplayModul::getAddressing()
 {
-	return this->addressing;
+    return this->addressing;
 }
-orientation_t 	DisplayModul::getOrientation()
+orientation_t DisplayModul::getOrientation()
 {
-	return this->orientation;
+    return this->orientation;
 }
-flip_t 	DisplayModul::getFlip()
+flip_t DisplayModul::getFlip()
 {
-	return this->flip;
+    return this->flip;
 }
-chip_t 			DisplayModul::getChip()
+chip_t DisplayModul::getChip()
 {
-	return this->chip;
+    return this->chip;
 }
-correction_t	DisplayModul::getCorrection()
+correction_t DisplayModul::getCorrection()
 {
-	return this->correction;
+    return this->correction;
 }
 
 void DisplayModul::reOrder(const int x, const int y, position_t &newPos)
 {
-	newPos.x = x - xOffset;
-	newPos.y = y - yOffset;
+    newPos.x = x - xOffset;
+    newPos.y = y - yOffset;
 
-	switch (addressing)
-	{
-	//horizontal
-	case xyHTL:
-		break;
-	case snakeHTL:
-		if(Utile::isEven(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyHTR:
-		newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case snakeHTR:
-		if(Utile::isOdd(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyHBL:
-		newPos.y = Utile::invert(newPos.y, height);
-		break;
-	case snakeHBL:
-		newPos.y = Utile::invert(newPos.y, height);
-		//like snakeHTL
-		if(Utile::isEven(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyHBR:
-		newPos.y = Utile::invert(newPos.y, height);
-		newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case snakeHBR:
-		newPos.y = Utile::invert(newPos.y, height);
-		//like snakeHTR
-		if(Utile::isOdd(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	//vertical
-	case xyVTL:
-		rotate90(newPos,Grad270);
-		//like xyHTR
-		newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case snakeVTL:
-		rotate90(newPos,Grad270);
-		//like snakeHTR
-		if(Utile::isOdd(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyVTR:
-		rotate90(newPos,Grad90);
-		//like xyHTL
-		break;
-	case snakeVTR:
-		rotate90(newPos,Grad90);
-		//like snakeHTL
-		if(Utile::isEven(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyVBL:
-		rotate90(newPos,Grad270);
-		//like xyHTL
-		break;
-	case snakeVBL:
-		rotate90(newPos,Grad270);
-		//like snakeHTL
-		if(Utile::isEven(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case xyVBR:
-		rotate90(newPos,Grad90);
-		//like xyHTR
-		newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case snakeVBR:
-		rotate90(newPos,Grad90);
-		//like snakeHTR
-		if(Utile::isOdd(newPos.y))
-			newPos.x = Utile::invert(newPos.x, width);
-		break;
-	default:
-		cerr << "addressing has a wrong id: "<< addressing << endl;
-		return;
-	}
+    switch (addressing)
+    {
+    //horizontal
+    case xyHTL:
+        break;
+    case snakeHTL:
+        if (Utile::isEven(newPos.y))
+            newPos.x = Utile::invert(newPos.x, width);
+        break;
+    case xyHTR:
+        newPos.x = Utile::invert(newPos.x, width);
+        break;
+    case snakeHTR:
+        if (Utile::isOdd(newPos.y))
+            newPos.x = Utile::invert(newPos.x, width);
+        break;
+    case xyHBL:
+        newPos.y = Utile::invert(newPos.y, height);
+        break;
+    case snakeHBL:
+        newPos.y = Utile::invert(newPos.y, height);
+        //like snakeHTL
+        if (Utile::isEven(newPos.y))
+            newPos.x = Utile::invert(newPos.x, width);
+        break;
+    case xyHBR:
+        newPos.y = Utile::invert(newPos.y, height);
+        newPos.x = Utile::invert(newPos.x, width);
+        break;
+    case snakeHBR:
+        newPos.y = Utile::invert(newPos.y, height);
+        //like snakeHTR
+        if (Utile::isOdd(newPos.y))
+            newPos.x = Utile::invert(newPos.x, width);
+        break;
+        //vertical
+    case xyVTL:
+        rotate90(newPos, Grad270);
+        //like xyHTR
+        newPos.x = Utile::invert(newPos.x, width);
+        break;
+    case snakeVTL:
+        rotate90(newPos, Grad270);
+        //like snakeHTR
+        if (Utile::isOdd(newPos.y))
+            newPos.x = Utile::invert(newPos.x, width);
+        break;
+    case xyVTR:
+        rotate90(newPos, Grad90);
+        //like xyHTL
+        break;
+    case snakeVTR:
+        rotate90(newPos, Grad90);
+        //like snakeHTL
+        if (Utile::isEven(newPos.y))
+            newPos.x = Utile::invert(newPos.x, width);
+        break;
+    case xyVBL:
+        rotate90(newPos, Grad270);
+        //like xyHTL
+        break;
+    case snakeVBL:
+        rotate90(newPos, Grad270);
+        //like snakeHTL
+        if (Utile::isEven(newPos.y))
+            newPos.x = Utile::invert(newPos.x, width);
+        break;
+    case xyVBR:
+        rotate90(newPos, Grad90);
+        //like xyHTR
+        newPos.x = Utile::invert(newPos.x, width);
+        break;
+    case snakeVBR:
+        rotate90(newPos, Grad90);
+        //like snakeHTR
+        if (Utile::isOdd(newPos.y))
+            newPos.x = Utile::invert(newPos.x, width);
+        break;
+    default:
+        cerr << "addressing has a wrong id: " << addressing << endl;
+        return;
+    }
 
-	switch (orientation)
-	{
-	case rotateNo:
-		break;
-	case rotateLeft:
-		rotate90(newPos,Grad270);
-		break;
-	case rotateHalf:
-		rotate90(newPos,Grad180);
-		break;
-	case rotateRight:
-		rotate90(newPos,Grad90);
-		break;
-	default:
-		cerr << "orientation has a wrong id: "<< orientation << endl;
-		return;
-	}
+    switch (orientation)
+    {
+    case rotateNo:
+        break;
+    case rotateLeft:
+        rotate90(newPos, Grad270);
+        break;
+    case rotateHalf:
+        rotate90(newPos, Grad180);
+        break;
+    case rotateRight:
+        rotate90(newPos, Grad90);
+        break;
+    default:
+        cerr << "orientation has a wrong id: " << orientation << endl;
+        return;
+    }
 
-	switch(flip)
-	{
-	case flipNo:
-		break;
-	case flipX:
-		newPos.x = Utile::invert(newPos.x, width);
-		break;
-	case flipY:
-		newPos.y = Utile::invert(newPos.y, height);
-		break;
-	default:
-		cerr << "flip has a wrong id: "<< flip << endl;
-		return;
-	}
+    switch (flip)
+    {
+    case flipNo:
+        break;
+    case flipX:
+        newPos.x = Utile::invert(newPos.x, width);
+        break;
+    case flipY:
+        newPos.y = Utile::invert(newPos.y, height);
+        break;
+    default:
+        cerr << "flip has a wrong id: " << flip << endl;
+        return;
+    }
 
-	newPos.x = newPos.x + xOffset;
-	newPos.y = newPos.y + yOffset;
+    newPos.x = newPos.x + xOffset;
+    newPos.y = newPos.y + yOffset;
 
 //	cout << "x "<< setw(2) << x << " y "<< setw(2) << y <<" newx "<< setw(2)<< newPos.x << " newy "<< setw(2)<< newPos.y << " xO "<< setw(2)<< xOffset << " yO "<< setw(2)<< yOffset;
 }
 
-
-
-
-void 		DisplayModul::rotate90(position_t &pos, angle_t angle)
+void DisplayModul::rotate90(position_t &pos, angle_t angle)
 {
-	if(Grad0 == angle)
-		return;
+    if (Grad0 == angle)
+        return;
 
-	int midX = width/2;
-	int midY = height/2;
+    int midX = width / 2;
+    int midY = height / 2;
 
-	pos.x = midX + ((pos.x - midX) * rot90cos(angle) - (pos.y - midY) * rot90sin(angle));
-	pos.y = midY + ((pos.y - midY) * rot90cos(angle) + (pos.x - midX) * rot90sin(angle));
+    pos.x = midX + ((pos.x - midX) * rot90cos(angle) - (pos.y - midY) * rot90sin(angle));
+    pos.y = midY + ((pos.y - midY) * rot90cos(angle) + (pos.x - midX) * rot90sin(angle));
 }
 
-int			DisplayModul::rot90sin(angle_t angle)
+int DisplayModul::rot90sin(angle_t angle)
 {
-	switch(angle)
-	{
-	case Grad90:
-		return 1;
-	case Grad270:
-		return -1;
-	default:
-		break;
-	}
-	return 0;
+    switch (angle)
+    {
+    case Grad90:
+        return 1;
+    case Grad270:
+        return -1;
+    default:
+        break;
+    }
+    return 0;
 }
 
-int			DisplayModul::rot90cos(angle_t angle)
+int DisplayModul::rot90cos(angle_t angle)
 {
-	switch(angle)
-	{
-	case Grad0:
-		return 1;
-	case Grad180:
-		return -1;
-	default:
-		break;
-	}
-	return 0;
+    switch (angle)
+    {
+    case Grad0:
+        return 1;
+    case Grad180:
+        return -1;
+    default:
+        break;
+    }
+    return 0;
 }
-
 
