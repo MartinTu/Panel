@@ -16,6 +16,11 @@ struct color_t
         uint8_t green;
         uint8_t blue;
 
+        color_t(uint8_t red=0, uint8_t green=0, uint8_t blue = 0)
+        : red(red), green(green), blue(blue)
+        {
+        }
+
         color_t& operator=(const color_t& a)
         {
             red = a.red;
@@ -24,21 +29,24 @@ struct color_t
             return *this;
         }
 
-        color_t(uint8_t red=0, uint8_t green=0, uint8_t blue = 0)
-        : red(red), green(green), blue(blue)
+        color_t& operator*(const float& a)
         {
+            red = a*red;
+            green = a*green;
+            blue = a*blue;
+            return *this;
         }
 
         bool operator==(color_t a) const
         {
-            if (a.red == red && a.green == green && a.blue == blue)
+            if ((a.red == red) && (a.green == green) && (a.blue == blue))
                 return true;
             return false;
         }
 
         bool operator!=(color_t a) const
         {
-            if (a.red != red || a.green != green || a.blue != blue)
+            if ((a.red != red) || (a.green != green) || (a.blue != blue))
                 return true;
             return false;
         }
