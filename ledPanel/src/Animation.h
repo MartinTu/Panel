@@ -44,6 +44,7 @@ enum animation_t
     aniScreenPulse = 0x04,
     aniRotateLine = 0x05,
     aniWaterdrop = 0x06,
+    aniFadingPixels = 0x07,
     _aniNUM  //numbers of ani (if enum values are not doubled or spaced)
 };
 
@@ -55,7 +56,8 @@ enum aniParamlen_t
     lenScreenFade = 0x05,
     lenScreenPulse = 0x05,
     lenRotateLine = 0x07,
-    lenWaterdrop = 0x06
+    lenWaterdrop = 0x06,
+    lenFadingPixels = 0x06
 };
 
 enum mixer_t
@@ -90,6 +92,7 @@ class Animation
         void screenPulse();
         void rotateLine();
         void waterdrop();
+        void fadingPixels();
 
     protected:
         int width;

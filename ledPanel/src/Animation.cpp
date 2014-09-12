@@ -13,6 +13,7 @@ Animation::Animation(int _width, int _height) :
 {
     //set up bootScreen parameter
     parameter[0] = 0x00;
+
     this->frame = new Canvas(width, height);
 }
 Animation::~Animation()
@@ -27,11 +28,13 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
     if (ani < _aniNUM)
     {
         this->runningAni = static_cast<animation_t>(ani);
-    } else
+    }
+    else
     {
         cerr << ani << " is no animation_t" << endl;
         runningAni = aniNone;
     }
+
     switch (runningAni)
     {
     case aniNone:
@@ -45,7 +48,8 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             parameter = param.substr(0, paramSize);
             aniDelay = 0;
             ret = 0;
-        } else
+        }
+        else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -57,7 +61,8 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             parameter = param.substr(0, paramSize);
             aniDelay = 3;
             ret = 0;
-        } else
+        }
+        else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -69,7 +74,8 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             parameter = param.substr(0, paramSize);
             aniDelay = 0;
             ret = 0;
-        } else
+        }
+        else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -81,7 +87,8 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             parameter = param.substr(0, paramSize);
             aniDelay = 0;
             ret = 0;
-        } else
+        }
+        else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -93,7 +100,8 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             parameter = param.substr(0, paramSize);
             aniDelay = 2;
             ret = 0;
-        } else
+        }
+        else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -105,7 +113,21 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             parameter = param.substr(0, paramSize);
             aniDelay = 2;
             ret = 0;
-        } else
+        }
+        else
+        {
+            cerr << " param out of bounds: " << paramSize << endl;
+        }
+        break;
+    case aniFadingPixels:
+        cout << "aniFadingPixels";
+        if (paramSize == (unsigned int) lenFadingPixels)
+        {
+            parameter = param.substr(0, paramSize);
+            parameter[1] = 0;
+            aniDelay = 1;
+            ret = 0;
+        }
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -139,11 +161,12 @@ bool Animation::nextStep()
 {
     if ((mixer != mixOff) && (aniDelayIterator-- == 0))
     {
-//		cout << "aniParam: 0x";
-//		for(unsigned int i = 0; i < parameter.length(); i++){
-//			cout << hex <<setw(3)<< (int) parameter[i];
-//		}
-//		cout << endl;
+//        cout << "aniParam: 0x";
+//        for (unsigned int i = 0; i < parameter.length(); i++)
+//        {
+//            cout << hex << setw(3) << (int) parameter[i];
+//        }
+//        cout << endl;
         aniDelayIterator = aniDelay;
         switch (runningAni)
         {
@@ -165,11 +188,15 @@ bool Animation::nextStep()
         case aniWaterdrop:
             waterdrop();
             break;
+        case aniFadingPixels:
+            fadingPixels();
+            break;
         default:
             return 0;
         }
         return 1;
-    } else
+    }
+    else
     {
         return 0;
     }
@@ -180,7 +207,8 @@ void Animation::setMixer(uint8_t _mixer)
     if (_mixer < _mixNUM)
     {
         this->mixer = static_cast<mixer_t>(_mixer);
-    } else
+    }
+    else
     {
         cerr << _mixer << " is no mixer_t" << endl;
     }
@@ -224,7 +252,8 @@ void Animation::bootScreen()
     if (actWheel < 128)
     {
         picture = true;
-    } else
+    }
+    else
     {
         picture = false;
     }
@@ -243,7 +272,8 @@ void Animation::bootScreen()
                     {
                         pictureWheel += 128;
                     }
-                } else
+                }
+                else
                 {
                     int nx = x - 1;
                     if (nx < 0)
@@ -255,7 +285,8 @@ void Animation::bootScreen()
                         pictureWheel += 128;
                     }
                 }
-            } else if (invaderOK == 144)
+            }
+            else if (invaderOK == 144)
             {  //martin
                 if (invader[y][x * 3])
                 {
@@ -361,14 +392,16 @@ void Animation::screenFade()
 
         if (0 == red)
             fadeStatus++;
-    } else if (0x01 == fadeStatus)
+    }
+    else if (0x01 == fadeStatus)
     {
         green--;
         blue++;
 
         if (0 == green)
             fadeStatus++;
-    } else if (0x02 == fadeStatus)
+    }
+    else if (0x02 == fadeStatus)
     {
         blue--;
         red++;
@@ -405,7 +438,8 @@ void Animation::screenPulse()
     {
         if (0xff == ++parameter[0])
             parameter[1] = false;
-    } else
+    }
+    else
     {
         if (0x00 == --parameter[0])
             parameter[1] = true;
@@ -485,10 +519,59 @@ void Animation::waterdrop()
     if (radius < sqrt(width * width + height * height))
     {
         parameter[2]++;
-    } else
+    }
+    else
     {
         parameter[0] = rand() % (width - 1);
         parameter[1] = rand() % (height - 1);
         parameter[2] = 0;
+    }
+}
+
+void Animation::fadingPixels()
+{
+    /* ani 0x07
+     * paramSize: 5
+     * [0]: max delay for showing up fading pixels (-> the greater the delay, the less the number of fading pixels)
+     * [1]: current delay
+     * [2]: current delay counter
+     * [3]: red
+     * [4]: green
+     * [5]: blue
+     */
+    uint8_t x;
+    uint8_t y;
+    color_t color;
+    color.red = parameter[3];
+    color.green = parameter[4];
+    color.blue = parameter[5];
+
+    if (parameter[0] == 0)
+        parameter[0] = 1;
+
+//     create new pixel after delay
+    if (parameter[2] >= parameter[1])
+    {
+        parameter[1] = rand() % parameter[0];
+        parameter[2] = 0;
+
+        x = rand() % width;
+        y = rand() % height;
+        frame->setPixel(x, y, color);
+    }
+    else
+    {
+        parameter[2]++;
+    }
+
+    // fade existing pixel
+    for (int x = 0; x < frame->getWidth(); x++)
+    {
+        for (int y = 0; y < frame->getHeight(); y++)
+        {
+            color_t tmp = frame->getPixel(x, y);
+            if (tmp != color_black)
+                frame->setPixel(x, y, tmp * 0.97);
+        }
     }
 }
