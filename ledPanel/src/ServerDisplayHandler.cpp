@@ -49,7 +49,6 @@ void ServerDisplayHandler::run()
 
     try
     {
-
         while (1)
         {
             while (1)

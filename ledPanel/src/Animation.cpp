@@ -482,7 +482,7 @@ void Animation::waterdrop()
     frame->setColor(color_black);
     frame->drawCircle(x, y, radius, color, 1);
 
-    if (radius < width)
+    if (radius < sqrt(width * width + height * height))
     {
         parameter[2]++;
     } else
