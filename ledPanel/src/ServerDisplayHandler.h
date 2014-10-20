@@ -20,7 +20,6 @@
 #define SPCMD_ANI_MIXER		0x04
 #define SPCMD_ANI_DELAY		0x05
 
-
 #include <sstream>
 #include <string>
 #include "Server.h"
@@ -34,28 +33,28 @@ using namespace std;
 
 class ServerDisplayHandler
 {
-public:
-	ServerDisplayHandler();
-	virtual ~ServerDisplayHandler();
+    public:
+        ServerDisplayHandler();
+        virtual ~ServerDisplayHandler();
 
-	void run();
+        void run();
 
-protected:
-	void getCommand();
+    protected:
+        void getCommand();
 
-	string executeCommand(string &command);
+        string executeCommand(string &command);
 
-	string executeTPM2NetProtocol(string &command);
-	string executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uint8_t subCmd, string &param, unsigned int paramLen);
-	string executeTpm2Cmd(uint8_t ctl, uint8_t cmd, string &param, unsigned int paramLen);
-	string makeTpm2NetACPacket(uint8_t response);
-	string makeTpm2NetADPacket(uint8_t response, string &data, unsigned int dataLen);
+        string executeTPM2NetProtocol(string &command);
+        string executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uint8_t subCmd, string &param, unsigned int paramLen);
+        string executeTpm2Cmd(uint8_t ctl, uint8_t cmd, string &param, unsigned int paramLen);
+        string makeTpm2NetACPacket(uint8_t response);
+        string makeTpm2NetADPacket(uint8_t response, string &data, unsigned int dataLen);
 
-	Animation* animation;
-	Server* server;
-	Display* panel;
+        Animation* animation;
+        Server* server;
+        Display* panel;
 
-	string lastCommand;
+        string lastCommand;
 
 };
 #endif /* SERVERDISPLAYHANDLER_H_ */

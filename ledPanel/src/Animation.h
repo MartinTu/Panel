@@ -33,74 +33,77 @@
 #include "Utile.h"
 #include "bitmaps.h"
 
-
 using namespace std;
 
-enum animation_t{
-	aniNone			= 0x00,
-	aniBootScreen  	= 0x01,
-	aniDirectionFade= 0x02,
-	aniScreenFade	= 0x03,
-	aniScreenPulse	= 0x04,
-	aniRotateLine	= 0x05,
-	aniWaterdrop	= 0x06,
-	_aniNUM	//numbers of ani (if enum values are not doubled or spaced)
+enum animation_t
+{
+    aniNone = 0x00,
+    aniBootScreen = 0x01,
+    aniDirectionFade = 0x02,
+    aniScreenFade = 0x03,
+    aniScreenPulse = 0x04,
+    aniRotateLine = 0x05,
+    aniWaterdrop = 0x06,
+    aniFadingPixels = 0x07,
+    _aniNUM  //numbers of ani (if enum values are not doubled or spaced)
 };
 
-enum aniParamlen_t{
-	lenNone		 	= 0x00,
-	lenBootScreen	= 0x01,
-	lenDirectionFade= 0x05,
-	lenScreenFade  	= 0x05,
-	lenScreenPulse	= 0x05,
-	lenRotateLine	= 0x07,
-	lenWaterdrop	= 0x06
+enum aniParamlen_t
+{
+    lenNone = 0x00,
+    lenBootScreen = 0x01,
+    lenDirectionFade = 0x05,
+    lenScreenFade = 0x05,
+    lenScreenPulse = 0x05,
+    lenRotateLine = 0x07,
+    lenWaterdrop = 0x06,
+    lenFadingPixels = 0x06
 };
 
-enum mixer_t{
-	mixOff			= 0x0,//animation wont update
-	mixMaybe		= 0x1,//another canvas may supress the animation from updating, animation is still continuing
-	mixAdd			= 0x2,//canvas is drawn with add
-	mixMult			= 0x3,//canvas is drawn with mult
-	mixOnly			= 0x4,//only this canvas is drawn
-	_mixNUM
+enum mixer_t
+{
+    mixOff = 0x0,	//animation wont update
+    mixMaybe = 0x1,  //another canvas may supress the animation from updating, animation is still continuing
+    mixAdd = 0x2,	//canvas is drawn with add
+    mixMult = 0x3,	//canvas is drawn with mult
+    mixOnly = 0x4,	//only this canvas is drawn
+    _mixNUM
 };
 
+class Animation
+{
+    public:
+        Animation(int _width, int _height);
+        virtual ~Animation();
 
-class Animation{
-public:
-	Animation(int _width, int _height);
-	virtual ~Animation();
+        int set(uint8_t ani, string &param, unsigned int paramSize);
+        void reset();
+        bool nextStep();
 
-	int set(uint8_t ani, string &param, unsigned int paramSize);
-	void reset();
-	bool nextStep();
+        void setMixer(uint8_t _mixer);
+        mixer_t getMixer();
+        Canvas* getCanvas();
+        void setAniDelay(unsigned int delay);
+        bool isAnimationRunning();
 
-	void setMixer(uint8_t _mixer);
-	mixer_t getMixer();
-	Canvas* getCanvas();
-	void setAniDelay(unsigned int delay);
-	bool isAnimationRunning();
+        void bootScreen();
+        void directionFade();
+        void screenFade();
+        void screenPulse();
+        void rotateLine();
+        void waterdrop();
+        void fadingPixels();
 
-	void bootScreen();
-	void directionFade();
-	void screenFade();
-	void screenPulse();
-	void rotateLine();
-	void waterdrop();
-
-protected:
-	int width;
-	int height;
-	unsigned int aniDelay;
-	unsigned int aniDelayIterator;
-	animation_t runningAni;
-	animation_t lastAni;
-	mixer_t mixer;
-	string parameter;
-	Canvas* frame;//x/y Animation screen
+    protected:
+        int width;
+        int height;
+        unsigned int aniDelay;
+        unsigned int aniDelayIterator;
+        animation_t runningAni;
+        animation_t lastAni;
+        mixer_t mixer;
+        string parameter;
+        Canvas* frame;	//x/y Animation screen
 };
-
-
 
 #endif /* ANIMATION_H_ */

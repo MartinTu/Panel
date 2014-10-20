@@ -26,7 +26,7 @@ using namespace std;
 class Utile
 {
     public:
-		static int invert(int val, int maxval);
+        static int invert(int val, int maxval);
         static unsigned long getTime();
 //        static int round(float val);
         static int pow(int base, int exp);
