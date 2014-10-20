@@ -15,15 +15,15 @@ BlockingQueue<T>::BlockingQueue()
     pthread_mutex_init(&writeMutex, NULL);
     pthread_mutex_init(&accessMutex, NULL);
 
-    pthread_mutex_lock (&readMutex);
+    pthread_mutex_lock(&readMutex);
 }
 
 template<typename T>
 BlockingQueue<T>::~BlockingQueue()
 {
-    pthread_mutex_destroy (&readMutex);
-    pthread_mutex_destroy (&writeMutex);
-    pthread_mutex_destroy (&accessMutex);
+    pthread_mutex_destroy(&readMutex);
+    pthread_mutex_destroy(&writeMutex);
+    pthread_mutex_destroy(&accessMutex);
 }
 
 template<typename T>
@@ -33,8 +33,7 @@ int BlockingQueue<T>::setSize(size_t size)
     if (size > this->maxSize)
     {
         this->maxSize = size;
-    }
-    else
+    } else
     {
         pthread_mutex_lock(&this->accessMutex);
         if (this->q.size() < size)
@@ -61,10 +60,10 @@ void BlockingQueue<T>::put(T object)
 {
 
     /* block until the queue is ready for writing access */
-    pthread_mutex_lock (&writeMutex);
+    pthread_mutex_lock(&writeMutex);
     pthread_mutex_unlock(&writeMutex);
 
-    pthread_mutex_lock (&accessMutex);
+    pthread_mutex_lock(&accessMutex);
     this->q.push_back(object);
 
     /* block the queue if the maximum size is reached */
@@ -75,17 +74,17 @@ void BlockingQueue<T>::put(T object)
     pthread_mutex_unlock(&accessMutex);
 
     /* unblock the queue for reading access */
-    pthread_mutex_unlock (&readMutex);
+    pthread_mutex_unlock(&readMutex);
 }
 
 template<typename T>
 T BlockingQueue<T>::take()
 {
     T object;
-    pthread_mutex_lock (&readMutex);
+    pthread_mutex_lock(&readMutex);
     pthread_mutex_unlock(&readMutex);
 
-    pthread_mutex_lock (&accessMutex);
+    pthread_mutex_lock(&accessMutex);
     object = this->q.front();
     this->q.pop_front();
 
@@ -94,7 +93,7 @@ T BlockingQueue<T>::take()
         pthread_mutex_lock(&readMutex);
     }
     pthread_mutex_unlock(&accessMutex);
-    pthread_mutex_unlock (&writeMutex);
+    pthread_mutex_unlock(&writeMutex);
     return object;
 }
 

@@ -7,26 +7,26 @@
 
 #include "MyException.h"
 
-    /**
-     * CTOR
-     */
-    MyException::MyException(std::string what)
-    {
-        this->message = what;
-    }
+/**
+ * CTOR
+ */
+MyException::MyException(std::string what)
+{
+    this->message = what;
+}
 
-    /**
-     * DTOR
-     */
-    MyException::~MyException()
-    {
-    }
+/**
+ * DTOR
+ */
+MyException::~MyException()
+{
+}
 
-    /**
-     * returns the error message
-     */
-    std::string MyException::what()
-    {
-        return this->message;
-    }
+/**
+ * returns the error message
+ */
+std::string MyException::what()
+{
+    return this->message;
+}
 
