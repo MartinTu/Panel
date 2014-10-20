@@ -25,7 +25,7 @@ class Canvas
         void setColor(color_t color);
         void drawFrame(const vector<vector<color_t> >& vec);
         void drawFrame(int dataLength, const uint8_t * data);
-        void drawSector(int dataLength, const uint8_t* data, int width, int heigth, int xOffset, int yOffset);
+        void drawSector(int dataLength, const uint8_t* data, int width, int height, int xOffset, int yOffset);
         void drawRandomPixel(int x, int y);
         void drawRandomPicture();
 

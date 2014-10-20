@@ -8,11 +8,13 @@
 #include "Animation.h"
 
 Animation::Animation(int _width, int _height) :
-        width(_width), height(_height), aniDelay(0), aniDelayIterator(0), runningAni(aniBootScreen), lastAni(aniNone), mixer(
+        width(_width), height(_height), aniDelay(0), aniDelayIterator(0), runningAni(aniFadingPixels), lastAni(aniNone), mixer(
                 mixMaybe)
 {
     //set up bootScreen parameter
     parameter[0] = 0x00;
+
+    parameter[4] = 0xff;
 
     this->frame = new Canvas(width, height);
 }
@@ -531,7 +533,7 @@ void Animation::waterdrop()
 void Animation::fadingPixels()
 {
     /* ani 0x07
-     * paramSize: 5
+     * paramSize: 6
      * [0]: max delay for showing up fading pixels (-> the greater the delay, the less the number of fading pixels)
      * [1]: current delay
      * [2]: current delay counter

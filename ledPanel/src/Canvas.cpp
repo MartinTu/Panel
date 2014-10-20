@@ -82,8 +82,22 @@ void Canvas::drawFrame(int dataLength, const uint8_t * data)
     }
 }
 
-void Canvas::drawSector(int dataLength, const uint8_t* data, int width, int heigth, int xOffset, int yOffset)
+void Canvas::drawSector(int dataLength, const uint8_t* data, int width, int height, int xOffset, int yOffset)
 {
+    if (((height + yOffset) * (width + xOffset) * 3 == dataLength) && (height + yOffset <= this->height)
+            && (width + xOffset <= this->width))
+    {
+        int i = 0;
+        for (int x = xOffset; x < xOffset + width; x++)
+        {
+            for (int y = xOffset; y < yOffset + height; y++)
+            {
+                pixel[x][y].red = data[i++];
+                pixel[x][y].green = data[i++];
+                pixel[x][y].blue = data[i++];
+            }
+        }
+    }
 
 }
 

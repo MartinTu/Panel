@@ -1570,7 +1570,7 @@ namespace rapidxml
         static Ch *skip_and_expand_character_refs(Ch *&text)
         {
             // If entity translation, whitespace condense and whitespace trimming is disabled, use plain skip
-            if (Flags & parse_no_entity_translation && 
+            if ((Flags & parse_no_entity_translation) &&
                 !(Flags & parse_normalize_whitespace) &&
                 !(Flags & parse_trim_whitespace))
             {

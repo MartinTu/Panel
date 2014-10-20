@@ -16,8 +16,8 @@ struct color_t
         uint8_t green;
         uint8_t blue;
 
-        color_t(uint8_t red=0, uint8_t green=0, uint8_t blue = 0)
-        : red(red), green(green), blue(blue)
+        color_t(uint8_t red = 0, uint8_t green = 0, uint8_t blue = 0) :
+                red(red), green(green), blue(blue)
         {
         }
 
@@ -31,9 +31,9 @@ struct color_t
 
         color_t& operator*(const float& a)
         {
-            red = a*red;
-            green = a*green;
-            blue = a*blue;
+            red = a * red;
+            green = a * green;
+            blue = a * blue;
             return *this;
         }
 
