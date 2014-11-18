@@ -102,7 +102,10 @@ class Animation
         animation_t runningAni;
         animation_t lastAni;
         mixer_t mixer;
+        //parameters are set from client
         string parameter;
+        //intern parameters are initialized in set(.)
+        string internPar;
         Canvas* frame;	//x/y Animation screen
 };
 

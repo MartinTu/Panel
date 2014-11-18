@@ -7,6 +7,44 @@
 
 #include "colorManipulation.h"
 
+color_t ColorMan::rgbFade(color_t previous, uint8_t delta)
+{
+    if (previous.blue < delta)
+    {
+        if (previous.green <= (255 - delta))
+            previous.green += delta;
+
+        if (previous.red >= delta)
+            previous.red -= delta;
+        else
+            previous.blue += delta;
+    }
+
+    if (previous.red < delta)
+    {
+        if (previous.blue <= (255 - delta))
+            previous.blue += delta;
+
+        if (previous.green >= delta)
+            previous.green -= delta;
+        else
+            previous.red += delta;
+    }
+
+    if (previous.green < delta)
+    {
+        if (previous.red <= (255 - delta))
+            previous.red += delta;
+
+        if (previous.blue >= delta)
+            previous.blue -= delta;
+        else
+            previous.green += delta;
+    }
+
+    return previous;
+}
+
 // Input a value 0 to 255 to get a color value.
 // The colors are a transition r - g - b - back to r.
 color_t ColorMan::wheel(uint8_t wheelPos)

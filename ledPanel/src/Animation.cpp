@@ -15,6 +15,8 @@ Animation::Animation(int _width, int _height) :
     parameter[0] = 0x00;
 
     parameter[4] = 0xff;
+    //init intern par
+    internPar.clear();
 
     this->frame = new Canvas(width, height);
 }
@@ -130,6 +132,7 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             aniDelay = 1;
             ret = 0;
         }
+        else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -149,6 +152,7 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
     }
     runningAni = lastAni;
     parameter.clear();
+    internPar.clear();
     return -1;  //error at paramSize
 }
 
@@ -157,6 +161,7 @@ void Animation::reset()
     lastAni = runningAni;
     runningAni = aniNone;
     parameter.clear();
+    internPar.clear();
 }
 
 bool Animation::nextStep()
@@ -313,10 +318,11 @@ void Animation::directionFade()
      * [4]: blue
      */
     color_t color;
-    uint8_t diff = parameter[0];
-    color.red = parameter[2];
-    color.green = parameter[3];
-    color.blue = parameter[4];
+    uint8_t diff = (uint8_t) parameter[0];
+
+    color.red = (uint8_t) parameter[2];
+    color.green = (uint8_t) parameter[3];
+    color.blue = (uint8_t) parameter[4];
 
     for (uint8_t x = 0; x < width; x++)
     {
@@ -324,38 +330,8 @@ void Animation::directionFade()
         {
             frame->setPixel(x, y, color);
         }
-        if (color.blue < diff)
-        {
-            if (color.green <= (255 - diff))
-                color.green += diff;
 
-            if (color.red >= diff)
-                color.red -= diff;
-            else
-                color.blue += diff;
-        }
-
-        if (color.red < diff)
-        {
-            if (color.blue <= (255 - diff))
-                color.blue += diff;
-
-            if (color.green >= diff)
-                color.green -= diff;
-            else
-                color.red += diff;
-        }
-
-        if (color.green < diff)
-        {
-            if (color.red <= (255 - diff))
-                color.red += diff;
-
-            if (color.blue >= diff)
-                color.blue -= diff;
-            else
-                color.green += diff;
-        }
+        color = ColorMan::rgbFade(color,diff);
 
         /* set new start color */
         if (x == 1)

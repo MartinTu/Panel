@@ -60,6 +60,7 @@ class ColorMan
 {
     public:
         static color_t wheel(uint8_t wheelPos);
+        static color_t rgbFade(color_t previous, uint8_t delta);
 };
 
 #endif /* COLORMANIPULATION_H_ */
