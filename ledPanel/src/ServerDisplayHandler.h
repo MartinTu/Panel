@@ -19,6 +19,7 @@
 //      SPCMD__ANI_SET_ANIMATION
 #define SPCMD_ANI_MIXER		0x04
 #define SPCMD_ANI_DELAY		0x05
+#define SPCMD_SYSTEM_ADMIN  0xFE
 
 #include <sstream>
 #include <string>

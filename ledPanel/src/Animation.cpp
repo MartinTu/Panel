@@ -8,11 +8,16 @@
 #include "Animation.h"
 
 Animation::Animation(int _width, int _height) :
-        width(_width), height(_height), aniDelay(0), aniDelayIterator(0), runningAni(aniBootScreen), lastAni(aniNone), mixer(
+        width(_width), height(_height), aniDelay(0), aniDelayIterator(0), runningAni(aniFadingPixels), lastAni(aniNone), mixer(
                 mixMaybe)
 {
     //set up bootScreen parameter
-    parameter[0] = 0x00;
+    parameter[0] = 0x20;
+    parameter[1] = 0x00;
+    parameter[2] = 0x00;
+    parameter[3] = 0x00;
+    parameter[4] = 0xFF;
+    parameter[5] = 0xFF;
 
     this->frame = new Canvas(width, height);
 }
