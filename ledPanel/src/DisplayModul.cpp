@@ -72,46 +72,46 @@ void DisplayModul::reOrder(const int x, const int y, position_t &newPos)
     case xyHTL:
         break;
     case snakeHTL:
-        if (Utile::isEven(newPos.y))
-            newPos.x = Utile::invert(newPos.x, width);
+        if (Utils::isEven(newPos.y))
+            newPos.x = Utils::invert(newPos.x, width);
         break;
     case xyHTR:
-        newPos.x = Utile::invert(newPos.x, width);
+        newPos.x = Utils::invert(newPos.x, width);
         break;
     case snakeHTR:
-        if (Utile::isOdd(newPos.y))
-            newPos.x = Utile::invert(newPos.x, width);
+        if (Utils::isOdd(newPos.y))
+            newPos.x = Utils::invert(newPos.x, width);
         break;
     case xyHBL:
-        newPos.y = Utile::invert(newPos.y, height);
+        newPos.y = Utils::invert(newPos.y, height);
         break;
     case snakeHBL:
-        newPos.y = Utile::invert(newPos.y, height);
+        newPos.y = Utils::invert(newPos.y, height);
         //like snakeHTL
-        if (Utile::isEven(newPos.y))
-            newPos.x = Utile::invert(newPos.x, width);
+        if (Utils::isEven(newPos.y))
+            newPos.x = Utils::invert(newPos.x, width);
         break;
     case xyHBR:
-        newPos.y = Utile::invert(newPos.y, height);
-        newPos.x = Utile::invert(newPos.x, width);
+        newPos.y = Utils::invert(newPos.y, height);
+        newPos.x = Utils::invert(newPos.x, width);
         break;
     case snakeHBR:
-        newPos.y = Utile::invert(newPos.y, height);
+        newPos.y = Utils::invert(newPos.y, height);
         //like snakeHTR
-        if (Utile::isOdd(newPos.y))
-            newPos.x = Utile::invert(newPos.x, width);
+        if (Utils::isOdd(newPos.y))
+            newPos.x = Utils::invert(newPos.x, width);
         break;
         //vertical
     case xyVTL:
         rotate90(newPos, Grad270);
         //like xyHTR
-        newPos.x = Utile::invert(newPos.x, width);
+        newPos.x = Utils::invert(newPos.x, width);
         break;
     case snakeVTL:
         rotate90(newPos, Grad270);
         //like snakeHTR
-        if (Utile::isOdd(newPos.y))
-            newPos.x = Utile::invert(newPos.x, width);
+        if (Utils::isOdd(newPos.y))
+            newPos.x = Utils::invert(newPos.x, width);
         break;
     case xyVTR:
         rotate90(newPos, Grad90);
@@ -120,8 +120,8 @@ void DisplayModul::reOrder(const int x, const int y, position_t &newPos)
     case snakeVTR:
         rotate90(newPos, Grad90);
         //like snakeHTL
-        if (Utile::isEven(newPos.y))
-            newPos.x = Utile::invert(newPos.x, width);
+        if (Utils::isEven(newPos.y))
+            newPos.x = Utils::invert(newPos.x, width);
         break;
     case xyVBL:
         rotate90(newPos, Grad270);
@@ -130,19 +130,19 @@ void DisplayModul::reOrder(const int x, const int y, position_t &newPos)
     case snakeVBL:
         rotate90(newPos, Grad270);
         //like snakeHTL
-        if (Utile::isEven(newPos.y))
-            newPos.x = Utile::invert(newPos.x, width);
+        if (Utils::isEven(newPos.y))
+            newPos.x = Utils::invert(newPos.x, width);
         break;
     case xyVBR:
         rotate90(newPos, Grad90);
         //like xyHTR
-        newPos.x = Utile::invert(newPos.x, width);
+        newPos.x = Utils::invert(newPos.x, width);
         break;
     case snakeVBR:
         rotate90(newPos, Grad90);
         //like snakeHTR
-        if (Utile::isOdd(newPos.y))
-            newPos.x = Utile::invert(newPos.x, width);
+        if (Utils::isOdd(newPos.y))
+            newPos.x = Utils::invert(newPos.x, width);
         break;
     default:
         cerr << "addressing has a wrong id: " << addressing << endl;
@@ -172,10 +172,10 @@ void DisplayModul::reOrder(const int x, const int y, position_t &newPos)
     case flipNo:
         break;
     case flipX:
-        newPos.x = Utile::invert(newPos.x, width);
+        newPos.x = Utils::invert(newPos.x, width);
         break;
     case flipY:
-        newPos.y = Utile::invert(newPos.y, height);
+        newPos.y = Utils::invert(newPos.y, height);
         break;
     default:
         cerr << "flip has a wrong id: " << flip << endl;

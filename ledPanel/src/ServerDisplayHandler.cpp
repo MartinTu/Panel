@@ -11,8 +11,8 @@ using namespace std;
 
 ServerDisplayHandler::ServerDisplayHandler()
 {
-    Utile::ledInit();
-    Utile::ledOn();
+    Utils::ledInit();
+    Utils::ledOn();
     int rt;
     struct sched_param param;
 
@@ -30,9 +30,9 @@ ServerDisplayHandler::ServerDisplayHandler()
     {
         throw MyException("ServerDisplayHandler: unable to change schedule parameters: " + string(strerror(rt)));
     }
-    Utile::printStars();
+    Utils::printStars();
     cout << "* ServerDisplayHandler thread: " << endl;
-    Utile::display_thread_sched_attr();
+    Utils::display_thread_sched_attr();
 }
 
 ServerDisplayHandler::~ServerDisplayHandler()
@@ -53,7 +53,7 @@ void ServerDisplayHandler::run()
         {
             while (1)
             {
-                refTime = Utile::getTime();
+                refTime = Utils::getTime();
 
                 if (server->hasMessage())
                 {
@@ -77,8 +77,8 @@ void ServerDisplayHandler::run()
                         panel->draw();
                     }
                 }
-                usleep(16667 - (Utile::getTime() - refTime));
-                Utile::ledOff();
+                usleep(16667 - (Utils::getTime() - refTime));
+                Utils::ledOff();
             }
 
         }
@@ -188,7 +188,7 @@ string ServerDisplayHandler::executeTPM2NetProtocol(string &command)
     {
     case TPM2_BLOCK_TYPE_DATA:
     {
-        //FIXME muss besser gel�st werden
+        //FIXME muss besser geloest werden
         animation->reset();
         uint8_t* data = (uint8_t*) (command.c_str() + TPM2_NET_DATA_P);
         panel->drawFrameModule(packetNum, dataSize, data);
@@ -249,7 +249,7 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
     {
     case SPCMD_DRAW:
     {
-        //FIXME muss besser gel�st werden
+        //FIXME muss besser geloest werden
         animation->reset();
         cout << "draw: ";
         switch (subCmd)
@@ -466,72 +466,3 @@ string ServerDisplayHandler::makeTpm2NetADPacket(uint8_t response, string &data,
     ret.append((char) TPM2_BLOCK_END_BYTE, 1);
     return ret;
 }
-
-/**
- * interprets a command of the MyProtocol
- */
-//string ServerDisplayHandler::executeMyProtocol(string &command) {
-//	uint8_t type;
-//	string response = "-OK";
-//
-//	command = checkMyPMessageSize(command);
-//	type = command[0];
-//	response[0] = type;
-//
-//	switch (type) {
-//	case COMMAND_DO_NOTHING:
-//		/* do nothing (in case of an error occurred ) */
-//		break;
-//
-//	case COMMAND_DRAW_COLOR:
-//		response = this->drawColor(command);
-//		break;
-//
-//	case COMMAND_FADE_COLOR:
-//		response = this->fadeColor(command);
-//		break;
-//
-//	case COMMAND_PULSE_COLOR:
-//		response = this->pulseColor(command);
-//		break;
-//
-//	case COMMAND_DRAW_PICTURE:
-//		//response = this->drawPicture(command);
-//		cerr << "COMMAND_DRAW_PICTURE not implemented" << endl;
-//		break;
-//
-//	case COMMAND_DRAW_PIXEL:
-//		cerr << "COMMAND_DRAW_PIXEL not implemented" << endl;
-//		break;
-//
-//	case COMMAND_DRAW_LINE:
-//		response = this->drawLine(command);
-//		break;
-//
-//	case COMMAND_DRAW_CIRCLE:
-//		response = this->drawCircle(command);
-//		break;
-//
-//	case COMMAND_BOOT_SCREEN:
-//		response = this->bootScreen(command);
-//		break;
-//
-//	case COMMAND_DRAW_RECT:
-//		cerr << "COMMAND_DRAW_RECT not implemented" << endl;
-//		break;
-//
-////	case COMMAND_DO_ANIMATION:
-//		response = this->doAnimation(command);
-//		break;
-//
-//	default:
-//		cerr << "[ERROR] unknown command: 0x'" << hex
-//				<< (unsigned int) command[0] << dec << "'" << endl;
-//		response = "-unknown command";
-//		response[0] = 0xff;
-//
-//		command[0] = 0;
-//	}
-//
-//	return makeHeader(response);
-//}

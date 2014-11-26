@@ -1,12 +1,12 @@
 /*
- * Utile.h
+ * Utils.h
  *
  *  Created on: 06.05.2013
  *      Author: martin
  */
 
-#ifndef UTILE_H_
-#define UTILE_H_
+#ifndef UTILS_H_
+#define UTILS_H_
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -23,10 +23,10 @@
 
 using namespace std;
 
-class Utile
+class Utils
 {
     public:
-		static int invert(int val, int maxval);
+        static int invert(int val, int maxval);
         static unsigned long getTime();
 //        static int round(float val);
         static int pow(int base, int exp);
@@ -38,6 +38,7 @@ class Utile
         static bool isEven(int val);
         static void printStars();
         static void display_thread_sched_attr();
+        static bool isInRange(int var, int min, int max);
         static int resize(int val, int min_val, int max_val);
         static string getSelfPath();
         static bool fileExists(std::string path, std::string file);
@@ -47,4 +48,4 @@ class Utile
         static void ledOff();
 };
 
-#endif /* UTILE_H_ */
+#endif /* UTILS_H_ */

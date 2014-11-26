@@ -1,20 +1,20 @@
 /*
- * Utile.cpp
+ * Utils.cpp
  *
  *  Created on: 06.05.2013
  *      Author: martin
  */
 
-#include "Utile.h"
+#include "Utils.h"
 
 using namespace std;
 
-int Utile::invert(int val, int maxval)
+int Utils::invert(int val, int maxval)
 {
     return maxval - val - 1;
 }
 
-unsigned long Utile::getTime()
+unsigned long Utils::getTime()
 {
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -22,7 +22,7 @@ unsigned long Utile::getTime()
     return 1000000 * tv.tv_sec + tv.tv_usec;
 }
 
-//int Utile::round(float val)
+//int Utils::round(float val)
 //{
 //    int rt = val;
 ////    val -= rt; /* val represents now only the numbers behind the point */
@@ -33,7 +33,7 @@ unsigned long Utile::getTime()
 //    return rt;
 //}
 
-int Utile::pow(const int base, const int exp)
+int Utils::pow(const int base, const int exp)
 {
 
     if (base == 0)
@@ -58,17 +58,17 @@ int Utile::pow(const int base, const int exp)
         return 1;
 }
 
-int Utile::absolute(int val)
+int Utils::absolute(int val)
 {
     return ((val < 0) ? val * (-1) : val);
 }
 
-float Utile::absolute(float val)
+float Utils::absolute(float val)
 {
     return ((val < 0) ? val * (-1) : val);
 }
 
-int Utile::min(int a, int b)
+int Utils::min(int a, int b)
 {
     if (a > b)
         return b;
@@ -76,7 +76,7 @@ int Utile::min(int a, int b)
         return a;
 }
 
-int Utile::max(int a, int b)
+int Utils::max(int a, int b)
 {
     if (a < b)
         return b;
@@ -84,17 +84,17 @@ int Utile::max(int a, int b)
         return a;
 }
 
-bool Utile::isOdd(int val)
+bool Utils::isOdd(int val)
 {
     return val % 2;
 }
 
-bool Utile::isEven(int val)
+bool Utils::isEven(int val)
 {
     return !(val % 2);
 }
 
-int Utile::resize(int val, int min_val, int max_val)
+int Utils::resize(int val, int min_val, int max_val)
 {
     if (val < min_val)
         return min_val;
@@ -105,7 +105,12 @@ int Utile::resize(int val, int min_val, int max_val)
     return val;
 }
 
-string Utile::getSelfPath()
+bool Utils::isInRange(int var, int min, int max)
+{
+    return (var >= min) && (var <= max);
+}
+
+string Utils::getSelfPath()
 {
     char buff[256];
     //terminate buff
@@ -135,7 +140,7 @@ string Utile::getSelfPath()
     return string("");
 }
 
-bool Utile::fileExists(string path, string file)
+bool Utils::fileExists(string path, string file)
 {
     DIR *dir;
     struct dirent *ent;
@@ -160,7 +165,7 @@ bool Utile::fileExists(string path, string file)
     }
 }
 
-void Utile::split(const string& message, const string& delimeter, vector<string> &tokens)
+void Utils::split(const string& message, const string& delimeter, vector<string> &tokens)
 {
     string::size_type start = 0;
     string::size_type end;
@@ -180,7 +185,7 @@ void Utile::split(const string& message, const string& delimeter, vector<string>
     }
 }
 
-void Utile::printStars()
+void Utils::printStars()
 {
     cout << "***********************************" << endl;
 }
@@ -188,7 +193,7 @@ void Utile::printStars()
 /**
  * display linux-process-scheduler attributes of the thread
  */
-void Utile::display_thread_sched_attr()
+void Utils::display_thread_sched_attr()
 {
     int policy, s;
     struct sched_param param;
@@ -211,7 +216,7 @@ void Utile::display_thread_sched_attr()
 static int led = 0;
 #endif
 
-void Utile::ledInit()
+void Utils::ledInit()
 {
 #ifndef LAPTOP
     // Starte die WiringPi-Api (wichtig)
@@ -222,13 +227,13 @@ void Utile::ledInit()
     pinMode(7, OUTPUT);
 #endif
 }
-void Utile::ledOn()
+void Utils::ledOn()
 {
 #ifndef LAPTOP
     if(led) digitalWrite(7, 1);
 #endif
 }
-void Utile::ledOff()
+void Utils::ledOff()
 {
 #ifndef LAPTOP
     if(led) digitalWrite(7, 0);

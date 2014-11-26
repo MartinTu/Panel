@@ -17,7 +17,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include "Utile.h"
+#include "Utils.h"
 #include "spi.h"
 #include "DisplayModul.h"
 #include "BlockingQueue.h"

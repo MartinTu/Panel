@@ -8,16 +8,17 @@
 #include "Animation.h"
 
 Animation::Animation(int _width, int _height) :
-        width(_width), height(_height), aniDelay(0), aniDelayIterator(0), runningAni(aniFadingPixels), lastAni(aniNone), mixer(
-                mixMaybe)
+        width(_width), height(_height), aniDelay(0), aniDelayIterator(0), runningAni(aniNone), lastAni(aniNone), mixer(mixMaybe)
 {
-    //set up bootScreen parameter
-    parameter[0] = 0x20;
-    parameter[1] = 0x00;
-    parameter[2] = 0x00;
-    parameter[3] = 0x00;
-    parameter[4] = 0xFF;
-    parameter[5] = 0xFF;
+    animation_t startingAni = aniDirectionFade;
+    parameter.clear();
+    parameter.push_back(0x01);  //diff
+    parameter.push_back(dirRightBot);  //dir
+    parameter.push_back(0xaa);  //value
+    parameter.push_back(0xff);  //saturation -- unused
+
+    //set running ani
+    this->set(startingAni, parameter, parameter.length());
 
     this->frame = new Canvas(width, height);
 }
@@ -32,9 +33,8 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
     lastAni = runningAni;
     if (ani < _aniNUM)
     {
-        this->runningAni = static_cast<animation_t>(ani);
-    }
-    else
+        runningAni = static_cast<animation_t>(ani);
+    } else
     {
         cerr << ani << " is no animation_t" << endl;
         runningAni = aniNone;
@@ -45,16 +45,22 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
     case aniNone:
         cout << "aniNone";
         parameter.clear();
+        internPar.clear();
         break;
-    case aniBootScreen:
-        cout << "aniBootScreen";
-        if (paramSize == (unsigned int) lenBootScreen)
+    case aniInvader:
+        cout << "aniInvader";
+        if (paramSize == (unsigned int) lenInvader)
         {
             parameter = param.substr(0, paramSize);
             aniDelay = 0;
             ret = 0;
-        }
-        else
+            if (runningAni != lastAni)
+            {
+                //initialize intern parameter
+                internPar.clear();
+                internPar.push_back(0x00);
+            }
+        } else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -66,8 +72,15 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             parameter = param.substr(0, paramSize);
             aniDelay = 3;
             ret = 0;
-        }
-        else
+            if (runningAni != lastAni)
+            {
+                //initialize intern parameter
+                internPar.clear();
+                internPar.push_back(0xff);  //red
+                internPar.push_back(0x00);  //green
+                internPar.push_back(0x00);  //blue
+            }
+        } else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -79,8 +92,7 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             parameter = param.substr(0, paramSize);
             aniDelay = 0;
             ret = 0;
-        }
-        else
+        } else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -92,8 +104,7 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             parameter = param.substr(0, paramSize);
             aniDelay = 0;
             ret = 0;
-        }
-        else
+        } else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -105,8 +116,7 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             parameter = param.substr(0, paramSize);
             aniDelay = 2;
             ret = 0;
-        }
-        else
+        } else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -118,8 +128,7 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             parameter = param.substr(0, paramSize);
             aniDelay = 2;
             ret = 0;
-        }
-        else
+        } else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -132,7 +141,7 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             parameter[1] = 0;
             aniDelay = 1;
             ret = 0;
-        }
+        } else
         {
             cerr << " param out of bounds: " << paramSize << endl;
         }
@@ -142,16 +151,34 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
     }
     if (ret == 0)
     {
-        cout << ": param(0x";
-        for (unsigned int i = 0; i < parameter.length(); i++)
+        if (!param.empty())
         {
-            cout << hex << setw(3) << (int) parameter[i];
+            cout << ": param(0x";
+            for (unsigned int i = 0; i < parameter.length(); i++)
+            {
+                cout << hex << setw(3) << (int) parameter[i];
+            }
+            cout << ") ";
+            if (internPar.empty())
+            {
+                cout << endl;
+            }
         }
-        cout << ")" << endl;
+        if (!internPar.empty())
+        {
+            cout << "internPar(0x";
+            for (unsigned int i = 0; i < internPar.length(); i++)
+            {
+                cout << hex << setw(3) << (int) internPar[i];
+            }
+            cout << ")" << endl;
+        }
         return 0;
     }
-    runningAni = lastAni;
+    runningAni = aniNone;
     parameter.clear();
+    internPar.clear();
+    cout << "animation set() error" << endl;
     return -1;  //error at paramSize
 }
 
@@ -160,6 +187,7 @@ void Animation::reset()
     lastAni = runningAni;
     runningAni = aniNone;
     parameter.clear();
+    internPar.clear();
 }
 
 bool Animation::nextStep()
@@ -175,8 +203,8 @@ bool Animation::nextStep()
         aniDelayIterator = aniDelay;
         switch (runningAni)
         {
-        case aniBootScreen:
-            bootScreen();
+        case aniInvader:
+            invader();
             break;
         case aniDirectionFade:
             directionFade();
@@ -200,8 +228,7 @@ bool Animation::nextStep()
             return 0;
         }
         return 1;
-    }
-    else
+    } else
     {
         return 0;
     }
@@ -212,8 +239,7 @@ void Animation::setMixer(uint8_t _mixer)
     if (_mixer < _mixNUM)
     {
         this->mixer = static_cast<mixer_t>(_mixer);
-    }
-    else
+    } else
     {
         cerr << _mixer << " is no mixer_t" << endl;
     }
@@ -224,7 +250,7 @@ mixer_t Animation::getMixer()
     return mixer;
 }
 
-Canvas* Animation::getCanvas()
+Canvas * Animation::getCanvas()
 {
     return frame;
 }
@@ -244,7 +270,7 @@ bool Animation::isAnimationRunning()
     return false;
 }
 
-void Animation::bootScreen()
+void Animation::invader()
 {
     /* ani 0x01
      * paramSize: 1
@@ -257,8 +283,7 @@ void Animation::bootScreen()
     if (actWheel < 128)
     {
         picture = true;
-    }
-    else
+    } else
     {
         picture = false;
     }
@@ -273,27 +298,25 @@ void Animation::bootScreen()
             {  //max
                 if (picture)
                 {
-                    if (invader1_10x20[y][x * 3])
+                    if (bit_invader1_10x20[y][x * 3])
                     {
                         pictureWheel += 128;
                     }
-                }
-                else
+                } else
                 {
                     int nx = x - 1;
                     if (nx < 0)
                     {
                         nx = nx + width;
                     }
-                    if (invader2_10x20[y][nx * 3])
+                    if (bit_invader2_10x20[y][nx * 3])
                     {
                         pictureWheel += 128;
                     }
                 }
-            }
-            else if (invaderOK == 144)
+            } else if (invaderOK == 144)
             {  //martin
-                if (invader[y][x * 3])
+                if (bit_invader[y][x * 3])
                 {
                     pictureWheel += 128;
                 }
@@ -308,66 +331,136 @@ void Animation::bootScreen()
 void Animation::directionFade()
 {
     /* ani 0x02
-     * paramSize: 5
-     * [0]: diff
-     * [1]: direction //TODO: implement
-     * [2]: red
-     * [3]: green
-     * [4]: blue
+     * paramSize: 4
+     * [0]: delta
+     * [1]: direction //original color comes from reversed direction
+     * [2]: colorDimmer
+     * [3]: saturation //todo: implement
+     * internPar:
+     * [0]: red
+     * [1]: green
+     * [2]: blue
      */
-    color_t color;
-    uint8_t diff = parameter[0];
-    color.red = parameter[2];
-    color.green = parameter[3];
-    color.blue = parameter[4];
 
-    for (uint8_t x = 0; x < width; x++)
+    color_t color((uint8_t) internPar[0], (uint8_t) internPar[1], (uint8_t) internPar[2]);
+    color_t calcColor;
+
+    calcColor.red = color.red * (float) (parameter[2] / 255.0);
+    calcColor.green = color.green * (float) (parameter[2] / 255.0);
+    calcColor.blue = color.blue * (float) (parameter[2] / 255.0);
+
+    uint8_t delta = (uint8_t) parameter[0];
+    direction_t dir = static_cast<direction_t>(parameter[1]);
+    int xmax = width;
+    int ymax = height;
+    int w = width - 1;
+    int h = height - 1;
+    switch (dir)
     {
-        for (uint8_t y = 0; y < height; y++)
+    case dirTop:
+        xmax = height;
+        ymax = width;
+        break;
+    case dirBottom:
+        xmax = height;
+        ymax = width;
+        break;
+    case dirLeftBot:
+        xmax = height;
+        ymax = width;
+        xmax += w;
+        break;
+    case dirRightBot:
+        xmax = height;
+        ymax = width;
+        xmax += w;
+        break;
+    case dirRightTop:
+        xmax += h;
+        break;
+    case dirLeftTop:
+        xmax += h;
+        break;
+    default:
+        break;
+    }
+
+    for (uint8_t x = 0; x < xmax; x++)
+    {
+
+        for (uint8_t y = 0; y < ymax; y++)
         {
-            frame->setPixel(x, y, color);
+            switch (dir)
+            {
+            case dirTop:
+            {
+                frame->setPixel(y, x, calcColor);
+                break;
+            }
+            case dirLeft:
+            {
+                frame->setPixel(x, y, calcColor);
+                break;
+            }
+            case dirRightBot:
+            {
+                int xi = x - y;
+                if (Utils::isInRange(xi, 0, h))
+                    frame->setPixel(w - y, h - xi, calcColor);
+                break;
+            }
+            case dirLeftTop:
+            {
+                int xi = x - y;
+                if (Utils::isInRange(xi, 0, w))
+                    frame->setPixel(xi, y, calcColor);
+                break;
+            }
+            case dirBottom:
+            {
+                frame->setPixel(y, h - x, calcColor);
+                break;
+            }
+            case dirRight:
+            {
+                frame->setPixel(w - x, y, calcColor);
+                break;
+            }
+            case dirLeftBot:
+            {
+                int xi = x - y;
+                if (Utils::isInRange(xi, 0, h))
+                    frame->setPixel(y, xi, calcColor);
+                break;
+            }
+            case dirRightTop:
+            {
+                int xi = x - y;
+                if (Utils::isInRange(xi, 0, w))
+                    frame->setPixel(w - xi, y, calcColor);
+                break;
+            }
+            default:
+                break;
+            }
         }
-        if (color.blue < diff)
-        {
-            if (color.green <= (255 - diff))
-                color.green += diff;
+        color = ColorMan::rgbFade(color, delta);
 
-            if (color.red >= diff)
-                color.red -= diff;
-            else
-                color.blue += diff;
-        }
 
-        if (color.red < diff)
-        {
-            if (color.blue <= (255 - diff))
-                color.blue += diff;
+        calcColor.red = color.red * (float) (parameter[2] / 255.0);
+        calcColor.green = color.green * (float) (parameter[2] / 255.0);
+        calcColor.blue = color.blue * (float) (parameter[2] / 255.0);
 
-            if (color.green >= diff)
-                color.green -= diff;
-            else
-                color.red += diff;
-        }
-
-        if (color.green < diff)
-        {
-            if (color.red <= (255 - diff))
-                color.red += diff;
-
-            if (color.blue >= diff)
-                color.blue -= diff;
-            else
-                color.green += diff;
-        }
 
         /* set new start color */
         if (x == 1)
         {
-            parameter[2] = color.red;
-            parameter[3] = color.green;
-            parameter[4] = color.blue;
+            internPar[0] = color.red;
+            internPar[1] = color.green;
+            internPar[2] = color.blue;
         }
     }
+
 }
 
 void Animation::screenFade()
@@ -380,45 +473,42 @@ void Animation::screenFade()
      * [3]: green
      * [4]: blue
      */
-    float maxBrightness = (uint8_t) parameter[0] / 255.0;
+    float maxBrightness = parameter[0] / 255.0;
     uint8_t fadeStatus = (uint8_t) parameter[1];
-    uint8_t red = (uint8_t) parameter[2];
-    uint8_t green = (uint8_t) parameter[3];
-    uint8_t blue = (uint8_t) parameter[4];
-    color_t color = {(uint8_t) (red * maxBrightness), (uint8_t) (green * maxBrightness),
-            (uint8_t) (blue * maxBrightness)};
+    color_t color;
+    color.red = (uint8_t) parameter[2];
+    color.green = (uint8_t) parameter[3];
+    color.blue = (uint8_t) parameter[4];
+    color = color * maxBrightness;
 
     frame->setColor(color);
 
     if (0x0 == fadeStatus)
     {
-        red--;
-        green++;
+        color.red--;
+        color.green++;
 
-        if (0 == red)
+        if (0 == color.red)
             fadeStatus++;
-    }
-    else if (0x01 == fadeStatus)
+    } else if (0x01 == fadeStatus)
     {
-        green--;
-        blue++;
+        color.green--;
+        color.blue++;
 
-        if (0 == green)
+        if (0 == color.green)
             fadeStatus++;
-    }
-    else if (0x02 == fadeStatus)
+    } else if (0x02 == fadeStatus)
     {
-        blue--;
-        red++;
+        color.blue--;
+        color.red++;
 
-        if (0 == blue)
+        if (0 == color.blue)
             fadeStatus = 0;
     }
-    parameter[0] = maxBrightness * 255;
     parameter[1] = fadeStatus;
-    parameter[2] = red;
-    parameter[3] = green;
-    parameter[4] = blue;
+    parameter[2] = color.red;
+    parameter[3] = color.green;
+    parameter[4] = color.blue;
 }
 
 void Animation::screenPulse()
@@ -443,8 +533,7 @@ void Animation::screenPulse()
     {
         if (0xff == ++parameter[0])
             parameter[1] = false;
-    }
-    else
+    } else
     {
         if (0x00 == --parameter[0])
             parameter[1] = true;
@@ -473,7 +562,7 @@ void Animation::rotateLine()
     color.green = parameter[5];
     color.blue = parameter[6];
 
-    // TODO start koordinaten, animation_delay, strich breite, color reset? !!
+// TODO start koordinaten, animation_delay, strich breite, color reset? !!
     if (p_x1 == width - 1)
         p_y1++;
 
@@ -486,8 +575,8 @@ void Animation::rotateLine()
         p_y1 = 0;
     }
 
-    p_x2 = Utile::invert(p_x1, width);
-    p_y2 = Utile::invert(p_y1, height);
+    p_x2 = Utils::invert(p_x1, width);
+    p_y2 = Utils::invert(p_y1, height);
 
     frame->setColor(color_black); /* color reset */
     frame->drawLine(p_x1, p_y1, p_x2, p_y2, color, 1);
@@ -524,8 +613,7 @@ void Animation::waterdrop()
     if (radius < sqrt(width * width + height * height))
     {
         parameter[2]++;
-    }
-    else
+    } else
     {
         parameter[0] = rand() % (width - 1);
         parameter[1] = rand() % (height - 1);
@@ -536,7 +624,7 @@ void Animation::waterdrop()
 void Animation::fadingPixels()
 {
     /* ani 0x07
-     * paramSize: 5
+     * paramSize: 6
      * [0]: max delay for showing up fading pixels (-> the greater the delay, the less the number of fading pixels)
      * [1]: current delay
      * [2]: current delay counter
@@ -563,13 +651,12 @@ void Animation::fadingPixels()
         x = rand() % width;
         y = rand() % height;
         frame->setPixel(x, y, color);
-    }
-    else
+    } else
     {
         parameter[2]++;
     }
 
-    // fade existing pixel
+// fade existing pixel
     for (int x = 0; x < frame->getWidth(); x++)
     {
         for (int y = 0; y < frame->getHeight(); y++)

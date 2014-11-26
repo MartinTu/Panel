@@ -127,9 +127,9 @@ SPI::SPI()
     struct sched_param param;
 
 #ifdef LAPTOP
-    if (!Utile::fileExists("/dev", "null"))  // FIXME debug purpose
+    if (!Utils::fileExists("/dev", "null"))  // FIXME debug purpose
 #else
-    if (!Utile::fileExists("/dev", "spidev0.0"))
+    if (!Utils::fileExists("/dev", "spidev0.0"))
 #endif
     {
         cout << "no spi device found, try to load it" << endl;
@@ -153,9 +153,9 @@ SPI::SPI()
     {
         throw MyException("SPI: unable to change schedule parameters: " + string(strerror(rt)));
     }
-    Utile::printStars();
+    Utils::printStars();
     cout << "* SPI thread:" << endl;
-    Utile::display_thread_sched_attr();
+    Utils::display_thread_sched_attr();
 }
 
 SPI::~SPI()
