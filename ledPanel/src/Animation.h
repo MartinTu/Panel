@@ -30,7 +30,7 @@
 #include <string>
 #include "Display.h"
 #include "colorManipulation.h"
-#include "Utile.h"
+#include "Utils.h"
 #include "bitmaps.h"
 
 using namespace std;
@@ -38,7 +38,7 @@ using namespace std;
 enum animation_t
 {
     aniNone = 0x00,
-    aniBootScreen = 0x01,
+    aniInvader = 0x01,
     aniDirectionFade = 0x02,
     aniScreenFade = 0x03,
     aniScreenPulse = 0x04,
@@ -51,8 +51,8 @@ enum animation_t
 enum aniParamlen_t
 {
     lenNone = 0x00,
-    lenBootScreen = 0x01,
-    lenDirectionFade = 0x05,
+    lenInvader = 0x01,
+    lenDirectionFade = 0x04,
     lenScreenFade = 0x05,
     lenScreenPulse = 0x05,
     lenRotateLine = 0x07,
@@ -68,6 +68,18 @@ enum mixer_t
     mixMult = 0x3,	//canvas is drawn with mult
     mixOnly = 0x4,	//only this canvas is drawn
     _mixNUM
+};
+
+enum direction_t
+{
+    dirLeft = 0x00,
+    dirLeftBot = 0x01,
+    dirBottom = 0x02,
+    dirRightBot = 0x03,
+    dirRight = 0x04,
+    dirRightTop = 0x05,
+    dirTop = 0x06,
+    dirLeftTop = 0x07
 };
 
 class Animation
@@ -86,7 +98,7 @@ class Animation
         void setAniDelay(unsigned int delay);
         bool isAnimationRunning();
 
-        void bootScreen();
+        void invader();
         void directionFade();
         void screenFade();
         void screenPulse();
@@ -104,7 +116,7 @@ class Animation
         mixer_t mixer;
         //parameters are set from client
         string parameter;
-        //intern parameters are initialized in set(.)
+        //intern parameters are initialized in set(.), if the animation does not alter
         string internPar;
         Canvas* frame;	//x/y Animation screen
 };

@@ -11,8 +11,8 @@ using namespace std;
 
 ServerDisplayHandler::ServerDisplayHandler()
 {
-    Utile::ledInit();
-    Utile::ledOn();
+    Utils::ledInit();
+    Utils::ledOn();
     int rt;
     struct sched_param param;
 
@@ -30,9 +30,9 @@ ServerDisplayHandler::ServerDisplayHandler()
     {
         throw MyException("ServerDisplayHandler: unable to change schedule parameters: " + string(strerror(rt)));
     }
-    Utile::printStars();
+    Utils::printStars();
     cout << "* ServerDisplayHandler thread: " << endl;
-    Utile::display_thread_sched_attr();
+    Utils::display_thread_sched_attr();
 }
 
 ServerDisplayHandler::~ServerDisplayHandler()
@@ -53,7 +53,7 @@ void ServerDisplayHandler::run()
         {
             while (1)
             {
-                refTime = Utile::getTime();
+                refTime = Utils::getTime();
 
                 if (server->hasMessage())
                 {
@@ -77,8 +77,8 @@ void ServerDisplayHandler::run()
                         panel->draw();
                     }
                 }
-                usleep(16667 - (Utile::getTime() - refTime));
-                Utile::ledOff();
+                usleep(16667 - (Utils::getTime() - refTime));
+                Utils::ledOff();
             }
 
         }

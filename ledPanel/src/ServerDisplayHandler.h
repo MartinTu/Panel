@@ -25,7 +25,7 @@
 #include "Server.h"
 #include "Display.h"
 #include "colorManipulation.h"
-#include "Utile.h"
+#include "Utils.h"
 #include "tpm2.h"
 #include "Animation.h"
 

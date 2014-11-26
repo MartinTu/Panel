@@ -6,6 +6,7 @@
  */
 
 #include "colorManipulation.h"
+using namespace std;
 
 color_t ColorMan::rgbFade(color_t previous, uint8_t delta)
 {
@@ -73,3 +74,8 @@ color_t ColorMan::wheel(uint8_t wheelPos)
     }
 }
 
+void ColorMan::printColor(string s, color_t color)
+{
+    cout << s+" r: " << hex << setw(3) << (int) color.red << " g: " << hex << setw(3) << (int) color.green
+            << " b: " << hex << setw(3) << (int) color.blue << endl;
+}

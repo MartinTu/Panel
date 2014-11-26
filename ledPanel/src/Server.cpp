@@ -53,9 +53,9 @@ Server::Server(serverType_t type, unsigned int port) :
     {
         throw MyException("Server: unable to change schedule parameters: " + string(strerror(rt)));
     }
-    Utile::printStars();
+    Utils::printStars();
     cout << "* Server thread:" << endl;
-    Utile::display_thread_sched_attr();
+    Utils::display_thread_sched_attr();
 }
 
 /**
@@ -258,7 +258,7 @@ void* Server::serverTask()
         while (!shut_down)
         {
             close_connection = false;
-            Utile::printStars();
+            Utils::printStars();
             cout << "[INFO] wait for connection ..." << endl;
             string actClient("");
             int actPort = 0;
@@ -282,7 +282,7 @@ void* Server::serverTask()
                 while ((!close_connection) && (!shut_down))
                 {
                     message = this->receiveCommand();
-                    Utile::ledOn();
+                    Utils::ledOn();
                     if (type == TCP)
                     {
                         cout << "[INFO] connected with " << inet_ntoa(clientAddr.sin_addr) << " on port 0x"

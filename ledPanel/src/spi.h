@@ -20,7 +20,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "Utile.h"
+#include "Utils.h"
 #include "MyException.h"
 
 class SPI

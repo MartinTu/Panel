@@ -9,6 +9,11 @@
 #define COLORMANIPULATION_H_
 
 #include <stdint.h>
+#include <iostream>
+#include <string>
+#include <iomanip>
+
+using namespace std;
 
 struct color_t
 {
@@ -18,6 +23,16 @@ struct color_t
 
         color_t(uint8_t red = 0, uint8_t green = 0, uint8_t blue = 0) :
                 red(red), green(green), blue(blue)
+        {
+        }
+/*
+        color_t(char red, char green, char blue) :
+                red((uint8_t)red), green((uint8_t)green), blue((uint8_t)blue)
+        {
+        }
+*/
+        color_t(const color_t& c) :
+                red(c.red), green(c.green), blue(c.blue)
         {
         }
 
@@ -61,6 +76,7 @@ class ColorMan
     public:
         static color_t wheel(uint8_t wheelPos);
         static color_t rgbFade(color_t previous, uint8_t delta);
+        static void printColor(string s, color_t color);
 };
 
 #endif /* COLORMANIPULATION_H_ */

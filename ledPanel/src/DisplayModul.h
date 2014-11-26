@@ -12,7 +12,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "Utile.h"
+#include "Utils.h"
 
 #define LEFT0RIGHT1_MSK 0x1
 #define BOTTOM0TOP1_MSK	0x2

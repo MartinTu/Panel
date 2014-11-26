@@ -19,7 +19,7 @@ Canvas::Canvas(int _width, int _height) :
     }
     setColor(color_black);
     //seed
-    srand((unsigned int) Utile::getTime());
+    srand((unsigned int) Utils::getTime());
 }
 
 Canvas::~Canvas()
@@ -28,14 +28,14 @@ Canvas::~Canvas()
 
 void Canvas::setPixel(int x, int y, color_t color)
 {
-    if ((x < 0) || (x >= width))
+    if (!Utils::isInRange(x, 0, width - 1))
     {
-        cerr << "setPixel() x out of bounds" << endl;
+        cerr << "setPixel("<<x<<","<<y<<",color) x out of bounds: " << endl;
         return;
     }
-    if ((y < 0) || (x >= height))
+    if (!Utils::isInRange(y, 0, height - 1))
     {
-        cerr << "setPixel() y out of bounds" << endl;
+        cerr << "setPixel("<<x<<","<<y<<",color) y out of bounds: " << endl;
         return;
     }
     pixel[x][y] = color;
@@ -152,7 +152,7 @@ void Canvas::drawLine(int x_start, int y_start, int x_end, int y_end, color_t co
     if ((x_diff == 0) && (y_diff == 0))
         return;
 
-    if (Utile::absolute(x_diff) >= Utile::absolute(y_diff))
+    if (Utils::absolute(x_diff) >= Utils::absolute(y_diff))
     {
         uint8_t y;
 
@@ -161,12 +161,12 @@ void Canvas::drawLine(int x_start, int y_start, int x_end, int y_end, color_t co
 
         if (x_start < x_end)
         {
-            start = Utile::resize(x_start, 0, this->width - 1);
-            end = Utile::resize(x_end, 0, this->width - 1);
+            start = Utils::resize(x_start, 0, this->width - 1);
+            end = Utils::resize(x_end, 0, this->width - 1);
         } else
         {
-            end = Utile::resize(x_start, 0, this->width - 1);
-            start = Utile::resize(x_end, 0, this->width - 1);
+            end = Utils::resize(x_start, 0, this->width - 1);
+            start = Utils::resize(x_end, 0, this->width - 1);
         }
 
 //        cout << "m " << m << " n " << n << endl;
@@ -190,12 +190,12 @@ void Canvas::drawLine(int x_start, int y_start, int x_end, int y_end, color_t co
 
         if (y_start < y_end)
         {
-            start = Utile::resize(y_start, 0, this->width - 1);
-            end = Utile::resize(y_end, 0, this->width - 1);
+            start = Utils::resize(y_start, 0, this->width - 1);
+            end = Utils::resize(y_end, 0, this->width - 1);
         } else
         {
-            end = Utile::resize(y_start, 0, this->width - 1);
-            start = Utile::resize(y_end, 0, this->width - 1);
+            end = Utils::resize(y_start, 0, this->width - 1);
+            start = Utils::resize(y_end, 0, this->width - 1);
         }
 
 //        cout << "m " << m << " n " << n << endl;
@@ -216,38 +216,38 @@ void Canvas::drawCircle(int x0, int y0, int radius, color_t color, uint8_t width
 {
     int y;
 
-    uint8_t start = Utile::resize(x0 - radius, 0, this->width - 1);
-    uint8_t end = Utile::resize(x0 + radius, 0, this->width - 1);
+    uint8_t start = Utils::resize(x0 - radius, 0, this->width - 1);
+    uint8_t end = Utils::resize(x0 + radius, 0, this->width - 1);
 
     for (uint8_t x = start; x <= end; x++)
     {
         /* lower half circle */
-        y = round(sqrt(Utile::pow(radius, 2) - Utile::pow(x - x0, 2))) + y0;
+        y = round(sqrt(Utils::pow(radius, 2) - Utils::pow(x - x0, 2))) + y0;
 //        cout << x << " " << y << endl;
 
         if ((y < this->height) && (y >= 0) && (x < this->width) && (x >= 0))
             pixel[x][y] = color;
 
         /* upper half circle */
-        y = round(-sqrt(Utile::pow(radius, 2) - Utile::pow(x - x0, 2))) + y0;
+        y = round(-sqrt(Utils::pow(radius, 2) - Utils::pow(x - x0, 2))) + y0;
 
         if ((y < this->height) && (y >= 0) && (x < this->width) && (x >= 0))
             pixel[x][y] = color;
     }
 
-    start = Utile::resize(y0 - radius, 0, this->height - 1);
-    end = Utile::resize(y0 + radius, 0, this->height - 1);
+    start = Utils::resize(y0 - radius, 0, this->height - 1);
+    end = Utils::resize(y0 + radius, 0, this->height - 1);
 
     for (uint8_t x = start; x <= end; x++)
     {
         /* right half circle */
-        y = round(sqrt(Utile::pow(radius, 2) - Utile::pow(x - y0, 2))) + x0;
+        y = round(sqrt(Utils::pow(radius, 2) - Utils::pow(x - y0, 2))) + x0;
 
         if ((y < this->width) && (y >= 0) && (x < this->height) && (x >= 0))
             pixel[y][x] = color;
 
         /* left half circle */
-        y = round(-sqrt(Utile::pow(radius, 2) - Utile::pow(x - y0, 2))) + x0;
+        y = round(-sqrt(Utils::pow(radius, 2) - Utils::pow(x - y0, 2))) + x0;
 
         if ((y < this->width) && (y >= 0) && (x < this->height) && (x >= 0))
             pixel[y][x] = color;

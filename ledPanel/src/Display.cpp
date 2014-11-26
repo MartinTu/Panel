@@ -298,17 +298,17 @@ int Display::initModulesWithConfigFile()
 
     xml_document<> doc;    // character type defaults to char
     xml_node<> * root_node;
-    string filePath = Utile::getSelfPath();
+    string filePath = Utils::getSelfPath();
     string file("panel_config.xml");
     ifstream myFile(string(filePath + file).c_str(), ifstream::in);
 
     //++fileParsing
     if (myFile.good())
     {
-        Utile::printStars();
+        Utils::printStars();
         cout << "* program started from: \n* " << filePath << endl;
         cout << "* reading: " << file << endl;
-        Utile::printStars();
+        Utils::printStars();
         vector<char> myFileBuffer((istreambuf_iterator<char>(myFile)), istreambuf_iterator<char>());
         myFileBuffer.push_back('\0');
         // Parse the buffer using the xml file parsing library into doc
@@ -417,7 +417,7 @@ int Display::initModulesWithConfigFile()
                     int checker = 0;
                     for (int i = 0; i < numModules; i++)
                     {
-                        Utile::printStars();
+                        Utils::printStars();
                         string neededVal = idOrder.front();
                         idOrder.pop_front();
                         for (section_node = root_node->first_node("module"); section_node;
@@ -699,8 +699,8 @@ int Display::initModulesWithConfigFile()
                                     break;
                                 }
 
-                                width = Utile::max(width, par.width + par.xOffset);
-                                height = Utile::max(height, par.height + par.yOffset);
+                                width = Utils::max(width, par.width + par.xOffset);
+                                height = Utils::max(height, par.height + par.yOffset);
 
                                 break;							//next module
                             }
@@ -755,8 +755,8 @@ int Display::initModulesWithConfigFile()
         break;
     }
 
-    width = Utile::max(width, par.width + par.xOffset);
-    height = Utile::max(height, par.height + par.yOffset);
+    width = Utils::max(width, par.width + par.xOffset);
+    height = Utils::max(height, par.height + par.yOffset);
 
     return 1;
 }

@@ -11,7 +11,7 @@
 #include <vector>
 #include <cmath>
 #include "colorManipulation.h"
-#include "Utile.h"
+#include "Utils.h"
 
 using namespace std;
 
