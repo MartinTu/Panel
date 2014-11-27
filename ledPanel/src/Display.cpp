@@ -146,11 +146,13 @@ void Display::drawFrameModule(int moduleNum, int dataLength, uint8_t* data)
                 }
             }
             setModulDrawn(moduleNum);
-        } else
+        }
+        else
         {
             cerr << "drawModuleFrame() does not got correct data length" << endl;
         }
-    } else
+    }
+    else
     {
         cerr << "drawModuleFrame() moduleNum does not exist" << endl;
     }
@@ -318,7 +320,8 @@ int Display::initModulesWithConfigFile()
         if (!root_node)
         {
             cerr << "* can not find <panel> tag" << endl;
-        } else
+        }
+        else
         {
             xml_node<> * section_node;
             xml_node<> * key_node;
@@ -327,7 +330,8 @@ int Display::initModulesWithConfigFile()
             if (!section_node)
             {
                 cout << "* can not find <version> tag" << endl;
-            } else
+            }
+            else
             {
                 cout << "* file version: " << section_node->value() << endl;
             }
@@ -335,14 +339,16 @@ int Display::initModulesWithConfigFile()
             if (!section_node)
             {
                 cerr << "* can not find <display> tag" << endl;
-            } else
+            }
+            else
             {
                 //++read numModules
                 key_node = section_node->first_node("numModules");
                 if (!key_node)
                 {
                     cout << "* can not find <numModules> tag" << endl;
-                } else
+                }
+                else
                 {
                     stringstream ss(key_node->value());
                     if (!(ss >> numModules))
@@ -377,7 +383,8 @@ int Display::initModulesWithConfigFile()
                 if (wireingOrder.size() < (unsigned int) numModules)
                 {
                     cerr << "* not at least " << numModules << "wireingModule tag(s) found" << endl;
-                } else
+                }
+                else
                 {
                     wireingOrder.sort();
                     //--get wireingOrder
@@ -440,7 +447,8 @@ int Display::initModulesWithConfigFile()
                                 if (!key_node)
                                 {
                                     cerr << "* can not find <width> tag" << endl;
-                                } else
+                                }
+                                else
                                 {
                                     stringstream ss(key_node->value());
                                     if (!(ss >> par.width))
@@ -459,7 +467,8 @@ int Display::initModulesWithConfigFile()
                                 if (!key_node)
                                 {
                                     cerr << "* can not find <height> tag" << endl;
-                                } else
+                                }
+                                else
                                 {
                                     stringstream ss(key_node->value());
                                     if (!(ss >> par.height))
@@ -478,7 +487,8 @@ int Display::initModulesWithConfigFile()
                                 if (!key_node)
                                 {
                                     cerr << "* can not find <xOffset> tag" << endl;
-                                } else
+                                }
+                                else
                                 {
                                     stringstream ss(key_node->value());
                                     if (!(ss >> par.xOffset))
@@ -497,7 +507,8 @@ int Display::initModulesWithConfigFile()
                                 if (!key_node)
                                 {
                                     cerr << "* can not find <yOffset> tag" << endl;
-                                } else
+                                }
+                                else
                                 {
                                     stringstream ss(key_node->value());
                                     if (!(ss >> par.yOffset))
@@ -517,60 +528,77 @@ int Display::initModulesWithConfigFile()
                                 if (!key_node)
                                 {
                                     cerr << "* can not find <addressing> tag" << endl;
-                                } else
+                                }
+                                else
                                 {
                                     string val = key_node->value();
                                     if (!(val.compare("xyVBL")))
                                     {
                                         par.addressing = xyVBL;
-                                    } else if (!(val.compare("xyVBR")))
+                                    }
+                                    else if (!(val.compare("xyVBR")))
                                     {
                                         par.addressing = xyVBR;
-                                    } else if (!(val.compare("xyVTL")))
+                                    }
+                                    else if (!(val.compare("xyVTL")))
                                     {
                                         par.addressing = xyVTL;
-                                    } else if (!(val.compare("xyVTR")))
+                                    }
+                                    else if (!(val.compare("xyVTR")))
                                     {
                                         par.addressing = xyVTR;
-                                    } else if (!(val.compare("xyHBL")))
+                                    }
+                                    else if (!(val.compare("xyHBL")))
                                     {
                                         par.addressing = xyHBL;
-                                    } else if (!(val.compare("xyHBR")))
+                                    }
+                                    else if (!(val.compare("xyHBR")))
                                     {
                                         par.addressing = xyHBR;
-                                    } else if (!(val.compare("xyHTL")))
+                                    }
+                                    else if (!(val.compare("xyHTL")))
                                     {
                                         par.addressing = xyHTL;
-                                    } else if (!(val.compare("xyHTR")))
+                                    }
+                                    else if (!(val.compare("xyHTR")))
                                     {
                                         par.addressing = xyHTR;
-                                    } else
+                                    }
+                                    else
                                     //snake
                                     if (!(val.compare("snakeVBL")))
                                     {
                                         par.addressing = snakeVBL;
-                                    } else if (!(val.compare("snakeVBR")))
+                                    }
+                                    else if (!(val.compare("snakeVBR")))
                                     {
                                         par.addressing = snakeVBR;
-                                    } else if (!(val.compare("snakeVTL")))
+                                    }
+                                    else if (!(val.compare("snakeVTL")))
                                     {
                                         par.addressing = snakeVTL;
-                                    } else if (!(val.compare("snakeVTR")))
+                                    }
+                                    else if (!(val.compare("snakeVTR")))
                                     {
                                         par.addressing = snakeVTR;
-                                    } else if (!(val.compare("snakeHBL")))
+                                    }
+                                    else if (!(val.compare("snakeHBL")))
                                     {
                                         par.addressing = snakeHBL;
-                                    } else if (!(val.compare("snakeHBR")))
+                                    }
+                                    else if (!(val.compare("snakeHBR")))
                                     {
                                         par.addressing = snakeHBR;
-                                    } else if (!(val.compare("snakeHTL")))
+                                    }
+                                    else if (!(val.compare("snakeHTL")))
                                     {
                                         par.addressing = snakeHTL;
-                                    } else if (!(val.compare("snakeHTR")))
+                                    }
+                                    else if (!(val.compare("snakeHTR")))
                                     {
                                         par.addressing = snakeHTR;
-                                    } else
+                                    }
+                                    else
                                     {
                                         cerr << "* addressing value is not correct" << endl;
                                     }
@@ -583,22 +611,27 @@ int Display::initModulesWithConfigFile()
                                 if (!key_node)
                                 {
                                     cerr << "* can not find <orientation> tag" << endl;
-                                } else
+                                }
+                                else
                                 {
                                     string val = key_node->value();
                                     if (!(val.compare("rotateNo")))
                                     {
                                         par.orientation = rotateNo;
-                                    } else if (!(val.compare("rotateLeft")))
+                                    }
+                                    else if (!(val.compare("rotateLeft")))
                                     {
                                         par.orientation = rotateLeft;
-                                    } else if (!(val.compare("rotateHalf")))
+                                    }
+                                    else if (!(val.compare("rotateHalf")))
                                     {
                                         par.orientation = rotateHalf;
-                                    } else if (!(val.compare("rotateRight")))
+                                    }
+                                    else if (!(val.compare("rotateRight")))
                                     {
                                         par.orientation = rotateRight;
-                                    } else
+                                    }
+                                    else
                                     {
                                         cerr << "* orientation value is not correct" << endl;
                                     }
@@ -611,19 +644,23 @@ int Display::initModulesWithConfigFile()
                                 if (!key_node)
                                 {
                                     cerr << "* can not find <flip> tag" << endl;
-                                } else
+                                }
+                                else
                                 {
                                     string val = key_node->value();
                                     if (!(val.compare("flipNo")))
                                     {
                                         par.flip = flipNo;
-                                    } else if (!(val.compare("flipX")))
+                                    }
+                                    else if (!(val.compare("flipX")))
                                     {
                                         par.flip = flipX;
-                                    } else if (!(val.compare("flipY")))
+                                    }
+                                    else if (!(val.compare("flipY")))
                                     {
                                         par.flip = flipY;
-                                    } else
+                                    }
+                                    else
                                     {
                                         cerr << "* flip value is not correct" << endl;
                                     }
@@ -636,16 +673,19 @@ int Display::initModulesWithConfigFile()
                                 if (!key_node)
                                 {
                                     cerr << "* can not find <chip> tag" << endl;
-                                } else
+                                }
+                                else
                                 {
                                     string val = key_node->value();
                                     if (!(val.compare("WS2801")))
                                     {
                                         par.chip = WS2801;
-                                    } else if (!(val.compare("LDP6803")))
+                                    }
+                                    else if (!(val.compare("LDP6803")))
                                     {
                                         par.chip = LDP6803;
-                                    } else
+                                    }
+                                    else
                                     {
                                         cerr << "* chip value is not correct" << endl;
                                     }
@@ -658,22 +698,27 @@ int Display::initModulesWithConfigFile()
                                 if (!key_node)
                                 {
                                     cerr << "* can not find <correction> tag" << endl;
-                                } else
+                                }
+                                else
                                 {
                                     string val = key_node->value();
                                     if (!(val.compare("corrNo")))
                                     {
                                         par.correction = corrNo;
-                                    } else if (!(val.compare("corrGamma")))
+                                    }
+                                    else if (!(val.compare("corrGamma")))
                                     {
                                         par.correction = corrGamma;
-                                    } else if (!(val.compare("corrPixel")))
+                                    }
+                                    else if (!(val.compare("corrPixel")))
                                     {
                                         par.correction = corrPixel;
-                                    } else if (!(val.compare("corrAll")))
+                                    }
+                                    else if (!(val.compare("corrAll")))
                                     {
                                         par.correction = corrAll;
-                                    } else
+                                    }
+                                    else
                                     {
                                         cerr << "* correction value is not correct" << endl;
                                     }
@@ -709,7 +754,8 @@ int Display::initModulesWithConfigFile()
                     if (numModules == checker)
                     {
                         return 0;
-                    } else
+                    }
+                    else
                     {
                         cerr << "* did not found every wired module" << endl;
                     }
@@ -717,7 +763,8 @@ int Display::initModulesWithConfigFile()
                 }
             }
         }
-    } else
+    }
+    else
     {
         cerr << "Unable to find file: " << file << ", in dir: " << filePath << endl;
     }

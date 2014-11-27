@@ -39,6 +39,7 @@ class Utils
         static void printStars();
         static void display_thread_sched_attr();
         static bool isInRange(int var, int min, int max);
+        static int addInBounds(int val1, int val2, int min_val = 0x00, int max_val = 0xff);
         static int resize(int val, int min_val, int max_val);
         static string getSelfPath();
         static bool fileExists(std::string path, std::string file);

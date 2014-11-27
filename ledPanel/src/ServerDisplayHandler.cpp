@@ -18,11 +18,11 @@ ServerDisplayHandler::ServerDisplayHandler()
 
     server = new Server(UDP, 0xFFE2);
 //	server = new Server(TCP, 0xaffe);
-    cout << "Server done" << endl;
+    cout << "[INFO] Server done" << endl;
     panel = new Display();
-    cout << "Display done" << endl;
+    cout << "[INFO] Display done" << endl;
     animation = new Animation(panel->getWidth(), panel->getHeight());
-    cout << "Animation done" << endl;
+    cout << "[INFO] Animation done" << endl;
 
     param.sched_priority = 50; 	//sched_get_priority_max(SCHED_FIFO);
     rt = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
@@ -180,10 +180,9 @@ string ServerDisplayHandler::executeTPM2NetProtocol(string &command)
         cout << "packetNum/numPackets: " << packetNum << "/" << numPackets << endl;
     }
 
-//	cout << "Block-Art: " << hex << blockType << "\n";
-//	cout << "Framesize: " << size << "\n";
-//	cout << "Packetnumber: " << packetNum << "\n";
-//	cout << "num Packets: " << numPackets << endl;
+//  cout << "\n\n\nBlock-Art: " << hex << (int) blockType << "\n";
+//	cout << "Packetnumber: " << (int) packetNum << "\n";
+//	cout << "num Packets: " << (int) numPackets << endl;
 
     switch (blockType)
     {
@@ -212,7 +211,8 @@ string ServerDisplayHandler::executeTPM2NetProtocol(string &command)
             paramSize = dataSize - 4;
             string cmdParam(command.substr(TPM2_NET_SP_CMD_DATA_P + 1, command.length() - 2));
             return executeTpm2SpecialCmd(cmdCtl, cmdSpType, cmdSpSubType, cmdParam, paramSize);
-        } else
+        }
+        else
         {
             string cmdParam(command.substr(TPM2_NET_CMD_DATA_P, command.length() - 1));
             paramSize = dataSize - 2;
@@ -272,7 +272,8 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
                 color.blue = param[2];
                 panel->getCanvas()->setColor(color);
                 panel->draw();
-            } else
+            }
+            else
             {
                 cerr << "paramLen out of bounds(3) " << paramLen << endl;
             }
@@ -296,7 +297,8 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
                 color.blue = param[4];
                 panel->getCanvas()->setPixel(param[0], param[1], color);
                 panel->draw();
-            } else
+            }
+            else
             {
                 cerr << "paramLen out of bounds(5) " << paramLen << endl;
             }
@@ -321,7 +323,8 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
                 //FIXME line width
                 panel->getCanvas()->drawLine(param[0], param[1], param[2], param[3], color, 1);
                 panel->draw();
-            } else
+            }
+            else
             {
                 cerr << "paramLen out of bounds(7) " << paramLen << endl;
             }
@@ -351,7 +354,8 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
                 //FIXME circle width
                 panel->getCanvas()->drawCircle(param[0], param[1], param[2], color, 1);
                 panel->draw();
-            } else
+            }
+            else
             {
                 cerr << "paramLen out of bounds(6) " << paramLen << endl;
             }
@@ -378,6 +382,7 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
         animation->setMixer(subCmd);
         break;
     }
+    /*
     case SPCMD_ANI_DELAY:
     {
         cout << "animation delay" << endl;
@@ -385,7 +390,37 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
         {
             unsigned int delay = (param[0] << 24) | (param[1] << 16) | (param[2] << 8) | param[3];
             animation->setAniDelay(delay);
-        } else
+        }
+        else
+        {
+            cerr << "paramLen out of bounds(4) " << paramLen << endl;
+        }
+
+        break;
+    }
+    */
+    case SPCMD_SYSTEM_ADMIN:
+    {
+        cout << " system administration" << endl;
+        if (paramLen == 4)
+        {
+            // some redundancy since its just UDP
+            unsigned int syscmd = (param[0] << 24) | (param[1] << 16) | (param[2] << 8) | param[3];
+            switch(syscmd)
+            {
+            case 0x012EB007: // 0xreboot
+                system("sudo reboot");
+                break;
+
+            case 0x4A17:    // 0xhalt
+                system("sudo halt");
+                break;
+
+            default:
+                cerr << "SysCommand 0x" << hex << cmd << "unknown" << endl;
+            }
+        }
+        else
         {
             cerr << "paramLen out of bounds(4) " << paramLen << endl;
         }
@@ -394,7 +429,7 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
     }
     default:
     {
-        cerr << "SpCommand 0x" << hex << cmd << "not supported" << endl;
+        cerr << "SpCommand 0x" << hex << (int) cmd << "not supported" << endl;
         break;
     }
     }

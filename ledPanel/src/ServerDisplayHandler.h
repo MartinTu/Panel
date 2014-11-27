@@ -8,17 +8,18 @@
 #ifndef SERVERDISPLAYHANDLER_H_
 #define SERVERDISPLAYHANDLER_H_
 
-#define SPCMD_DRAW 			0x01
-#define SPCMD__COLOR   		0x01
-#define SPCMD__SET_PIXEL	0x02
-#define SPCMD__DRAW_LINE	0x03
-#define SPCMD__DRAW_RECT	0x04
-#define SPCMD__DRAW_CIRC	0x05
+#define SPCMD_DRAW          0x01
+#define SPCMD__COLOR        0x01
+#define SPCMD__SET_PIXEL    0x02
+#define SPCMD__DRAW_LINE    0x03
+#define SPCMD__DRAW_RECT    0x04
+#define SPCMD__DRAW_CIRC    0x05
 
-#define SPCMD_ANI_SET		0x03
+#define SPCMD_ANI_SET       0x03
 //      SPCMD__ANI_SET_ANIMATION
-#define SPCMD_ANI_MIXER		0x04
-#define SPCMD_ANI_DELAY		0x05
+#define SPCMD_ANI_MIXER     0x04
+#define SPCMD_ANI_DELAY     0x05
+#define SPCMD_SYSTEM_ADMIN  0xFE
 
 #include <sstream>
 #include <string>

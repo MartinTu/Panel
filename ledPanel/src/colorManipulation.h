@@ -25,12 +25,12 @@ struct color_t
                 red(red), green(green), blue(blue)
         {
         }
-/*
-        color_t(char red, char green, char blue) :
-                red((uint8_t)red), green((uint8_t)green), blue((uint8_t)blue)
-        {
-        }
-*/
+        /*
+         color_t(char red, char green, char blue) :
+         red((uint8_t)red), green((uint8_t)green), blue((uint8_t)blue)
+         {
+         }
+         */
         color_t(const color_t& c) :
                 red(c.red), green(c.green), blue(c.blue)
         {
@@ -38,18 +38,45 @@ struct color_t
 
         color_t& operator=(const color_t& a)
         {
+            //suppress selfcopy
             red = a.red;
             green = a.green;
             blue = a.blue;
             return *this;
         }
 
-        color_t& operator*(const float& a)
+        color_t& operator*=(const float& a)
         {
             red = a * red;
             green = a * green;
             blue = a * blue;
+            //return reference
             return *this;
+        }
+
+        color_t operator*(const float& a)
+        {
+            color_t c(a * red, a * green, a * blue);
+            //return copy
+            return c;
+        }
+
+        //Saturation calculation
+        color_t& operator&=(const uint8_t& a)
+        {
+            red = Utils::max(a, red);
+            green = Utils::max(a, green);
+            blue = Utils::max(a, blue);
+            //reference
+            return *this;
+        }
+
+        //Saturation calculation
+        color_t operator&(const uint8_t& a)
+        {
+            color_t b(Utils::max(a, red), Utils::max(a, green), Utils::max(a, blue));
+            //return copy
+            return b;
         }
 
         bool operator==(color_t a) const
@@ -68,6 +95,9 @@ struct color_t
 };
 
 static const color_t color_black = {0, 0, 0};
+static const color_t color_red = {0xff, 0, 0};
+static const color_t color_green = {0, 0xff, 0};
+static const color_t color_blue = {0, 0, 0xff};
 static const color_t color_dark_grey = {20, 20, 20};
 static const color_t color_dark_blue = {0, 0, 20};
 

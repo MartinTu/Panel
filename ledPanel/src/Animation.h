@@ -45,19 +45,20 @@ enum animation_t
     aniRotateLine = 0x05,
     aniWaterdrop = 0x06,
     aniFadingPixels = 0x07,
+   // aniDirFallingPixel = 0x08,
     _aniNUM  //numbers of ani (if enum values are not doubled or spaced)
 };
 
 enum aniParamlen_t
 {
     lenNone = 0x00,
-    lenInvader = 0x01,
-    lenDirectionFade = 0x04,
-    lenScreenFade = 0x05,
+    lenInvader = 0x03,
+    lenDirectionFade = 0x05,
+    lenScreenFade = 0x04,
     lenScreenPulse = 0x05,
-    lenRotateLine = 0x07,
-    lenWaterdrop = 0x06,
-    lenFadingPixels = 0x06
+    lenRotateLine = 0x0b,
+    lenWaterdrop = 0x09,
+    lenFadingPixels = 0x07
 };
 
 enum mixer_t
@@ -95,7 +96,9 @@ class Animation
         void setMixer(uint8_t _mixer);
         mixer_t getMixer();
         Canvas* getCanvas();
-        void setAniDelay(unsigned int delay);
+
+        bool isFrameNotSkipped(unsigned int skip);
+
         bool isAnimationRunning();
 
         void invader();
@@ -109,15 +112,21 @@ class Animation
     protected:
         int width;
         int height;
-        unsigned int aniDelay;
-        unsigned int aniDelayIterator;
+        unsigned int aniSkipIterator;
         animation_t runningAni;
-        animation_t lastAni;
         mixer_t mixer;
-        //parameters are set from client
+
+        /* parameter
+         * parameters are set from client
+         * during animation these should not be altered
+         */
         string parameter;
-        //intern parameters are initialized in set(.), if the animation does not alter
+        /* internPar
+         * intern parameters are initialized in set(.), if the animation does not alter
+         * stores the intern state of ananimation
+         */
         string internPar;
+
         Canvas* frame;	//x/y Animation screen
 };
 

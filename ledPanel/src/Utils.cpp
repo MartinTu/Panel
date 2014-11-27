@@ -110,6 +110,16 @@ bool Utils::isInRange(int var, int min, int max)
     return (var >= min) && (var <= max);
 }
 
+int Utils::addInBounds(int val1, int val2, int min_val, int max_val)
+{
+    int r = val1 + val2;
+    if (r > max_val)
+        return max_val;
+    if (r < min_val)
+        return min_val;
+    return r;
+}
+
 string Utils::getSelfPath()
 {
     char buff[256];
