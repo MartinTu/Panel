@@ -129,22 +129,18 @@ string ServerDisplayHandler::executeCommand(string &command)
 }
 
 /**
- *  Pixel matrix protocol
- *  see: http://www.ledstyles.de/ftopic18969.html for more information (german)
+ * checks wether the tpm2 frame is valid and returns the block type and the data size
  */
-string ServerDisplayHandler::executeTPM2NetProtocol(string &command)
+uint8_t ServerDisplayHandler::checkTPM2Frame(string &command, unsigned int* dataSize)
 {
-
-//	cout << "TPM2NET frame received" << endl;
-
     uint8_t blockType = command[TPM2_BLOCK_TYPE_P];
     switch (blockType)
     {
     case TPM2_BLOCK_TYPE_DATA:
-//		cout << "data"<< endl;
+//      cout << "data"<< endl;
         break;
     case TPM2_BLOCK_TYPE_CMD:
-//		cout << "command"<< endl;
+//      cout << "command"<< endl;
         break;
     case TPM2_BLOCK_TYPE_ACK:
         cout << "ack req" << endl;
@@ -154,24 +150,77 @@ string ServerDisplayHandler::executeTPM2NetProtocol(string &command)
         break;
     default:
         cerr << "unknown TPM2 frame type: " << hex << blockType << endl;
-        return "";  //no tpm2 ack
+        return TPM2_BLOCK_TYPE_UNKNOWN;  //no tpm2 ack
     }
 
     //test on block-end byte
     if (command[command.length() - 1] != TPM2_BLOCK_END_BYTE)
     {
         cerr << "ServerDisplayHandler: wrong TPM2 end byte" << endl;
-        return "";  //no tpm2 ack
+        return TPM2_BLOCK_TYPE_UNKNOWN;  //no tpm2 ack
     }
 
-    unsigned int dataSize = (((unsigned int) command[TPM2_FRAME_SIZE_HIGH_P]) << 8) | command[TPM2_FRAME_SIZE_LOW_P];
+    *dataSize = (((unsigned int) command[TPM2_FRAME_SIZE_HIGH_P]) << 8) | command[TPM2_FRAME_SIZE_LOW_P];
 
-    if (dataSize != command.length() - TPM2_NET_HEADER_SIZE - TPM2_FOOTER_SIZE)
+    if (*dataSize != command.length() - TPM2_NET_HEADER_SIZE - TPM2_FOOTER_SIZE)
     {
         cerr << "ServerDisplayHandler: TPM2 frame is too short: " << dataSize << " " << command.length() << endl;
-        return "";  //no tpm2 ack
+        return TPM2_BLOCK_TYPE_UNKNOWN;  //no tpm2 ack
     }
 
+    return blockType;
+}
+
+/**
+ * handles a TPM2 frame of type data
+ */
+string ServerDisplayHandler::executeTPM2Data(string &command, uint8_t packetNum, unsigned int dataSize)
+{
+    //FIXME muss besser geloest werden
+    animation->reset();
+    uint8_t* data = (uint8_t*) (command.c_str() + TPM2_NET_DATA_P);
+    panel->drawFrameModule(packetNum, dataSize, data);
+    if (panel->getModulDrawn())
+    {
+        panel->resetModulDrawn();
+        panel->draw();
+    }
+    return "";  //no tpm2 ack
+}
+
+/**
+ * handles a TPM2 frame of type command
+ */
+string ServerDisplayHandler::executeTPM2Command(string &command, uint8_t packetNum, uint8_t dataSize)
+{
+    uint8_t cmdCtl = command[TPM2_NET_CMD_CONTROL_P];
+    uint8_t cmdType = command[TPM2_NET_CMD_TYPE_P];
+    unsigned int paramSize = 0;
+    if (cmdType == TPM2_CMD_SPECIAL_CMD)
+    {
+        uint8_t cmdSpType = command[TPM2_NET_SP_CMD_P];
+        uint8_t cmdSpSubType = command[TPM2_NET_SP_CMD_P + 1];
+        paramSize = dataSize - 4;
+        string cmdParam(command.substr(TPM2_NET_SP_CMD_DATA_P + 1, command.length() - 2));
+        return executeTpm2SpecialCmd(cmdCtl, cmdSpType, cmdSpSubType, cmdParam, paramSize);
+    }
+    else
+    {
+        string cmdParam(command.substr(TPM2_NET_CMD_DATA_P, command.length() - 1));
+        paramSize = dataSize - 2;
+        return executeTpm2Cmd(cmdCtl, cmdType, cmdParam, paramSize);
+    }
+}
+
+/**
+ *  Pixel matrix protocol
+ *  see: http://www.ledstyles.de/ftopic18969.html for more information (german)
+ */
+string ServerDisplayHandler::executeTPM2NetProtocol(string &command)
+{
+    //cout << "TPM2NET frame received" << endl;
+    unsigned int dataSize;
+    uint8_t blockType = checkTPM2Frame(command, &dataSize);
     uint8_t packetNum = command[TPM2_NET_PACKET_NUM_P];
     uint8_t numPackets = command[TPM2_NET_PACKET_TOTAL_PACK_NUM_P];
 
@@ -180,63 +229,184 @@ string ServerDisplayHandler::executeTPM2NetProtocol(string &command)
         cout << "packetNum/numPackets: " << packetNum << "/" << numPackets << endl;
     }
 
-//  cout << "\n\n\nBlock-Art: " << hex << (int) blockType << "\n";
-//	cout << "Packetnumber: " << (int) packetNum << "\n";
-//	cout << "num Packets: " << (int) numPackets << endl;
+    //cout << "\n\n\nBlock-Art: " << hex << (int) blockType << "\n";
+    //cout << "Packetnumber: " << (int) packetNum << "\n";
+    //cout << "num Packets: " << (int) numPackets << endl;
 
     switch (blockType)
     {
     case TPM2_BLOCK_TYPE_DATA:
-    {
-        //FIXME muss besser geloest werden
-        animation->reset();
-        uint8_t* data = (uint8_t*) (command.c_str() + TPM2_NET_DATA_P);
-        panel->drawFrameModule(packetNum, dataSize, data);
-        if (panel->getModulDrawn())
-        {
-            panel->resetModulDrawn();
-            panel->draw();
-        }
-        return "";  //no tpm2 ack
-    }
+        return executeTPM2Data(command, packetNum, dataSize);
     case TPM2_BLOCK_TYPE_CMD:
-    {
-        uint8_t cmdCtl = command[TPM2_NET_CMD_CONTROL_P];
-        uint8_t cmdType = command[TPM2_NET_CMD_TYPE_P];
-        unsigned int paramSize = 0;
-        if (cmdType == TPM2_CMD_SPECIAL_CMD)
-        {
-            uint8_t cmdSpType = command[TPM2_NET_SP_CMD_P];
-            uint8_t cmdSpSubType = command[TPM2_NET_SP_CMD_P + 1];
-            paramSize = dataSize - 4;
-            string cmdParam(command.substr(TPM2_NET_SP_CMD_DATA_P + 1, command.length() - 2));
-            return executeTpm2SpecialCmd(cmdCtl, cmdSpType, cmdSpSubType, cmdParam, paramSize);
-        }
-        else
-        {
-            string cmdParam(command.substr(TPM2_NET_CMD_DATA_P, command.length() - 1));
-            paramSize = dataSize - 2;
-            return executeTpm2Cmd(cmdCtl, cmdType, cmdParam, paramSize);
-        }
-    }
-
+        return executeTPM2Command(command, packetNum, dataSize);
     case TPM2_BLOCK_TYPE_ACK:
-    {
         break;
-    }
-
     case TPM2_BLOCK_TYPE_ACK_DATA:
-    {
         break;
-    }
-
     default:
-    {
         return "";
     }
-
-    }
     return "";
+}
+
+void ServerDisplayHandler::drawColor(unsigned int paramLen, string &param)
+{
+    cout << "Color";
+    cout << ": param(0x";
+    for (unsigned int i = 0; i < param.length(); i++)
+    {
+        cout << hex << setw(3) << (int) param[i];
+    }
+    cout << ")" << endl;
+
+    if (paramLen == 3)
+    {
+        color_t color;
+        color.red = param[0];
+        color.green = param[1];
+        color.blue = param[2];
+        panel->getCanvas()->setColor(color);
+        panel->draw();
+    }
+    else
+    {
+        cerr << "paramLen out of bounds(3) " << paramLen << endl;
+    }
+}
+
+void ServerDisplayHandler::setPixel(unsigned int paramLen, string &param)
+{
+    cout << "Pixel";
+    cout << ": param(0x";
+    for (unsigned int i = 0; i < param.length(); i++)
+    {
+        cout << hex << setw(3) << (int) param[i];
+    }
+    cout << ")" << endl;
+
+    if (paramLen == 5)
+    {
+        color_t color;
+        color.red = param[2];
+        color.green = param[3];
+        color.blue = param[4];
+        panel->getCanvas()->setPixel(param[0], param[1], color);
+        panel->draw();
+    }
+    else
+    {
+        cerr << "paramLen out of bounds(5) " << paramLen << endl;
+    }
+}
+
+void ServerDisplayHandler::drawLine(unsigned int paramLen, string& param)
+{
+    cout << "Line";
+    cout << ": param(0x";
+    for (unsigned int i = 0; i < param.length(); i++)
+    {
+        cout << hex << setw(3) << (int) (param[i]);
+    }
+    cout << ")" << endl;
+    if (paramLen == 7)
+    {
+        color_t color;
+        color.red = param[4];
+        color.green = param[5];
+        color.blue = param[6];
+        //FIXME line width
+        panel->getCanvas()->drawLine(param[0], param[1], param[2], param[3], color, 1);
+        panel->draw();
+    }
+    else
+    {
+        cerr << "paramLen out of bounds(7) " << paramLen << endl;
+    }
+}
+
+void ServerDisplayHandler::drawCircle(unsigned int paramLen, string& param)
+{
+    cout << "Circle";
+    cout << ": param(0x";
+    for (unsigned int i = 0; i < param.length(); i++)
+    {
+        cout << hex << setw(3) << (int) (param[i]);
+    }
+    cout << ")" << endl;
+    if (paramLen == 6)
+    {
+        color_t color;
+        color.red = param[3];
+        color.green = param[4];
+        color.blue = param[5];
+        //FIXME circle width
+        panel->getCanvas()->drawCircle(param[0], param[1], param[2], color, 1);
+        panel->draw();
+    }
+    else
+    {
+        cerr << "paramLen out of bounds(6) " << paramLen << endl;
+    }
+}
+
+void ServerDisplayHandler::draw(uint8_t subCmd, unsigned int paramLen, string &param)
+{
+    //FIXME muss besser geloest werden
+    animation->reset();
+
+    switch (subCmd)
+    {
+    case SPCMD__COLOR:
+        drawColor(paramLen, param);
+        break;
+
+    case SPCMD__SET_PIXEL:
+        setPixel(paramLen, param);
+        break;
+
+    case SPCMD__DRAW_LINE:
+        drawLine(paramLen, param);
+        break;
+
+    case SPCMD__DRAW_RECT:
+        cerr << "SPCMD__DRAW_RECT not supported" << endl;
+        break;
+
+    case SPCMD__DRAW_CIRC:
+        drawCircle(paramLen, param);
+        break;
+
+    default:
+        cerr << "SpSubCommand 0x" << hex << subCmd << "not supported" << endl;
+        break;
+    }
+}
+
+void ServerDisplayHandler::systemAdministration(uint8_t cmd, unsigned int paramLen, string &param)
+{
+    cout << " system administration" << endl;
+    if (paramLen == 4)
+    {
+        // some redundancy since its just UDP
+        unsigned int syscmd = (param[0] << 24) | (param[1] << 16) | (param[2] << 8) | param[3];
+        switch (syscmd)
+        {
+        case 0x012EB007:  // 0xreboot
+            system("sudo reboot");
+            break;
+
+        case 0x4A17:    // 0xhalt
+            system("sudo halt");
+            break;
+
+        default:
+            cerr << "SysCommand 0x" << hex << cmd << "unknown" << endl;
+        }
+    }
+    else
+    {
+        cerr << "paramLen out of bounds(4) " << paramLen << endl;
+    }
 }
 
 string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uint8_t subCmd, string &param,
@@ -248,196 +418,51 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
     switch (cmd)
     {
     case SPCMD_DRAW:
-    {
-        //FIXME muss besser geloest werden
-        animation->reset();
-        cout << "draw: ";
-        switch (subCmd)
-        {
-        case SPCMD__COLOR:
-        {
-            cout << "Color";
-            cout << ": param(0x";
-            for (unsigned int i = 0; i < param.length(); i++)
-            {
-                cout << hex << setw(3) << (int) param[i];
-            }
-            cout << ")" << endl;
+        draw(subCmd, paramLen, param);
+        break;
 
-            if (paramLen == 3)
-            {
-                color_t color;
-                color.red = param[0];
-                color.green = param[1];
-                color.blue = param[2];
-                panel->getCanvas()->setColor(color);
-                panel->draw();
-            }
-            else
-            {
-                cerr << "paramLen out of bounds(3) " << paramLen << endl;
-            }
-            break;
-        }
-        case SPCMD__SET_PIXEL:
-        {
-            cout << "Pixel";
-            cout << ": param(0x";
-            for (unsigned int i = 0; i < param.length(); i++)
-            {
-                cout << hex << setw(3) << (int) param[i];
-            }
-            cout << ")" << endl;
-
-            if (paramLen == 5)
-            {
-                color_t color;
-                color.red = param[2];
-                color.green = param[3];
-                color.blue = param[4];
-                panel->getCanvas()->setPixel(param[0], param[1], color);
-                panel->draw();
-            }
-            else
-            {
-                cerr << "paramLen out of bounds(5) " << paramLen << endl;
-            }
-            break;
-        }
-        case SPCMD__DRAW_LINE:
-        {
-            cout << "Line";
-            cout << ": param(0x";
-            for (unsigned int i = 0; i < param.length(); i++)
-            {
-                cout << hex << setw(3) << (int) param[i];
-            }
-            cout << ")" << endl;
-
-            if (paramLen == 7)
-            {
-                color_t color;
-                color.red = param[4];
-                color.green = param[5];
-                color.blue = param[6];
-                //FIXME line width
-                panel->getCanvas()->drawLine(param[0], param[1], param[2], param[3], color, 1);
-                panel->draw();
-            }
-            else
-            {
-                cerr << "paramLen out of bounds(7) " << paramLen << endl;
-            }
-            break;
-        }
-        case SPCMD__DRAW_RECT:
-        {
-            cerr << "SPCMD__DRAW_RECT not supported" << endl;
-            break;
-        }
-        case SPCMD__DRAW_CIRC:
-        {
-            cout << "Circle";
-            cout << ": param(0x";
-            for (unsigned int i = 0; i < param.length(); i++)
-            {
-                cout << hex << setw(3) << (int) param[i];
-            }
-            cout << ")" << endl;
-
-            if (paramLen == 6)
-            {
-                color_t color;
-                color.red = param[3];
-                color.green = param[4];
-                color.blue = param[5];
-                //FIXME circle width
-                panel->getCanvas()->drawCircle(param[0], param[1], param[2], color, 1);
-                panel->draw();
-            }
-            else
-            {
-                cerr << "paramLen out of bounds(6) " << paramLen << endl;
-            }
-            break;
-        }
-        default:
-        {
-            cerr << "SpSubCommand 0x" << hex << subCmd << "not supported" << endl;
-            break;
-        }
-        }
-        break;  //spCmd
-
-    }
     case SPCMD_ANI_SET:
-    {
         cout << "set animation: ";
         animation->set(subCmd, param, paramLen);
         break;
-    }
+
     case SPCMD_ANI_MIXER:
-    {
         cout << "animation mixer" << endl;
         animation->setMixer(subCmd);
         break;
-    }
-    /*
-    case SPCMD_ANI_DELAY:
-    {
-        cout << "animation delay" << endl;
-        if (paramLen == 4)
-        {
-            unsigned int delay = (param[0] << 24) | (param[1] << 16) | (param[2] << 8) | param[3];
-            animation->setAniDelay(delay);
-        }
-        else
-        {
-            cerr << "paramLen out of bounds(4) " << paramLen << endl;
-        }
 
-        break;
-    }
-    */
     case SPCMD_SYSTEM_ADMIN:
-    {
-        cout << " system administration" << endl;
-        if (paramLen == 4)
-        {
-            // some redundancy since its just UDP
-            unsigned int syscmd = (param[0] << 24) | (param[1] << 16) | (param[2] << 8) | param[3];
-            switch(syscmd)
-            {
-            case 0x012EB007: // 0xreboot
-                system("sudo reboot");
-                break;
-
-            case 0x4A17:    // 0xhalt
-                system("sudo halt");
-                break;
-
-            default:
-                cerr << "SysCommand 0x" << hex << cmd << "unknown" << endl;
-            }
-        }
-        else
-        {
-            cerr << "paramLen out of bounds(4) " << paramLen << endl;
-        }
-
+        systemAdministration(cmd, paramLen, param);
         break;
-    }
+
+        /*
+         case SPCMD_ANI_DELAY:
+         {
+         cout << "animation delay" << endl;
+         if (paramLen == 4)
+         {
+         unsigned int delay = (param[0] << 24) | (param[1] << 16) | (param[2] << 8) | param[3];
+         animation->setAniDelay(delay);
+         }
+         else
+         {
+         cerr << "paramLen out of bounds(4) " << paramLen << endl;
+         }
+
+         break;
+         }
+         */
+
     default:
-    {
         cerr << "SpCommand 0x" << hex << (int) cmd << "not supported" << endl;
         break;
-    }
     }
 
     if (ackBit)
     {
         return makeTpm2NetACPacket(response);
     }
+
     return "";
 }
 string ServerDisplayHandler::executeTpm2Cmd(uint8_t ctl, uint8_t cmd, string &param, unsigned int paramLen)

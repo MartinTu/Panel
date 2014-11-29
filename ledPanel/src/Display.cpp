@@ -59,7 +59,7 @@ Display::~Display()
     draw();
     usleep(200);
     //is this the correct deletion?
-    for (int i = numModules; i > numModules; i--)
+    for (unsigned int i = numModules; i > numModules; i--)
     {
         delete modul[i];
     }
@@ -91,7 +91,7 @@ int Display::getNumFramePix()
 int Display::getNumPix()
 {
     unsigned int num = 0;
-    for (int i = 0; i < numModules; i++)
+    for (unsigned int i = 0; i < numModules; i++)
     {
         num += modul[i]->getNumPix();
     }
@@ -105,7 +105,7 @@ int Display::getNumModules()
 
 bool Display::getModulDrawn()
 {
-    for (int i = 0; i < numModules; i++)
+    for (unsigned int i = 0; i < numModules; i++)
     {
         if (false == modulDrawn[i])
         {
@@ -117,13 +117,13 @@ bool Display::getModulDrawn()
 
 void Display::resetModulDrawn()
 {
-    for (int i = 0; i < numModules; i++)
+    for (unsigned int i = 0; i < numModules; i++)
     {
         modulDrawn[i] = false;
     }
 }
 
-void Display::drawFrameModule(int moduleNum, int dataLength, uint8_t* data)
+void Display::drawFrameModule(unsigned int moduleNum, unsigned int dataLength, uint8_t* data)
 {
     if ((moduleNum >= 0) && (moduleNum < numModules))
     {
@@ -135,9 +135,9 @@ void Display::drawFrameModule(int moduleNum, int dataLength, uint8_t* data)
             //0-0 = topleft
             int x0 = modul[moduleNum]->getXOffset();
             int y0 = modul[moduleNum]->getYOffset();
-            for (int y = 0; y < modul[moduleNum]->getWidth(); y++)
+            for (unsigned int y = 0; y < modul[moduleNum]->getWidth(); y++)
             {
-                for (int x = 0; x < modul[moduleNum]->getWidth(); x++)
+                for (unsigned int x = 0; x < modul[moduleNum]->getWidth(); x++)
                 {
                     color.red = data[i++];
                     color.green = data[i++];
@@ -181,7 +181,7 @@ void Display::draw()
     q.put(buffer);
 }
 
-void Display::setModulDrawn(int modulNum)
+void Display::setModulDrawn(unsigned int modulNum)
 {
     if ((modulNum >= 0) && (modulNum < numModules))
     {
@@ -211,9 +211,9 @@ void Display::drawLDP6803()
     int x, y;
     color_t color;
     //pixel[0][0] = topleft corner
-    for (int i = 0; i < modul[actModul]->getHeight(); i++)
+    for (unsigned int i = 0; i < modul[actModul]->getHeight(); i++)
     {
-        for (int j = 0; j < modul[actModul]->getWidth(); j++)
+        for (unsigned int j = 0; j < modul[actModul]->getWidth(); j++)
         {
             x = j + modul[actModul]->getXOffset();
             y = i + modul[actModul]->getYOffset();
@@ -255,9 +255,9 @@ void Display::drawWS2801()
     int x, y;
     //pixel[0][0] = topleft corner
     //buffer starts at bottomleft corner
-    for (int i = 0; i < modul[actModul]->getHeight(); i++)
+    for (unsigned int i = 0; i < modul[actModul]->getHeight(); i++)
     {
-        for (int j = 0; j < modul[actModul]->getWidth(); j++)
+        for (unsigned int j = 0; j < modul[actModul]->getWidth(); j++)
         {
             x = j + modul[actModul]->getXOffset();
             y = i + modul[actModul]->getYOffset();
@@ -390,7 +390,7 @@ int Display::initModulesWithConfigFile()
                     //--get wireingOrder
 
                     //++get idOrder
-                    for (int i = 0; i < numModules; i++)
+                    for (unsigned int i = 0; i < numModules; i++)
                     {
                         int neededVal = wireingOrder.front();
                         wireingOrder.pop_front();
@@ -421,8 +421,8 @@ int Display::initModulesWithConfigFile()
                     //--get idOrder
 
                     //++read module definitions
-                    int checker = 0;
-                    for (int i = 0; i < numModules; i++)
+                    unsigned int checker = 0;
+                    for (unsigned int i = 0; i < numModules; i++)
                     {
                         Utils::printStars();
                         string neededVal = idOrder.front();
@@ -769,7 +769,7 @@ int Display::initModulesWithConfigFile()
         cerr << "Unable to find file: " << file << ", in dir: " << filePath << endl;
     }
     //--fileParsing
-    for (int i = numModules; i > numModules; i--)
+    for (unsigned int i = numModules; i > numModules; i--)
     {
         delete modul[i];
     }

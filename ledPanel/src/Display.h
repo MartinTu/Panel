@@ -41,7 +41,7 @@ class Display
         int getNumPix();
         int getNumModules();
 
-        void drawFrameModule(int moduleNum, int dataLength, uint8_t* data);
+        void drawFrameModule(unsigned int moduleNum, unsigned int dataLength, uint8_t* data);
         bool getModulDrawn();
         void resetModulDrawn();
 
@@ -51,20 +51,20 @@ class Display
 
     protected:
 
-        void setModulDrawn(int modulNum);
+        void setModulDrawn(unsigned int modulNum);
         void drawLDP6803();
         void drawWS2801();
         int initModulesWithConfigFile();
 
-        int width;  //display width
-        int height;  //display height
+        unsigned int width;  //display width
+        unsigned int height;  //display height
         orientation_t orientation;
 
-        int numModules;
+        unsigned int numModules;
 
         unsigned int buffersize;
         unsigned int buffoffset;
-        int actModul;
+        unsigned int actModul;
         double gamma;
 
         bool spiThreadIsRunning;

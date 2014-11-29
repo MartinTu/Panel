@@ -20,42 +20,51 @@ DisplayModul::~DisplayModul()
 
 }
 
-int DisplayModul::getWidth()
+unsigned int DisplayModul::getWidth()
 {
     return this->width;
 }
-int DisplayModul::getHeight()
+
+unsigned int DisplayModul::getHeight()
 {
     return this->height;
 }
-int DisplayModul::getNumPix()
+
+unsigned int DisplayModul::getNumPix()
 {
     return (this->width * this->height);
 }
-int DisplayModul::getXOffset()
+
+unsigned int DisplayModul::getXOffset()
 {
     return this->xOffset;
 }
-int DisplayModul::getYOffset()
+
+unsigned int DisplayModul::getYOffset()
 {
     return this->yOffset;
 }
+
 addressing_t DisplayModul::getAddressing()
 {
     return this->addressing;
 }
+
 orientation_t DisplayModul::getOrientation()
 {
     return this->orientation;
 }
+
 flip_t DisplayModul::getFlip()
 {
     return this->flip;
 }
+
 chip_t DisplayModul::getChip()
 {
     return this->chip;
 }
+
 correction_t DisplayModul::getCorrection()
 {
     return this->correction;

@@ -103,11 +103,11 @@ class DisplayModul
         DisplayModul(struct modul_t &modul);
         virtual ~DisplayModul();
 
-        int getWidth();
-        int getHeight();
-        int getNumPix();
-        int getXOffset();
-        int getYOffset();
+        unsigned int getWidth();
+        unsigned int getHeight();
+        unsigned int getNumPix();
+        unsigned int getXOffset();
+        unsigned int getYOffset();
         addressing_t getAddressing();
         orientation_t getOrientation();
         flip_t getFlip();

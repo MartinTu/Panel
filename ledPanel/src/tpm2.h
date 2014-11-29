@@ -18,6 +18,7 @@
 #define TPM2_BLOCK_TYPE_CMD					0xC0 // Block is a  'COMMAND BLOCK'
 #define TPM2_BLOCK_TYPE_ACK					0xAC // Block is an 'ANSWER without DATA' (Acknowledge)
 #define TPM2_BLOCK_TYPE_ACK_DATA			0xAD // Block is an 'ANSWER containing DATA'
+#define TPM2_BLOCK_TYPE_UNKNOWN             0x00 // Block is unknown
 #define TPM2_BLOCK_END_BYTE					0x36 // Last Byte of a TMP2 Block
 
 //Header & footer size
