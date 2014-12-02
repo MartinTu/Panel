@@ -32,6 +32,7 @@
 #include "colorManipulation.h"
 #include "Utils.h"
 #include "bitmaps.h"
+#include <vector>
 
 using namespace std;
 

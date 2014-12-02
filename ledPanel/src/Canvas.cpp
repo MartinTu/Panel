@@ -30,14 +30,26 @@ void Canvas::setPixel(int x, int y, color_t color)
 {
     if (!Utils::isInRange(x, 0, width - 1))
     {
-        cerr << "setPixel("<<x<<","<<y<<",color) x out of bounds: " << endl;
+        cerr << "setPixel() x out of bounds: " << x << endl;
         return;
     }
     if (!Utils::isInRange(y, 0, height - 1))
     {
-        cerr << "setPixel("<<x<<","<<y<<",color) y out of bounds: " << endl;
+        cerr << "setPixel() y out of bounds: " << y << endl;
         return;
     }
+    pixel[x][y] = color;
+}
+
+void Canvas::setPixel(int num, color_t color)
+{
+    if ((num >= width * height) || (num < 0))
+    {
+        cerr << "setPixel() num out of bounds: " << num << endl;
+        return;
+    }
+    int x = num % width;
+    int y = num / width;
     pixel[x][y] = color;
 }
 
@@ -258,14 +270,26 @@ color_t Canvas::getPixel(int x, int y)
 {
     if ((x < 0) || (x >= width))
     {
-        cerr << "getPixel() x out of bounds" << endl;
+        cerr << "getPixel() x out of bounds: " << x << endl;
         return color_black;
     }
     if ((y < 0) || (x >= height))
     {
-        cerr << "getPixel() y out of bounds" << endl;
+        cerr << "getPixel() y out of bounds: " << y << endl;
         return color_black;
     }
+    return pixel[x][y];
+}
+
+color_t Canvas::getPixel(int num)
+{
+    if ((num < 0) || (num >= width * height))
+    {
+        cerr << "getPixel() num out of bounds: " << num << endl;
+        return color_black;
+    }
+    int x = num % width;
+    int y = num / width;
     return pixel[x][y];
 }
 

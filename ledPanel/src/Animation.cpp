@@ -14,10 +14,10 @@ Animation::Animation(int _width, int _height) :
     parameter.clear();
     parameter.push_back(0x00);  //skipframe
     parameter.push_back(0x00);
-    parameter.push_back(200);
+    parameter.push_back(100);
     parameter.push_back(0x2);
+    parameter.push_back(0x55);
     parameter.push_back(0x00);
-    parameter.push_back(0xff);
     parameter.push_back(0x00);
 
     //set running ani
@@ -742,15 +742,19 @@ void Animation::fadingPixels()
             //trim targetPixel to maximumPixel
             targetPix = maximumPixel;
         }
+
         if (targetPix != targetPixOld)
         {
+            //initialize vector
+            vector<int> emptyPix;
+            for (int n = 0; n < maximumPixel; n++)
+            {
+                emptyPix.push_back(n);
+            }
             //initialize screen with targetPix Pixels
             frame->setColor(color_black);
             for (int i = 0; i < targetPix; i++)
             {
-                int x;
-                int y;
-                bool noPixel = true;
                 color_t newPixelColor(color);
                 if (color.red)
                     newPixelColor.red = (uint8_t) (rand() % color.red);
@@ -758,16 +762,9 @@ void Animation::fadingPixels()
                     newPixelColor.green = (uint8_t) (rand() % color.green);
                 if (color.blue)
                     newPixelColor.blue = (uint8_t) (rand() % color.blue);
-                while (noPixel)
-                {
-                    x = rand() % width;
-                    y = rand() % height;
-                    if (frame->getPixel(x, y) == color_black)
-                    {
-                        noPixel = false;
-                        frame->setPixel(x, y, newPixelColor);
-                    }
-                }
+                int num = rand() % emptyPix.size();
+                frame->setPixel(emptyPix[num], newPixelColor);
+                emptyPix.erase(emptyPix.begin() + num);
             }
             internPar[0] = (targetPix >> 8) & 0xff;
             internPar[1] = targetPix & 0xff;
@@ -783,32 +780,27 @@ void Animation::fadingPixels()
             }
         }
         //get actual amount of pixels
+        vector<int> emptyPix;
         int actualPix = 0;
-        for (int x = 0; x < width; x++)
+        for (int n = 0; n < maximumPixel; n++)
         {
-            for (int y = 0; y < height; y++)
+            if (frame->getPixel(n) == color_black)
+            //fill vector of empty pixels
             {
-                if (frame->getPixel(x, y) != color_black)
-                    actualPix++;
+                emptyPix.push_back(n);
+            } else
+            {
+                actualPix++;
             }
         }
         //create targetPixel-actualPix Pixels
         int pix = targetPix - actualPix;
         for (int i = 0; i < pix; i++)
         {
-            int x;
-            int y;
-            bool noPixel = true;
-            while (noPixel)
-            {
-                x = rand() % width;
-                y = rand() % height;
-                if (frame->getPixel(x, y) == color_black)
-                {
-                    noPixel = false;
-                    frame->setPixel(x, y, color);
-                }
-            }
+            int n = rand() % emptyPix.size();
+            frame->setPixel(emptyPix[n], color);
+            //cout << i << " num: " << n << " value: " << emptyPix[n] << " size: " << emptyPix.size() << endl;
+            emptyPix.erase(emptyPix.begin() + n);
         }
     }
 }

@@ -22,6 +22,7 @@ class Canvas
         virtual ~Canvas();
 
         void setPixel(int x, int y, color_t color);
+        void setPixel(int num, color_t color);
         void setColor(color_t color);
         void drawFrame(const vector<vector<color_t> >& vec);
         void drawFrame(int dataLength, const uint8_t * data);
@@ -33,6 +34,7 @@ class Canvas
         void drawCircle(int x0, int y0, int radius, color_t color, uint8_t width);
 
         color_t getPixel(int x, int y);
+        color_t getPixel(int num);
         vector<vector<color_t> >& getPicture();
         int getWidth();
         int getHeight();
