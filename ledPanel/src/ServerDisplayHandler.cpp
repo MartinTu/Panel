@@ -261,10 +261,7 @@ void ServerDisplayHandler::drawColor(unsigned int paramLen, string &param)
 
     if (paramLen == 3)
     {
-        color_t color;
-        color.red = param[0];
-        color.green = param[1];
-        color.blue = param[2];
+        color_t color{(uint8_t) param[0],(uint8_t) param[1], (uint8_t) param[2]};
         panel->getCanvas()->setColor(color);
         panel->draw();
     }
@@ -286,10 +283,7 @@ void ServerDisplayHandler::setPixel(unsigned int paramLen, string &param)
 
     if (paramLen == 5)
     {
-        color_t color;
-        color.red = param[2];
-        color.green = param[3];
-        color.blue = param[4];
+        color_t color{(uint8_t) param[2],(uint8_t) param[3], (uint8_t) param[4]};
         panel->getCanvas()->setPixel(param[0], param[1], color);
         panel->draw();
     }
@@ -310,10 +304,7 @@ void ServerDisplayHandler::drawLine(unsigned int paramLen, string& param)
     cout << ")" << endl;
     if (paramLen == 7)
     {
-        color_t color;
-        color.red = param[4];
-        color.green = param[5];
-        color.blue = param[6];
+        color_t color{(uint8_t) param[4],(uint8_t) param[5], (uint8_t) param[6]};
         //FIXME line width
         panel->getCanvas()->drawLine(param[0], param[1], param[2], param[3], color, 1);
         panel->draw();
@@ -335,10 +326,7 @@ void ServerDisplayHandler::drawCircle(unsigned int paramLen, string& param)
     cout << ")" << endl;
     if (paramLen == 6)
     {
-        color_t color;
-        color.red = param[3];
-        color.green = param[4];
-        color.blue = param[5];
+        color_t color{(uint8_t) param[3],(uint8_t) param[4], (uint8_t) param[5]};
         //FIXME circle width
         panel->getCanvas()->drawCircle(param[0], param[1], param[2], color, 1);
         panel->draw();

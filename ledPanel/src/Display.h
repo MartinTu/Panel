@@ -21,7 +21,7 @@
 #include "spi.h"
 #include "DisplayModul.h"
 #include "BlockingQueue.h"
-#include "colorManipulation.h"
+#include "Color.h"
 #include "Canvas.h"
 
 #include "rapidxml.hpp"//xml file reading

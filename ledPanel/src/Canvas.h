@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <cmath>
-#include "colorManipulation.h"
+#include "Color.h"
 #include "Utils.h"
 
 using namespace std;

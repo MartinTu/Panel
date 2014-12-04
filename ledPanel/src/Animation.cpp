@@ -10,17 +10,26 @@
 Animation::Animation(int _width, int _height) :
         width(_width), height(_height), aniSkipIterator(0), runningAni(aniNone), mixer(mixMaybe)
 {
-    animation_t startingAni = aniFadingPixels;
+    animation_t startingAni = aniDirFallingPixel;
     parameter.clear();
-    parameter.push_back(0x00);  //skipframe
+    /* [0]: frameSkip
+     * [1]: targetPix
+     * [2]: length
+     * [3]: direction
+     * [4]: dropDiff
+     * [5]: pixRed
+     * [6]: pixGreen
+     * [7]: pixBlue
+     */
+    parameter.push_back(0x04);  //frameSkip
+    parameter.push_back(0x14);
+    parameter.push_back(0x06);
+    parameter.push_back(0x01);
+    parameter.push_back(0xf);//random
+    parameter.push_back(0x00);  //red
+    parameter.push_back(0x60);
     parameter.push_back(0x00);
-    parameter.push_back(100);
-    parameter.push_back(0x2);
-    parameter.push_back(0x55);
-    parameter.push_back(0x00);
-    parameter.push_back(0x00);
-
-    //set running ani
+    //set starting ani
     this->set(startingAni, parameter, parameter.length());
 
     this->frame = new Canvas(width, height);
@@ -197,6 +206,26 @@ int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
             cerr << " param out of bounds: " << paramSize << endl;
         }
         break;
+    case aniDirFallingPixel:
+        cout << "[INFO] aniDirFallingPixel";
+        if (paramSize == (unsigned int) lenDirFallingPixel)
+        {
+            parameter = param.substr(0, paramSize);
+            //frameskip = 1;
+            ret = 0;
+            if (runningAni != lastAni)
+            {
+                //initialize intern parameter
+                internPar.clear();
+                internPar.push_back(0x00);  //targetPixOld
+                internPar.push_back(0x00);  //dirOld
+                internPar.push_back(0x00);  //dropSpeedIterator
+            }
+        } else
+        {
+            cerr << " param out of bounds: " << paramSize << endl;
+        }
+        break;
     default:
         break;
     }
@@ -272,6 +301,9 @@ bool Animation::nextStep()
             break;
         case aniFadingPixels:
             fadingPixels();
+            break;
+        case aniDirFallingPixel:
+            dirFallingPixel();
             break;
         default:
             return 0;
@@ -373,9 +405,9 @@ void Animation::invader()
                         pictureWheel += 128;
                     }
                 }
-                color = ColorMan::wheel(pictureWheel);
-                color *= colorDimmer;
-                color &= saturation;
+                color.wheel(pictureWheel);
+                color.setDimmer(colorDimmer);
+                color.setSaturation(saturation);
                 frame->setPixel(x, y, color * (float) (parameter[1] / 255.0));
             }
         }
@@ -406,8 +438,6 @@ void Animation::directionFade()
         float colorDimmer = parameter[3] / 255.0;
         uint8_t saturation = (uint8_t) parameter[4];
         color_t calcColor(color);
-        calcColor *= colorDimmer;
-        calcColor &= saturation;
 
         int xmax = width;
         int ymax = height;
@@ -446,6 +476,9 @@ void Animation::directionFade()
         for (uint8_t x = 0; x < xmax; x++)
         {
 
+            calcColor = color;
+            calcColor.setDimmer(colorDimmer);
+            calcColor.setSaturation(saturation);
             for (uint8_t y = 0; y < ymax; y++)
             {
                 switch (dir)
@@ -502,10 +535,8 @@ void Animation::directionFade()
                     break;
                 }
             }
-            color = ColorMan::rgbFade(color, delta);
-            calcColor = color;
-            calcColor *= colorDimmer;
-            calcColor &= saturation;
+            //fade original color
+            color.rgbFade(delta);
 
             /* set new start color */
             if (x == 1)
@@ -540,8 +571,8 @@ void Animation::screenFade()
         int saturation = parameter[3];
         color_t color(internPar[1], internPar[2], internPar[3]);
         color_t screenColor(color);
-        screenColor *= maxBrightness;
-        screenColor &= saturation;
+        screenColor.setDimmer(maxBrightness);
+        screenColor.setSaturation(saturation);
         frame->setColor(screenColor);
         if (!delta)
         {
@@ -801,6 +832,131 @@ void Animation::fadingPixels()
             frame->setPixel(emptyPix[n], color);
             //cout << i << " num: " << n << " value: " << emptyPix[n] << " size: " << emptyPix.size() << endl;
             emptyPix.erase(emptyPix.begin() + n);
+        }
+    }
+}
+
+void Animation::dirFallingPixel()
+{
+    /* ani 0x08
+     * paramSize: 8
+     * [0]: frameSkip
+     * [1]: targetPix
+     * [2]: length
+     * [3]: direction
+     * [4]: dropDiff
+     * [5]: pixRed
+     * [6]: pixGreen
+     * [7]: pixBlue
+     * internPar: 3
+     * [0]: targetPixOld//0x00
+     * [1]: directionOld//0x00
+     */
+    if (isFrameNotSkipped(parameter[0]))
+    {
+        color_t color((uint8_t) parameter[5], (uint8_t) parameter[6], (uint8_t) parameter[7]);
+        if (color == color_black)
+            color = color_green;
+
+        int targetPix = parameter[1];
+        int targetPixOld = internPar[0];
+        int length = parameter[2];
+        direction_t dir = static_cast<direction_t>(parameter[3]);
+        direction_t dirOld = static_cast<direction_t>(internPar[1]);
+        int dropDiff = parameter[4];
+        //dir==top
+        int w = width;
+        int h = height;
+        color_t dimColor(color / (float) length);
+        if (dimColor.isAChannelVal(0))
+        {
+            dimColor.setSaturation(1);
+        }
+        if (targetPix > w)
+        {
+            //trim targetPixel to w
+            targetPix = w;
+        }
+        //initialize
+        if ((dirOld != dir) && (targetPixOld != targetPix))
+        {
+            //initialize vector
+            vector<int> emptyRow;
+            for (int n = 0; n < w; n++)
+            {
+                emptyRow.push_back(n);
+            }
+            //initialize screen with targetPix Pixels
+            frame->setColor(color_black);
+
+            //set falling pixels
+            for (int i = 0; i < targetPix; i++)
+            {
+                int s = rand() % h;
+                int num = rand() % emptyRow.size();
+                for (int l = 0; l < length; l++)
+                {
+                    //dir==top
+                    if (Utils::isInRange(s - l, 0, h))
+                        frame->setPixel(emptyRow[num], s - l, color - (dimColor * l));
+                }
+                emptyRow.erase(emptyRow.begin() + num);
+            }
+            internPar[0] = targetPix;
+            internPar[1] = dir;
+        }
+        //let em fall
+        for (int n = 0; n < w; n++)
+        {
+            //put a bit random... not forward every line...
+            int r = rand() % 0xff;
+            if (r >= dropDiff)
+            {
+                //copy pixels from higher lanes
+                for (int s = h - 1; s > 0; s--)
+                {
+                    frame->setPixel(n, s, frame->getPixel(n, s - 1));
+                }
+                //add last line
+                color_t lineColor = frame->getPixel(n, 0);
+                if (lineColor != color_black)
+                {
+                    frame->setPixel(n, 0, lineColor - dimColor);
+                }
+            }
+        }
+        //count used rows
+        int actualPix = 0;
+        vector<int> emptyRow;
+        for (int n = 0; n < w; n++)
+        {
+            bool empty = true;
+            for (int m = 0; m < h; m++)
+            {
+                if (frame->getPixel(n, m) == color)
+                {
+                    if (m == 0)
+                    {
+                        empty = false;
+                    }
+                    actualPix++;
+                    break;
+                }
+            }
+            if (empty)
+            {
+                emptyRow.push_back(n);
+            }
+        }
+        //set new falling pixels..
+        int newPix = targetPix - actualPix;
+        for (int i = 0; i < newPix; i++)
+        {
+            //draw new falling pixel
+            int num = rand() % emptyRow.size();
+            //dir==top
+            frame->setPixel(emptyRow[num], 0, color);
+            emptyRow.erase(emptyRow.begin() + num);
         }
     }
 }

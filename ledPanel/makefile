@@ -1,7 +1,7 @@
 CC = g++
 #SOURCES = $(shell find $(SOURCEDIR) -name '*.c')
 #OBJECTS = $(SOURCES:%.c=%.o)
-OBJECTS = main.o Utils.o Server.o ServerDisplayHandler.o Display.o MyException.o spi.o  DisplayModul.o colorManipulation.o Canvas.o Animation.o
+OBJECTS = main.o Utils.o Server.o ServerDisplayHandler.o Display.o MyException.o spi.o  DisplayModul.o Color.o Canvas.o Animation.o
 LIBS = -lpthread -lwiringPi
 CFLAGS = -g3 -Wall -D__GXX_EXPERIMENTAL_CXX0X__=1 -std=c++0x -pedantic
 PROGRAMDIR = led/

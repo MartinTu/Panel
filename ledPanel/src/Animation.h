@@ -29,7 +29,7 @@
 
 #include <string>
 #include "Display.h"
-#include "colorManipulation.h"
+#include "Color.h"
 #include "Utils.h"
 #include "bitmaps.h"
 #include <vector>
@@ -46,7 +46,7 @@ enum animation_t
     aniRotateLine = 0x05,
     aniWaterdrop = 0x06,
     aniFadingPixels = 0x07,
-   // aniDirFallingPixel = 0x08,
+    aniDirFallingPixel = 0x08,
     _aniNUM  //numbers of ani (if enum values are not doubled or spaced)
 };
 
@@ -59,7 +59,8 @@ enum aniParamlen_t
     lenScreenPulse = 0x05,
     lenRotateLine = 0x0b,
     lenWaterdrop = 0x09,
-    lenFadingPixels = 0x07
+    lenFadingPixels = 0x07,
+    lenDirFallingPixel = 0x08
 };
 
 enum mixer_t
@@ -93,15 +94,12 @@ class Animation
         int set(uint8_t ani, string &param, unsigned int paramSize);
         void reset();
         bool nextStep();
-
         void setMixer(uint8_t _mixer);
         mixer_t getMixer();
         Canvas* getCanvas();
-
-        bool isFrameNotSkipped(unsigned int skip);
-
         bool isAnimationRunning();
 
+    private:
         void invader();
         void directionFade();
         void screenFade();
@@ -109,8 +107,10 @@ class Animation
         void rotateLine();
         void waterdrop();
         void fadingPixels();
+        void dirFallingPixel();
 
     protected:
+        bool isFrameNotSkipped(unsigned int skip);
         int width;
         int height;
         unsigned int aniSkipIterator;
@@ -123,7 +123,7 @@ class Animation
          */
         string parameter;
         /* internPar
-         * intern parameters are initialized in set(.), if the animation does not alter
+         * intern parameters are initialized in set(.) and can change during animation
          * stores the intern state of ananimation
          */
         string internPar;
