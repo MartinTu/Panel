@@ -1,5 +1,5 @@
 /*
- * spi.h
+ * Spi.h
  *
  *  Created on: 31.01.2013
  *      Author: martin

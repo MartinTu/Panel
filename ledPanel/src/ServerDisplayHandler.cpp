@@ -21,6 +21,8 @@ ServerDisplayHandler::ServerDisplayHandler()
     cout << "[INFO] Server done" << endl;
     panel = new Display();
     cout << "[INFO] Display done" << endl;
+    painting = new Painting(panel->getWidth(), panel->getHeight());
+    cout << "[INFO] Painting done" << endl;
     animation = new Animation(panel->getWidth(), panel->getHeight());
     cout << "[INFO] Animation done" << endl;
 
@@ -37,9 +39,37 @@ ServerDisplayHandler::ServerDisplayHandler()
 
 ServerDisplayHandler::~ServerDisplayHandler()
 {
-    delete server;
-    delete panel;
-    delete animation;
+    if (server)
+    {
+        delete server;
+    } else
+    {
+        cout << "ServerDisplayHandler.cpp: server didnt exist" << endl;
+    }
+
+    if (panel)
+    {
+        delete panel;
+    } else
+    {
+        cout << "ServerDisplayHandler.cpp: panel didnt exist" << endl;
+    }
+
+    if (painting)
+    {
+        delete painting;
+    } else
+    {
+        cout << "ServerDisplayHandler.cpp: painting didnt exist" << endl;
+    }
+
+    if (animation)
+    {
+        delete animation;
+    } else
+    {
+        cout << "ServerDisplayHandler.cpp: animation didnt exist" << endl;
+    }
 }
 
 void ServerDisplayHandler::run()
@@ -203,8 +233,7 @@ string ServerDisplayHandler::executeTPM2Command(string &command, uint8_t packetN
         paramSize = dataSize - 4;
         string cmdParam(command.substr(TPM2_NET_SP_CMD_DATA_P + 1, command.length() - 2));
         return executeTpm2SpecialCmd(cmdCtl, cmdSpType, cmdSpSubType, cmdParam, paramSize);
-    }
-    else
+    } else
     {
         string cmdParam(command.substr(TPM2_NET_CMD_DATA_P, command.length() - 1));
         paramSize = dataSize - 2;
@@ -249,127 +278,6 @@ string ServerDisplayHandler::executeTPM2NetProtocol(string &command)
     return "";
 }
 
-void ServerDisplayHandler::drawColor(unsigned int paramLen, string &param)
-{
-    cout << "Color";
-    cout << ": param(0x";
-    for (unsigned int i = 0; i < param.length(); i++)
-    {
-        cout << hex << setw(3) << (int) param[i];
-    }
-    cout << ")" << endl;
-
-    if (paramLen == 3)
-    {
-        color_t color{(uint8_t) param[0],(uint8_t) param[1], (uint8_t) param[2]};
-        panel->getCanvas()->setColor(color);
-        panel->draw();
-    }
-    else
-    {
-        cerr << "paramLen out of bounds(3) " << paramLen << endl;
-    }
-}
-
-void ServerDisplayHandler::setPixel(unsigned int paramLen, string &param)
-{
-    cout << "Pixel";
-    cout << ": param(0x";
-    for (unsigned int i = 0; i < param.length(); i++)
-    {
-        cout << hex << setw(3) << (int) param[i];
-    }
-    cout << ")" << endl;
-
-    if (paramLen == 5)
-    {
-        color_t color{(uint8_t) param[2],(uint8_t) param[3], (uint8_t) param[4]};
-        panel->getCanvas()->setPixel(param[0], param[1], color);
-        panel->draw();
-    }
-    else
-    {
-        cerr << "paramLen out of bounds(5) " << paramLen << endl;
-    }
-}
-
-void ServerDisplayHandler::drawLine(unsigned int paramLen, string& param)
-{
-    cout << "Line";
-    cout << ": param(0x";
-    for (unsigned int i = 0; i < param.length(); i++)
-    {
-        cout << hex << setw(3) << (int) (param[i]);
-    }
-    cout << ")" << endl;
-    if (paramLen == 7)
-    {
-        color_t color{(uint8_t) param[4],(uint8_t) param[5], (uint8_t) param[6]};
-        //FIXME line width
-        panel->getCanvas()->drawLine(param[0], param[1], param[2], param[3], color, 1);
-        panel->draw();
-    }
-    else
-    {
-        cerr << "paramLen out of bounds(7) " << paramLen << endl;
-    }
-}
-
-void ServerDisplayHandler::drawCircle(unsigned int paramLen, string& param)
-{
-    cout << "Circle";
-    cout << ": param(0x";
-    for (unsigned int i = 0; i < param.length(); i++)
-    {
-        cout << hex << setw(3) << (int) (param[i]);
-    }
-    cout << ")" << endl;
-    if (paramLen == 6)
-    {
-        color_t color{(uint8_t) param[3],(uint8_t) param[4], (uint8_t) param[5]};
-        //FIXME circle width
-        panel->getCanvas()->drawCircle(param[0], param[1], param[2], color, 1);
-        panel->draw();
-    }
-    else
-    {
-        cerr << "paramLen out of bounds(6) " << paramLen << endl;
-    }
-}
-
-void ServerDisplayHandler::draw(uint8_t subCmd, unsigned int paramLen, string &param)
-{
-    //FIXME muss besser geloest werden
-    animation->reset();
-
-    switch (subCmd)
-    {
-    case SPCMD__COLOR:
-        drawColor(paramLen, param);
-        break;
-
-    case SPCMD__SET_PIXEL:
-        setPixel(paramLen, param);
-        break;
-
-    case SPCMD__DRAW_LINE:
-        drawLine(paramLen, param);
-        break;
-
-    case SPCMD__DRAW_RECT:
-        cerr << "SPCMD__DRAW_RECT not supported" << endl;
-        break;
-
-    case SPCMD__DRAW_CIRC:
-        drawCircle(paramLen, param);
-        break;
-
-    default:
-        cerr << "SpSubCommand 0x" << hex << subCmd << "not supported" << endl;
-        break;
-    }
-}
-
 void ServerDisplayHandler::systemAdministration(uint8_t cmd, unsigned int paramLen, string &param)
 {
     cout << " system administration" << endl;
@@ -390,8 +298,7 @@ void ServerDisplayHandler::systemAdministration(uint8_t cmd, unsigned int paramL
         default:
             cerr << "SysCommand 0x" << hex << cmd << "unknown" << endl;
         }
-    }
-    else
+    } else
     {
         cerr << "paramLen out of bounds(4) " << paramLen << endl;
     }
@@ -406,7 +313,11 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
     switch (cmd)
     {
     case SPCMD_DRAW:
-        draw(subCmd, paramLen, param);
+        //FIXME: better solution... use mixer
+        animation->reset();
+        painting->set(subCmd, param, paramLen);
+        panel->getCanvas()->drawFrame(painting->getCanvas()->getPicture());
+        panel->draw();
         break;
 
     case SPCMD_ANI_SET:

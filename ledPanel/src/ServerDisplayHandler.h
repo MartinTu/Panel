@@ -8,18 +8,6 @@
 #ifndef SERVERDISPLAYHANDLER_H_
 #define SERVERDISPLAYHANDLER_H_
 
-#define SPCMD_DRAW 			0x01
-#define SPCMD__COLOR   		0x01
-#define SPCMD__SET_PIXEL	0x02
-#define SPCMD__DRAW_LINE	0x03
-#define SPCMD__DRAW_RECT	0x04
-#define SPCMD__DRAW_CIRC	0x05
-
-#define SPCMD_ANI_SET		0x03
-//      SPCMD__ANI_SET_ANIMATION
-#define SPCMD_ANI_MIXER		0x04
-#define SPCMD_ANI_DELAY		0x05
-#define SPCMD_SYSTEM_ADMIN  0xFE
 
 #include <sstream>
 #include <string>
@@ -29,6 +17,7 @@
 #include "Utils.h"
 #include "tpm2.h"
 #include "Animation.h"
+#include "Painting.h"
 
 using namespace std;
 
@@ -54,15 +43,14 @@ class ServerDisplayHandler
         string executeTPM2Data(string &command, uint8_t packetNum, unsigned int dataSize);
         string executeTPM2Command(string &command, uint8_t packetNum, uint8_t dataSize);
 
-        void draw(uint8_t subCmd, unsigned int paramLen, string &param);
         void systemAdministration(uint8_t cmd, unsigned int paramLen, string &param);
 
-        void drawColor(unsigned int paramLen, string& param);
-        void setPixel(unsigned int paramLen, string& param);
-        void drawLine(unsigned int paramLen, string& param);
-        void drawCircle(unsigned int paramLen, string& param);
 
+//different layers
         Animation* animation;
+        Painting* painting;
+        //Painting* externalStream;
+
         Server* server;
         Display* panel;
 

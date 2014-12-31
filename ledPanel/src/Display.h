@@ -18,7 +18,7 @@
 #include <iomanip>
 
 #include "Utils.h"
-#include "spi.h"
+#include "Spi.h"
 #include "DisplayModul.h"
 #include "BlockingQueue.h"
 #include "Color.h"

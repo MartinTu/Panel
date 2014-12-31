@@ -23,6 +23,19 @@
 
 using namespace std;
 
+
+enum direction_t
+{
+    dirLeft = 0x00,
+    dirLeftBot = 0x01,
+    dirBottom = 0x02,
+    dirRightBot = 0x03,
+    dirRight = 0x04,
+    dirRightTop = 0x05,
+    dirTop = 0x06,
+    dirLeftTop = 0x07
+};
+
 class Utils
 {
     public:

@@ -1,9 +1,10 @@
 CC = g++
 #SOURCES = $(shell find $(SOURCEDIR) -name '*.c')
 #OBJECTS = $(SOURCES:%.c=%.o)
-OBJECTS = main.o Utils.o Server.o ServerDisplayHandler.o Display.o MyException.o spi.o  DisplayModul.o Color.o Canvas.o Animation.o
+OBJECTS = main.o Animation.o Canvas.o Color.o Display.o DisplayModul.o Layer.o MyException.o Painting.o Server.o ServerDisplayHandler.o Spi.o Utils.o
 LIBS = -lpthread -lwiringPi
 CFLAGS = -g3 -Wall -D__GXX_EXPERIMENTAL_CXX0X__=1 -std=c++0x -pedantic
+CFLAGSDBG = -g3 -Wall -D__GXX_EXPERIMENTAL_CXX0X__=1 -std=c++0x -pedantic -g
 PROGRAMDIR = led/
 BINDIR = /usr/bin/$(PROGRAMDIR)
 
@@ -20,7 +21,7 @@ all: $(TESTOBJECTS)
 
 obj/%.o: src/%.cpp
 	@echo -n "[ ][Compile] $<"
-	@$(CC) -c $(CFLAGS) $< -o $@
+	@$(CC) -c $(CFLAGSDBG) $< -o $@
 	@echo -n "\r[x][Compile] $<\n"
 
 clean:
@@ -55,5 +56,3 @@ uninstall:
 	@echo -n "[ ][Uninst ] $(INSTALL) from $(BINDIR)"
 	@rm $(BINDIR)$(NAME)
 	@echo -n "\r[x][Uninst ] $(INSTALL) from $(BINDIR)\n"
-
-

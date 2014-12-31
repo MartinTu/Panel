@@ -1,12 +1,12 @@
 /*
- * colorManipulation.h
+ * Color.h
  *
  *  Created on: 31.08.2014
  *      Author: keKs
  */
 
-#ifndef COLORMANIPULATION_H_
-#define COLORMANIPULATION_H_
+#ifndef COLOR_H_
+#define COLOR_H_
 
 #include <stdint.h>
 #include <iostream>

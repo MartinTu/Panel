@@ -1,5 +1,5 @@
 /*
- * bitmaps.h
+ * Bitmaps.h
  *
  *  Created on: 20.01.2014
  *      Author: martin

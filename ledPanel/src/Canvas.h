@@ -42,6 +42,7 @@ class Canvas
     protected:
         int width;
         int height;
+        int aaf; //antialiasingfactor
         vector<vector<color_t> > pixel;  //x/y
 };
 

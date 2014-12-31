@@ -28,11 +28,12 @@
 //	animation_delay = 2;
 
 #include <string>
+#include <vector>
 #include "Display.h"
 #include "Color.h"
 #include "Utils.h"
-#include "bitmaps.h"
-#include <vector>
+#include "Bitmaps.h"
+#include "Layer.h"
 
 using namespace std;
 
@@ -63,40 +64,18 @@ enum aniParamlen_t
     lenDirFallingPixel = 0x08
 };
 
-enum mixer_t
-{
-    mixOff = 0x0,	//animation wont update
-    mixMaybe = 0x1,  //another canvas may supress the animation from updating, animation is still continuing
-    mixAdd = 0x2,	//canvas is drawn with add
-    mixMult = 0x3,	//canvas is drawn with mult
-    mixOnly = 0x4,	//only this canvas is drawn
-    _mixNUM
-};
 
-enum direction_t
-{
-    dirLeft = 0x00,
-    dirLeftBot = 0x01,
-    dirBottom = 0x02,
-    dirRightBot = 0x03,
-    dirRight = 0x04,
-    dirRightTop = 0x05,
-    dirTop = 0x06,
-    dirLeftTop = 0x07
-};
 
-class Animation
+class Animation : public Layer
 {
     public:
         Animation(int _width, int _height);
         virtual ~Animation();
 
-        int set(uint8_t ani, string &param, unsigned int paramSize);
+        int set(uint8_t id, string &param, unsigned int paramSize);
         void reset();
+
         bool nextStep();
-        void setMixer(uint8_t _mixer);
-        mixer_t getMixer();
-        Canvas* getCanvas();
         bool isAnimationRunning();
 
     private:
@@ -111,11 +90,9 @@ class Animation
 
     protected:
         bool isFrameNotSkipped(unsigned int skip);
-        int width;
-        int height;
+
         unsigned int aniSkipIterator;
         animation_t runningAni;
-        mixer_t mixer;
 
         /* parameter
          * parameters are set from client
@@ -127,8 +104,6 @@ class Animation
          * stores the intern state of ananimation
          */
         string internPar;
-
-        Canvas* frame;	//x/y Animation screen
 };
 
 #endif /* ANIMATION_H_ */

@@ -1,11 +1,11 @@
 /*
- * spi.cpp
+ * Spi.cpp
  *
  *  Created on: 31.01.2013
  *      Author: martin
  */
 
-#include "spi.h"
+#include "Spi.h"
 
 using namespace std;
 

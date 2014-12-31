@@ -8,10 +8,9 @@
 #include "Animation.h"
 
 Animation::Animation(int _width, int _height) :
-        width(_width), height(_height), aniSkipIterator(0), runningAni(aniNone), mixer(mixMaybe)
+        Layer(_width, _height), aniSkipIterator(0), runningAni(aniNone)
 {
-    animation_t startingAni = aniDirFallingPixel;
-    parameter.clear();
+
     /* [0]: frameSkip
      * [1]: targetPix
      * [2]: length
@@ -21,22 +20,45 @@ Animation::Animation(int _width, int _height) :
      * [6]: pixGreen
      * [7]: pixBlue
      */
-    parameter.push_back(0x04);  //frameSkip
-    parameter.push_back(0x14);
-    parameter.push_back(0x06);
-    parameter.push_back(0x01);
-    parameter.push_back(0xf);//random
-    parameter.push_back(0x00);  //red
-    parameter.push_back(0x60);
-    parameter.push_back(0x00);
+
+    /*
+
+     animation_t startingAni = aniDirFallingPixel;
+     parameter.clear();
+     parameter.push_back(0x04);  //frameSkip
+     parameter.push_back(0x14);
+     parameter.push_back(0x06);
+     parameter.push_back(0x01);
+     parameter.push_back(0xf);//random
+     parameter.push_back(0x00);  //red
+     parameter.push_back(0x60);
+     parameter.push_back(0x00);
+     */
+    /*
+
+     * [0]: frameSkip
+     * [1]: targetPixHigh
+     * [2]: targetPixLow
+     * [3]: fadeSpeed
+     * [4]: pixRed
+     * [5]: pixGreen
+     * [6]: pixBlue
+     */
+    animation_t startingAni = aniFadingPixels;
+    parameter.clear();
+    parameter.push_back(0);
+    parameter.push_back(0x0);
+    parameter.push_back(0x64);
+    parameter.push_back(0x02);
+    parameter.push_back(0xff);
+    parameter.push_back(0x46);
+    parameter.push_back(0);
     //set starting ani
     this->set(startingAni, parameter, parameter.length());
-
-    this->frame = new Canvas(width, height);
 }
+
 Animation::~Animation()
 {
-    delete frame;
 }
 
 bool Animation::isFrameNotSkipped(unsigned int skip)
@@ -51,20 +73,24 @@ bool Animation::isFrameNotSkipped(unsigned int skip)
     return false;
 }
 
-int Animation::set(uint8_t ani, string &param, unsigned int paramSize)
+int Animation::set(uint8_t id, string &param, unsigned int paramSize)
 {
     int ret = -1;
-    //dont skip next frame
-    aniSkipIterator = 0;
     //backup last animationID
     animation_t lastAni = runningAni;
-    if (ani < _aniNUM)
+    if (id < _aniNUM)
     {
-        runningAni = static_cast<animation_t>(ani);
+        runningAni = static_cast<animation_t>(id);
     } else
     {
-        cerr << ani << " is no animation_t" << endl;
+        cerr << id << " is no animation_t" << endl;
         runningAni = aniNone;
+    }
+
+    if (runningAni != lastAni)
+    {
+        //dont skip next frame
+        aniSkipIterator = 0;
     }
 
     switch (runningAni)
@@ -313,27 +339,6 @@ bool Animation::nextStep()
     {
         return 0;
     }
-}
-
-void Animation::setMixer(uint8_t _mixer)
-{
-    if (_mixer < _mixNUM)
-    {
-        this->mixer = static_cast<mixer_t>(_mixer);
-    } else
-    {
-        cerr << _mixer << " is no mixer_t" << endl;
-    }
-}
-
-mixer_t Animation::getMixer()
-{
-    return mixer;
-}
-
-Canvas * Animation::getCanvas()
-{
-    return frame;
 }
 
 bool Animation::isAnimationRunning()
@@ -786,13 +791,8 @@ void Animation::fadingPixels()
             frame->setColor(color_black);
             for (int i = 0; i < targetPix; i++)
             {
-                color_t newPixelColor(color);
-                if (color.red)
-                    newPixelColor.red = (uint8_t) (rand() % color.red);
-                if (color.green)
-                    newPixelColor.green = (uint8_t) (rand() % color.green);
-                if (color.blue)
-                    newPixelColor.blue = (uint8_t) (rand() % color.blue);
+                float v = (float) ((rand() & color.max()) / 255.0);
+                color_t newPixelColor(color * v);
                 int num = rand() % emptyPix.size();
                 frame->setPixel(emptyPix[num], newPixelColor);
                 emptyPix.erase(emptyPix.begin() + num);
@@ -843,7 +843,7 @@ void Animation::dirFallingPixel()
      * [0]: frameSkip
      * [1]: targetPix
      * [2]: length
-     * [3]: direction
+     * [3]: direction//todo: implement
      * [4]: dropDiff
      * [5]: pixRed
      * [6]: pixGreen

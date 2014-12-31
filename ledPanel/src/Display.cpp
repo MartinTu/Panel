@@ -61,11 +61,31 @@ Display::~Display()
     //is this the correct deletion?
     for (unsigned int i = numModules; i > numModules; i--)
     {
-        delete modul[i];
+        if (modul[i])
+        {
+            delete modul[i];
+        } else
+        {
+            cout << "Display.cpp: modul[" << i << "] didnt exist" << endl;
+        }
     }
-    delete master;
+    if (master)
+    {
+        delete master;
+    } else
+    {
+        cout << "Display.cpp: master didnt exist" << endl;
+    }
     this->spiThreadIsRunning = false;
     pthread_cancel(spiThread);
+    if (spi)
+    {
+        delete spi;
+    } else
+    {
+        cout << "Display.cpp: spi didnt exist" << endl;
+    }
+
 }
 
 int Display::getWidth()
@@ -724,7 +744,13 @@ int Display::initModulesWithConfigFile()
     //--fileParsing
     for (unsigned int i = numModules; i > numModules; i--)
     {
-        delete modul[i];
+        if (modul[i])
+        {
+            delete modul[i];
+        }
+        else{
+            cout << "Display.cpp: modul[" << i << "] didnt exist" << endl;
+        }
     }
     numModules = 1;
     this->modul.resize(numModules);
