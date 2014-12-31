@@ -281,17 +281,16 @@ string ServerDisplayHandler::executeTPM2NetProtocol(string &command)
 void ServerDisplayHandler::systemAdministration(uint8_t cmd, unsigned int paramLen, string &param)
 {
     cout << " system administration" << endl;
-    if (paramLen == 4)
+    if (paramLen == 0)
     {
         // some redundancy since its just UDP
-        unsigned int syscmd = (param[0] << 24) | (param[1] << 16) | (param[2] << 8) | param[3];
-        switch (syscmd)
+        switch (cmd)
         {
-        case 0x012EB007:  // 0xreboot
+        case 0x02:  // 0xreboot
             system("sudo reboot");
             break;
 
-        case 0x4A17:    // 0xhalt
+        case 0x01:    // 0xhalt
             system("sudo halt");
             break;
 
@@ -300,7 +299,7 @@ void ServerDisplayHandler::systemAdministration(uint8_t cmd, unsigned int paramL
         }
     } else
     {
-        cerr << "paramLen out of bounds(4) " << paramLen << endl;
+        cerr << "systemAdministration paramLen out of bounds(0) " << paramLen << endl;
     }
 }
 
@@ -331,7 +330,7 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
         break;
 
     case SPCMD_SYSTEM_ADMIN:
-        systemAdministration(cmd, paramLen, param);
+        systemAdministration(subCmd, paramLen, param);
         break;
 
         /*
