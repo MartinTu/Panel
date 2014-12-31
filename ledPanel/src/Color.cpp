@@ -53,7 +53,7 @@ color_t color_t::operator-(const color_t& a)
 {
     color_t c(Utils::addInBounds((uint8_t) red, -((int) a.red), 0, 255),
             Utils::addInBounds((uint8_t) green, -((int) a.green), 0, 255),
-            Utils::addInBounds((uint8_t) blue, -((int) a.green), 0, 255));
+            Utils::addInBounds((uint8_t) blue, -((int) a.blue), 0, 255));
     //return copy
     return c;
 }
@@ -61,7 +61,7 @@ color_t color_t::operator+(const color_t& a)
 {
     color_t c(Utils::addInBounds((uint8_t) red, a.red, 0, 255),
             Utils::addInBounds((uint8_t) green, a.green, 0, 255),
-            Utils::addInBounds((uint8_t) blue, a.green, 0, 255));
+            Utils::addInBounds((uint8_t) blue, a.blue, 0, 255));
     //return copy
     return c;
 }
@@ -164,6 +164,8 @@ uint8_t color_t::min()
     return i;
 }
 
+
+//todo saturation muss multiplikativ berechnet werden, nicht absoult
 void color_t::setSaturation(const uint8_t saturation)
 {
     red = Utils::max(saturation, red);

@@ -844,7 +844,7 @@ void Animation::dirFallingPixel()
      * [1]: targetPix
      * [2]: length
      * [3]: direction//todo: implement
-     * [4]: dropDiff
+     * [4]: dropDiff//random parameter in falling
      * [5]: pixRed
      * [6]: pixGreen
      * [7]: pixBlue
