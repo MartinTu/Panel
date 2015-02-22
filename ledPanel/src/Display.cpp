@@ -28,7 +28,7 @@ void *Display::spiThreadTask()
 }
 
 Display::Display() :
-        width(1), height(1), orientation(rotateNo), numModules(1), buffersize(0), buffoffset(0), actModul(0), gamma(
+        width(1), height(1), orientation(rotateNo), numModules(1), buffersize(0), buffoffset(0), actModul(0), startingModul(0), nextModul(0), gamma(
                 2.2), spiThreadIsRunning(true)
 {
     this->spi = new SPI();
@@ -40,9 +40,7 @@ Display::Display() :
     buffer.resize(buffersize);
     //cout << "pixel: " << width * height << endl;
     this->master = new Canvas(width, height);
-
-    modulDrawn.resize(numModules);
-    resetModulDrawn();
+    resetNextModul();
 
     int rt = pthread_create(&spiThread, NULL, &spiThreadTaskStatic, this);
     if (rt != 0)
@@ -123,29 +121,24 @@ int Display::getNumModules()
     return this->numModules;
 }
 
-bool Display::getModulDrawn()
+int Display::getNextModul()
 {
-    for (unsigned int i = 0; i < numModules; i++)
-    {
-        if (false == modulDrawn[i])
-        {
-            return false;
-        }
-    }
-    return true;
+	return this->nextModul;
 }
 
-void Display::resetModulDrawn()
+int Display::getStartingModul()
 {
-    for (unsigned int i = 0; i < numModules; i++)
-    {
-        modulDrawn[i] = false;
-    }
+	return this->startingModul;
+}
+
+void Display::resetNextModul()
+{
+    nextModul = startingModul;
 }
 
 void Display::drawFrameModule(unsigned int moduleNum, unsigned int dataLength, uint8_t* data)
 {
-    if ((moduleNum >= 0) && (moduleNum < numModules))
+    if (moduleNum == nextModul)
     {
         if (dataLength == modul[moduleNum]->getNumPix() * 3)
         {
@@ -153,26 +146,28 @@ void Display::drawFrameModule(unsigned int moduleNum, unsigned int dataLength, u
             int i = 0;
             color_t color;
             //0-0 = topleft
-            int x0 = modul[moduleNum]->getXOffset();
-            int y0 = modul[moduleNum]->getYOffset();
-            for (unsigned int y = 0; y < modul[moduleNum]->getWidth(); y++)
+            unsigned int x0 = modul[moduleNum]->getXOffset();
+            unsigned int y0 = modul[moduleNum]->getYOffset();
+            unsigned int x1 = x0 + modul[moduleNum]->getWidth();
+            unsigned int y1 = y0 + modul[moduleNum]->getHeight();
+            for (unsigned int y = y0; y < y1; y++)
             {
-                for (unsigned int x = 0; x < modul[moduleNum]->getWidth(); x++)
+                for (unsigned int x = x0; x < x1; x++)
                 {
                     color.red = data[i++];
                     color.green = data[i++];
                     color.blue = data[i++];
-                    master->setPixel(x + x0, y + y0, color);
+                    master->setPixel(x, y, color,1);
                 }
             }
-            setModulDrawn(moduleNum);
+            incNextModul();
         } else
         {
             cerr << "drawModuleFrame() does not got correct data length" << endl;
         }
     } else
     {
-        cerr << "drawModuleFrame() moduleNum does not exist" << endl;
+        cerr << "drawModuleFrame() moduleNum " << moduleNum << "is not actual Modul" << endl;
     }
 }
 
@@ -199,12 +194,14 @@ void Display::draw()
     q.put(buffer);
 }
 
-void Display::setModulDrawn(unsigned int modulNum)
+void Display::incNextModul()
 {
-    if ((modulNum >= 0) && (modulNum < numModules))
+    if (nextModul < numModules)
     {
-        modulDrawn[modulNum] = true;
+    	nextModul = 0;
+    	return;
     }
+    nextModul++;
 }
 
 /**

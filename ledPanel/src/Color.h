@@ -27,7 +27,7 @@ class color_t
         color_t(const color_t& c);
 
         color_t& operator=(const color_t& a);
-        color_t& operator*=(const float& a);
+        //color_t& operator*=(const float& a);
         color_t operator*(const float& a);
         color_t operator/(const float& a);
         color_t operator-(const color_t& a);

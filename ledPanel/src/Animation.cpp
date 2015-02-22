@@ -413,7 +413,7 @@ void Animation::invader()
                 color.wheel(pictureWheel);
                 color.setDimmer(colorDimmer);
                 color.setSaturation(saturation);
-                frame->setPixel(x, y, color * (float) (parameter[1] / 255.0));
+                frame->setPixel(x, y, color * (float) (parameter[1] / 255.0),1);
             }
         }
         internPar[0]++;
@@ -490,50 +490,50 @@ void Animation::directionFade()
                 {
                 case dirTop:
                 {
-                    frame->setPixel(y, x, calcColor);
+                    frame->setPixel(y, x, calcColor,1);
                     break;
                 }
                 case dirLeft:
                 {
-                    frame->setPixel(x, y, calcColor);
+                    frame->setPixel(x, y, calcColor,1);
                     break;
                 }
                 case dirRightBot:
                 {
                     int xi = x - y;
                     if (Utils::isInRange(xi, 0, h))
-                        frame->setPixel(w - y, h - xi, calcColor);
+                        frame->setPixel(w - y, h - xi, calcColor,1);
                     break;
                 }
                 case dirLeftTop:
                 {
                     int xi = x - y;
                     if (Utils::isInRange(xi, 0, w))
-                        frame->setPixel(xi, y, calcColor);
+                        frame->setPixel(xi, y, calcColor,1);
                     break;
                 }
                 case dirBottom:
                 {
-                    frame->setPixel(y, h - x, calcColor);
+                    frame->setPixel(y, h - x, calcColor,1);
                     break;
                 }
                 case dirRight:
                 {
-                    frame->setPixel(w - x, y, calcColor);
+                    frame->setPixel(w - x, y, calcColor,1);
                     break;
                 }
                 case dirLeftBot:
                 {
                     int xi = x - y;
                     if (Utils::isInRange(xi, 0, h))
-                        frame->setPixel(y, xi, calcColor);
+                        frame->setPixel(y, xi, calcColor,1);
                     break;
                 }
                 case dirRightTop:
                 {
                     int xi = x - y;
                     if (Utils::isInRange(xi, 0, w))
-                        frame->setPixel(w - xi, y, calcColor);
+                        frame->setPixel(w - xi, y, calcColor,1);
                     break;
                 }
                 default:
@@ -631,7 +631,7 @@ void Animation::screenPulse()
         {
             delta = 1;
         }
-        color *= val;
+        color.setDimmer(val);
 
         if (internPar[1])
         {
@@ -725,7 +725,7 @@ void Animation::waterdrop()
         uint8_t y = internPar[1];
         uint8_t radius = internPar[2];
 
-        color *= ((width - ((radius == 0) ? 1 : radius)) / (float) (width + 1));
+        color.setDimmer((width - ((radius == 0) ? 1 : radius)) / (float) (width + 1));
 
         frame->setColor(background);
         frame->drawCircle(x, y, radius, color, lineWidth);
@@ -794,7 +794,7 @@ void Animation::fadingPixels()
                 float v = (float) ((rand() & color.max()) / 255.0);
                 color_t newPixelColor(color * v);
                 int num = rand() % emptyPix.size();
-                frame->setPixel(emptyPix[num], newPixelColor);
+                frame->setPixel(emptyPix[num], newPixelColor,1);
                 emptyPix.erase(emptyPix.begin() + num);
             }
             internPar[0] = (targetPix >> 8) & 0xff;
@@ -807,7 +807,7 @@ void Animation::fadingPixels()
             {
                 color_t tmp(frame->getPixel(x, y));
                 if (tmp != color_black)
-                    frame->setPixel(x, y, tmp * fadeFactor);
+                    frame->setPixel(x, y, tmp * fadeFactor,1);
             }
         }
         //get actual amount of pixels
@@ -829,7 +829,7 @@ void Animation::fadingPixels()
         for (int i = 0; i < pix; i++)
         {
             int n = rand() % emptyPix.size();
-            frame->setPixel(emptyPix[n], color);
+            frame->setPixel(emptyPix[n], color,1);
             //cout << i << " num: " << n << " value: " << emptyPix[n] << " size: " << emptyPix.size() << endl;
             emptyPix.erase(emptyPix.begin() + n);
         }
@@ -898,7 +898,7 @@ void Animation::dirFallingPixel()
                 {
                     //dir==top
                     if (Utils::isInRange(s - l, 0, h))
-                        frame->setPixel(emptyRow[num], s - l, color - (dimColor * l));
+                        frame->setPixel(emptyRow[num], s - l, color - (dimColor * l),1);
                 }
                 emptyRow.erase(emptyRow.begin() + num);
             }
@@ -915,13 +915,13 @@ void Animation::dirFallingPixel()
                 //copy pixels from higher lanes
                 for (int s = h - 1; s > 0; s--)
                 {
-                    frame->setPixel(n, s, frame->getPixel(n, s - 1));
+                    frame->setPixel(n, s, frame->getPixel(n, s - 1),1);
                 }
                 //add last line
                 color_t lineColor = frame->getPixel(n, 0);
                 if (lineColor != color_black)
                 {
-                    frame->setPixel(n, 0, lineColor - dimColor);
+                    frame->setPixel(n, 0, lineColor - dimColor,1);
                 }
             }
         }
@@ -955,7 +955,7 @@ void Animation::dirFallingPixel()
             //draw new falling pixel
             int num = rand() % emptyRow.size();
             //dir==top
-            frame->setPixel(emptyRow[num], 0, color);
+            frame->setPixel(emptyRow[num], 0, color,1);
             emptyRow.erase(emptyRow.begin() + num);
         }
     }

@@ -21,8 +21,8 @@ class Canvas
         Canvas(int _width, int _height);
         virtual ~Canvas();
 
-        void setPixel(int x, int y, color_t color);
-        void setPixel(int num, color_t color);
+        void setPixel(int x, int y, color_t color, bool errorMsg);
+        void setPixel(int num, color_t color, bool errorMsg);
         void setColor(color_t color);
         void drawFrame(const vector<vector<color_t> >& vec);
         void drawFrame(int dataLength, const uint8_t * data);
@@ -30,8 +30,12 @@ class Canvas
         void drawRandomPixel(int x, int y);
         void drawRandomPicture();
 
-        void drawLine(int x_start, int y_start, int x_end, int y_end, color_t color, int width);
+        void drawLine(int x0, int y0, int x1, int y1, color_t color, int width);
+        void drawRect(int x0, int y0, int x1, int y1, color_t color);
         void drawCircle(int x0, int y0, int radius, color_t color, uint8_t width);
+
+        void dimPixel(int x, int y, float dimm, bool errorMsg);
+        void dimFrame(float dimm);
 
         color_t getPixel(int x, int y);
         color_t getPixel(int num);

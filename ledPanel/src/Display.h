@@ -42,8 +42,9 @@ class Display
         int getNumModules();
 
         void drawFrameModule(unsigned int moduleNum, unsigned int dataLength, uint8_t* data);
-        bool getModulDrawn();
-        void resetModulDrawn();
+        int getNextModul();
+        int getStartingModul();
+        void resetNextModul();
 
         void draw();
 
@@ -51,7 +52,7 @@ class Display
 
     protected:
 
-        void setModulDrawn(unsigned int modulNum);
+        void incNextModul();
         void drawLDP6803();
         void drawWS2801();
         int initModulesWithConfigFile();
@@ -65,13 +66,15 @@ class Display
         unsigned int buffersize;
         unsigned int buffoffset;
         unsigned int actModul;
+        unsigned int startingModul;
+        unsigned int nextModul;
+
         double gamma;
 
         bool spiThreadIsRunning;
         pthread_t spiThread;
         SPI* spi;
         Canvas* master;
-        std::vector<bool> modulDrawn;
         std::vector<DisplayModul *> modul;
         BlockingQueue<std::vector<uint8_t> > q;
         std::vector<uint8_t> buffer;  //hardware Display picture

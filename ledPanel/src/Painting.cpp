@@ -34,7 +34,7 @@ int Painting::set(uint8_t id, string &param, unsigned int paramSize)
         break;
 
     case SPCMD__DRAW_RECT:
-        cerr << "SPCMD__DRAW_RECT not supported" << endl;
+    	drawRect(paramSize, param);
         break;
 
     case SPCMD__DRAW_CIRC:
@@ -86,7 +86,7 @@ void Painting::setPixel(unsigned int paramLen, string &param)
     if (paramLen == 5)
     {
         color_t color {(uint8_t) param[2], (uint8_t) param[3], (uint8_t) param[4]};
-        frame->setPixel(param[0], param[1], color);
+        frame->setPixel(param[0], param[1], color, 1);
     } else
     {
         cerr << "paramLen out of bounds(5) " << paramLen << endl;
@@ -130,5 +130,25 @@ void Painting::drawCircle(unsigned int paramLen, string& param)
     } else
     {
         cerr << "paramLen out of bounds(6) " << paramLen << endl;
+    }
+}
+
+void Painting::drawRect(unsigned int paramLen, string& param)
+{
+    cout << "Rect";
+    cout << ": param(0x";
+    for (unsigned int i = 0; i < param.length(); i++)
+    {
+        cout << hex << setw(3) << (int) (param[i]);
+    }
+    cout << ")" << endl;
+    if (paramLen == 7)
+    {
+    	color_t color {(uint8_t) param[4], (uint8_t) param[5], (uint8_t) param[6]};
+    	//FIXME line width
+    	frame->drawRect(param[0], param[1], param[2], param[3], color);
+    } else
+    {
+        cerr << "paramLen out of bounds(7) " << paramLen << endl;
     }
 }

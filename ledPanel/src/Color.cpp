@@ -27,6 +27,7 @@ color_t& color_t::operator=(const color_t& a)
     return *this;
 }
 
+/*
 color_t& color_t::operator*=(const float& a)
 {
     red = a * red;
@@ -35,6 +36,7 @@ color_t& color_t::operator*=(const float& a)
     //return reference
     return *this;
 }
+*/
 
 color_t color_t::operator*(const float& a)
 {

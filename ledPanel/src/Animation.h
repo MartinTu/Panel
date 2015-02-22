@@ -64,8 +64,6 @@ enum aniParamlen_t
     lenDirFallingPixel = 0x08
 };
 
-
-
 class Animation : public Layer
 {
     public:

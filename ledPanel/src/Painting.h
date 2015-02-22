@@ -31,6 +31,7 @@ class Painting : public Layer
         void setPixel(unsigned int paramLen, string& param);
         void drawLine(unsigned int paramLen, string& param);
         void drawCircle(unsigned int paramLen, string& param);
+        void drawRect(unsigned int paramLen, string& param);
 };
 
 #endif /* PAINTING_H_ */

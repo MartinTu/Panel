@@ -210,9 +210,8 @@ string ServerDisplayHandler::executeTPM2Data(string &command, uint8_t packetNum,
     animation->reset();
     uint8_t* data = (uint8_t*) (command.c_str() + TPM2_NET_DATA_P);
     panel->drawFrameModule(packetNum, dataSize, data);
-    if (panel->getModulDrawn())
+    if (panel->getNextModul() == panel->getStartingModul())
     {
-        panel->resetModulDrawn();
         panel->draw();
     }
     return "";  //no tpm2 ack
