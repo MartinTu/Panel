@@ -263,6 +263,7 @@ int SPI::spi_transfer(int fd, const uint8_t* tx, uint32_t dataLength)
     uint8_t* rx = new uint8_t[dataLength];
 
     struct spi_ioc_transfer tr;
+    memset(&tr,0,sizeof(tr));
     tr.tx_buf = (unsigned long) tx;
     tr.rx_buf = (unsigned long) rx;
     tr.len = dataLength;
