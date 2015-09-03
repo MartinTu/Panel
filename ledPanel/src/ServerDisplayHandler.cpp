@@ -161,7 +161,7 @@ string ServerDisplayHandler::executeCommand(string &command)
 /**
  * checks wether the tpm2 frame is valid and returns the block type and the data size
  */
-uint8_t ServerDisplayHandler::checkTPM2Frame(string &command, unsigned int* dataSize)
+uint8_t ServerDisplayHandler::checkTPM2Frame(string &command, unsigned int *dataSize)
 {
     uint8_t blockType = command[TPM2_BLOCK_TYPE_P];
     switch (blockType)
@@ -209,10 +209,11 @@ string ServerDisplayHandler::executeTPM2Data(string &command, uint8_t packetNum,
     //FIXME muss besser geloest werden
     animation->reset();
     uint8_t* data = (uint8_t*) (command.c_str() + TPM2_NET_DATA_P);
-    panel->drawFrameModule(packetNum, dataSize, data);
-    if (panel->getNextModul() == panel->getStartingModul())
-    {
-        panel->draw();
+    if(panel->drawFrameModule(packetNum, dataSize, data) == 0){
+		if (panel->getNextModul() == panel->getStartingModul())
+		{
+			panel->draw();
+		}
     }
     return "";  //no tpm2 ack
 }
@@ -277,19 +278,48 @@ string ServerDisplayHandler::executeTPM2NetProtocol(string &command)
     return "";
 }
 
+void ServerDisplayHandler::manipulateColorPlate(uint8_t cmd, unsigned int paramLen, string &param)
+{
+	switch (cmd)
+	{
+	case SPCMD__PLATE_CLEAR:
+		if(paramLen == 0){
+			cout << "clear";
+			animation->getPlate()->clear();
+		}
+		else
+			cerr << "manipulateColorPlate paramLen out of bounds(0) " << paramLen << endl;
+		break;
+
+	case SPCMD__PLATE_APPEND:
+		if(paramLen == 3){
+			cout << "append: 0x" << hex << (int) param[0] << hex << (int) param[1] << hex << (int) param[2];
+			color_t c((uint8_t) param[0],(uint8_t) param[1],(uint8_t) param[2]);
+			animation->getPlate()->append(c);
+		}
+		else
+			cerr << "manipulateColorPlate paramLen out of bounds(3) " << paramLen << endl;
+		break;
+
+	default:
+		cerr << "PaleteCommand 0x" << hex << cmd << "unknown" << endl;
+		break;
+	}
+	cout << endl;
+}
+
 void ServerDisplayHandler::systemAdministration(uint8_t cmd, unsigned int paramLen, string &param)
 {
-    cout << " system administration" << endl;
     if (paramLen == 0)
     {
         // some redundancy since its just UDP
         switch (cmd)
         {
-        case 0x02:  // 0xreboot
+        case SPCMD__REBOOT:  // 0xreboot
             system("sudo reboot");
             break;
 
-        case 0x01:    // 0xhalt
+        case SPCMD__SUTDOWN:    // 0xhalt
             system("sudo halt");
             break;
 
@@ -327,8 +357,14 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
         cout << "animation mixer" << endl;
         animation->setMixer(subCmd);
         break;
-
+	
+	case SPCMD_COLORPLATE:
+		cout << "color plate: ";
+        manipulateColorPlate(subCmd, paramLen, param);
+        break;
+	
     case SPCMD_SYSTEM_ADMIN:
+		cout << " system administration" << endl;
         systemAdministration(subCmd, paramLen, param);
         break;
 

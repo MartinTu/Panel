@@ -28,8 +28,8 @@ void *Display::spiThreadTask()
 }
 
 Display::Display() :
-        width(1), height(1), orientation(rotateNo), numModules(1), buffersize(0), buffoffset(0), actModul(0), startingModul(0), nextModul(0), gamma(
-                2.2), spiThreadIsRunning(true)
+        width(1), height(1), orientation(rotateNo), numModules(1), buffersize(0), buffoffset(0), 
+		actModul(0), startingModul(0), nextModul(0), gamma(true), spiThreadIsRunning(true)
 {
     this->spi = new SPI();
     this->spi->init();
@@ -55,7 +55,7 @@ Display::~Display()
 {
     master->setColor(color_black);
     draw();
-    usleep(200);
+    sleep(200);
     //is this the correct deletion?
     for (unsigned int i = numModules; i > numModules; i--)
     {
@@ -136,7 +136,7 @@ void Display::resetNextModul()
     nextModul = startingModul;
 }
 
-void Display::drawFrameModule(unsigned int moduleNum, unsigned int dataLength, uint8_t* data)
+int Display::drawFrameModule(unsigned int moduleNum, unsigned int dataLength, uint8_t* data)
 {
     if (moduleNum == nextModul)
     {
@@ -161,13 +161,16 @@ void Display::drawFrameModule(unsigned int moduleNum, unsigned int dataLength, u
                 }
             }
             incNextModul();
+            return 0;
         } else
         {
-            cerr << "drawModuleFrame() does not got correct data length" << endl;
+            cerr << "drawFrameModule() does not got correct data length" << endl;
+            return 1;
         }
     } else
     {
-        cerr << "drawModuleFrame() moduleNum " << moduleNum << "is not actual Modul" << endl;
+        cerr << "drawFrameModule() moduleNum " << moduleNum << " is not nextModul" << nextModul << endl;
+        return 2;
     }
 }
 
@@ -196,12 +199,12 @@ void Display::draw()
 
 void Display::incNextModul()
 {
-    if (nextModul < numModules)
-    {
-    	nextModul = 0;
-    	return;
-    }
     nextModul++;
+    if (nextModul == numModules)
+    {
+    	resetNextModul();
+     	return;
+    }
 }
 
 /**
@@ -282,26 +285,26 @@ void Display::drawWS2801()
 //			cout << setw(4) << y;
 //			cout << setw(4) << pos->x;
 //			cout << setw(4) << pos->y << endl;
-            switch (modul[actModul]->getCorrection())
+            if((modul[actModul]->getCorrection() == corrGamma) || (modul[actModul]->getCorrection() == corrAll))
             {
-//			case corrPixel:
+			//corrPixel
 //				buffer[buffoffset++] = round(pixel[pos.x][pos.y].red	* corrPixMatrix[numModul][pos.x][pos.y].[0]);
 //				buffer[buffoffset++] = round(pixel[pos.x][pos.y].green	* corrPixMatrix[numModul][pos.x][pos.y].[1]);
 //				buffer[buffoffset++] = round(pixel[pos.x][pos.y].blue	* corrPixMatrix[numModul][pos.x][pos.y].[2]);
-//				break;
-//			case corrGamma:
-//
-//				break;
-//
-//			case corrAll:
-//
-//				break;
-            default:
-                // corrNo
+			}
+			if(((modul[actModul]->getCorrection() == corrGamma) || (modul[actModul]->getCorrection() == corrAll)) && gamma)
+			{
+			//corrGamma
+                buffer[buffoffset++] = gamma_samples[master->getPixel(pos.x, pos.y).red];
+                buffer[buffoffset++] = gamma_samples[master->getPixel(pos.x, pos.y).green];
+                buffer[buffoffset++] = gamma_samples[master->getPixel(pos.x, pos.y).blue];
+			}
+			if(modul[actModul]->getCorrection() == corrNo)
+			{
+			//corrNo
                 buffer[buffoffset++] = master->getPixel(pos.x, pos.y).red;
                 buffer[buffoffset++] = master->getPixel(pos.x, pos.y).green;
                 buffer[buffoffset++] = master->getPixel(pos.x, pos.y).blue;
-                break;
             }
         }
     }

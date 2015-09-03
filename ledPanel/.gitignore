@@ -1,2 +1,6 @@
 /Debug/
 /panel_config.xml
+ledPanel
+*.o
+.*
+!.gitignore

@@ -19,10 +19,11 @@
 #include <vector>
 #include <unistd.h>//file path with "proc/self/exe"
 #include <stdio.h>
+#include <cmath>
 #include <wiringPi.h>
+#include "LUT.h"
 
 using namespace std;
-
 
 enum direction_t
 {
@@ -39,6 +40,11 @@ enum direction_t
 class Utils
 {
     public:
+		static float sinf(float x);
+		static float sinn(float x);
+		static float cosf(float x);
+		static float cosn(float x);
+		static float distance(float x1, float y1, float x2, float y2);
         static int invert(int val, int maxval);
         static unsigned long getTime();
 //        static int round(float val);

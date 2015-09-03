@@ -12,6 +12,7 @@
 #include "Utils.h"
 #include "Canvas.h"
 #include "Color.h"
+#include "ColorPlate.h"
 
 enum mixer_t
 {
@@ -33,13 +34,17 @@ class Layer
         virtual void reset() = 0;
 
         void setMixer(uint8_t _mixer);
+		void setGamma(bool _gamma);
         mixer_t getMixer();
+		
+		Plate *getPlate();
         Canvas* getCanvas();
-
     protected:
         int width;
         int height;
+		bool gamma;
         mixer_t mixer;
+		Plate *plate;
         Canvas* frame;  //x/y drawing screen
 };
 

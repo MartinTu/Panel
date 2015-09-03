@@ -10,18 +10,23 @@
 Layer::Layer(int _width, int _height) :
         width(_width), height(_height), mixer(mixMaybe)
 {
-    this->frame = new Canvas(width, height);
+	plate = new Plate;
+    frame = new Canvas(width, height);
+	
+	plate->clear();
 }
 
 Layer::~Layer()
 {
+	
+	if(plate)
+		delete plate;
+	else
+		cout << "Layer.cpp: plate didnt exist" << endl;
     if (frame)
-    {
         delete frame;
-    }
-    else{
+    else
         cout << "Layer.cpp: frame didnt exist" << endl;
-    }
 }
 
 void Layer::setMixer(uint8_t _mixer)
@@ -43,4 +48,16 @@ mixer_t Layer::getMixer()
 Canvas* Layer::getCanvas()
 {
     return frame;
+}
+
+
+void Layer::setGamma(bool _gamma)
+{
+	this->gamma = _gamma;
+}
+
+
+Plate *Layer::getPlate()
+{
+	return plate;
 }

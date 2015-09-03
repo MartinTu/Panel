@@ -44,6 +44,7 @@ class ServerDisplayHandler
         string executeTPM2Command(string &command, uint8_t packetNum, uint8_t dataSize);
 
         void systemAdministration(uint8_t cmd, unsigned int paramLen, string &param);
+		void manipulateColorPlate(uint8_t cmd, unsigned int paramLen, string &param);
 
 
 //different layers

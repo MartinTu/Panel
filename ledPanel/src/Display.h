@@ -23,6 +23,7 @@
 #include "BlockingQueue.h"
 #include "Color.h"
 #include "Canvas.h"
+#include "LUT.h"
 
 #include "rapidxml.hpp"//xml file reading
 
@@ -41,7 +42,7 @@ class Display
         int getNumPix();
         int getNumModules();
 
-        void drawFrameModule(unsigned int moduleNum, unsigned int dataLength, uint8_t* data);
+        int drawFrameModule(unsigned int moduleNum, unsigned int dataLength, uint8_t* data);
         int getNextModul();
         int getStartingModul();
         void resetNextModul();
@@ -68,9 +69,9 @@ class Display
         unsigned int actModul;
         unsigned int startingModul;
         unsigned int nextModul;
-
-        double gamma;
-
+		
+		
+		bool gamma;
         bool spiThreadIsRunning;
         pthread_t spiThread;
         SPI* spi;
