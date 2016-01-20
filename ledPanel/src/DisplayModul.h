@@ -107,7 +107,7 @@ class DisplayModul
         chip_t chip;
 		correction_t correction;
 		
-		static const unsigned char	angleGrad0   =0x00;
+		static const unsigned char angleGrad0   =0x00;
 		static const unsigned char angleGrad90  =0x01;
 		static const unsigned char angleGrad180 =0x02;
 		static const unsigned char angleGrad270 =0x03;

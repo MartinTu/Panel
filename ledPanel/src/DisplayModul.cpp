@@ -112,43 +112,43 @@ void DisplayModul::reOrder(const int x, const int y, int &newPosX, int &newPosY)
         break;
         //vertical
     case xyVTL:
-        rotate90(newPosX,newPosY, Grad270);
+        rotate90(newPosX,newPosY, angleGrad270);
         //like xyHTR
         newPosX = Utils::invert(newPosX, width);
         break;
     case snakeVTL:
-        rotate90(newPosX,newPosY, Grad270);
+        rotate90(newPosX,newPosY, angleGrad270);
         //like snakeHTR
         if (Utils::isOdd(newPosY))
             newPosX = Utils::invert(newPosX, width);
         break;
     case xyVTR:
-        rotate90(newPosX,newPosY, Grad90);
+        rotate90(newPosX,newPosY, angleGrad90);
         //like xyHTL
         break;
     case snakeVTR:
-        rotate90(newPosX,newPosY, Grad90);
+        rotate90(newPosX,newPosY, angleGrad90);
         //like snakeHTL
         if (Utils::isEven(newPosY))
             newPosX = Utils::invert(newPosX, width);
         break;
     case xyVBL:
-        rotate90(newPosX,newPosY, Grad270);
+        rotate90(newPosX,newPosY, angleGrad270);
         //like xyHTL
         break;
     case snakeVBL:
-        rotate90(newPosX,newPosY, Grad270);
+        rotate90(newPosX,newPosY, angleGrad270);
         //like snakeHTL
         if (Utils::isEven(newPosY))
             newPosX = Utils::invert(newPosX, width);
         break;
     case xyVBR:
-        rotate90(newPosX,newPosY, Grad90);
+        rotate90(newPosX,newPosY, angleGrad90);
         //like xyHTR
         newPosX = Utils::invert(newPosX, width);
         break;
     case snakeVBR:
-        rotate90(newPosX,newPosY, Grad90);
+        rotate90(newPosX,newPosY, angleGrad90);
         //like snakeHTR
         if (Utils::isOdd(newPosY))
             newPosX = Utils::invert(newPosX, width);
