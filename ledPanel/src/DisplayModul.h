@@ -106,10 +106,11 @@ class DisplayModul
         flip_t flip;
         chip_t chip;
 		correction_t correction;
-		const unsigned char	angleGrad0   =0x00;
-		const unsigned char angleGrad90  =0x01;
-		const unsigned char angleGrad180 =0x02;
-		const unsigned char angleGrad270 =0x03;
+		
+		static const unsigned char	angleGrad0   =0x00;
+		static const unsigned char angleGrad90  =0x01;
+		static const unsigned char angleGrad180 =0x02;
+		static const unsigned char angleGrad270 =0x03;
 };
 
 #endif /* DISPLAYMODUL_H_ */
