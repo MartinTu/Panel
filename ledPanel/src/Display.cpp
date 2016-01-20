@@ -318,7 +318,6 @@ int Display::initModulesWithConfigFile()
 	int modulHeight;
 	int modulXOffset;
 	int modulYOffset;
-	int modulNumWireing;
 	addressing_t modulAddressing;
 	orientation_t modulOrientation;
 	flip_t modulFlip;
@@ -773,7 +772,7 @@ int Display::initModulesWithConfigFile()
 	modulAddressing		= xyVBL;
 	modulOrientation	= rotateNo;
 	modulFlip			= flipNo;
-	modulChip			= chipNo;
+	modulChip			= WS2801;
 	modulCorrection		= corrNo;
 
     this->modul[0] = new DisplayModul(modulWidth, modulHeight, modulXOffset, modulYOffset, modulAddressing, modulOrientation, modulFlip, modulChip, modulCorrection);
@@ -791,8 +790,8 @@ int Display::initModulesWithConfigFile()
         break;
     }
 
-    this->width  = Utils::max(modulWidth, modulWidth + xOffset);
-    this->height = Utils::max(modulHeight, modulHeight + yOffset);
+    this->width  = Utils::max(modulWidth, modulWidth + modulXOffset);
+    this->height = Utils::max(modulHeight, modulHeight + modulYOffset);
 
     return 1;
 }
