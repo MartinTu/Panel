@@ -25,13 +25,6 @@ enum game_t
     _gameNUM  //numbers of ani (if enum values are not doubled or spaced)
 };
 
-enum aniParamlen_t
-{
-    lenNone = 0x00,
-	lenSnake = 0x01
-};
-
-
 class Game : public Layer
 {
     public:
@@ -46,6 +39,9 @@ class Game : public Layer
 
     private:
         void snake();
+		
+		const byte lenParamNone   =0x00;
+		const byte lenParamSnake  =0x01;
 
     protected:
         bool isFrameNotSkipped(unsigned int skip);

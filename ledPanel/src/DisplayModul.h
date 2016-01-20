@@ -72,35 +72,10 @@ enum chip_t
     LDP6803 = 0x00, WS2801 = 0x01
 };
 
-enum angle_t
-{
-    Grad0 = 0x00, Grad90 = 0x01, Grad180 = 0x02, Grad270 = 0x03
-};
-
-struct modul_t
-{
-        int width;
-        int height;
-        int xOffset;
-        int yOffset;
-        int numWireing;
-        addressing_t addressing;
-        orientation_t orientation;
-        flip_t flip;
-        chip_t chip;
-        correction_t correction;
-};
-
-struct position_t
-{
-        int x;
-        int y;
-};
-
 class DisplayModul
 {
     public:
-        DisplayModul(struct modul_t &modul);
+        DisplayModul(int modulWidth, int modulHeight, int modulXOffset, int modulYOffset, addressing_t modulAddressing, orientation_t modulOrientation, flip_t modulFlip, chip_t modulChip, correction_t modulCorrection);
         virtual ~DisplayModul();
 
         unsigned int getWidth();
@@ -114,12 +89,12 @@ class DisplayModul
         chip_t getChip();
         correction_t getCorrection();
 
-        void reOrder(const int x, const int y, position_t &newPos);
+        void reOrder(const int x, const int y, int &newPosX, int &newPosY);
 
     private:
-        void rotate90(position_t &pos, angle_t angle);
-        int rot90sin(angle_t angle);
-        int rot90cos(angle_t angle);
+        void rotate90(int &newPosX, int &newPosY, byte angle);
+        int rot90sin(byte angle);
+        int rot90cos(byte angle);
 
         //module parameters
         int width;
@@ -131,6 +106,11 @@ class DisplayModul
         flip_t flip;
         chip_t chip;
         correction_t correction;
+		
+		const byte	angleGrad0   =0x00;
+		const byte 	angleGrad90  =0x01;
+		const byte 	angleGrad180 =0x02;
+		const byte 	angleGrad270 =0x03;
 };
 
 #endif /* DISPLAYMODUL_H_ */

@@ -66,7 +66,7 @@ int Game::set(uint8_t id, string &param, unsigned int paramSize)
         break;
     case gameSnake:
         cout << "[INFO] gameSnake";
-        if (paramSize == (unsigned int) lenSnake)
+        if (paramSize == (unsigned int) lenParamSnake)
         {
             parameter = param.substr(0, paramSize);
             ret = 0;

@@ -53,18 +53,6 @@ enum animation_t {
 	_aniNUM  //numbers of ani (if enum values are not doubled or spaced)
 };
 
-enum aniParamlen_t {
-	lenNone = 0x00,
-	lenInvader = 0x03,
-	lenDirectionFade = 0x05,
-	lenScreenFade = 0x04,
-	lenScreenPulse = 0x05,
-	lenRotateLine = 0x0b,
-	lenWaterdrop = 0x09,
-	lenFadingPixels = 0x07,
-	lenDirFallingPixel = 0x08,
-	lenPlasma = 0x03
-};
 
 class Animation: public Layer {
 public:
@@ -88,6 +76,17 @@ private:
 	void dirFallingPixel();
 	void plasma();
 	
+	const byte	lenParamNone            =0x00;
+	const byte	lenParamInvader         =0x03;
+	const byte	lenParamDirectionFade   =0x05;
+	const byte	lenParamScreenFade      =0x04;
+	const byte	lenParamScreenPulse     =0x05;
+	const byte	lenParamRotateLine      =0x0b;
+	const byte	lenParamWaterdrop       =0x09;
+	const byte	lenParamFadingPixels    =0x07;
+	const byte	lenParamDirFallingPixel =0x08;
+	const byte	lenParamPlasma          =0x03;
+
 protected:
 	bool isFrameNotSkipped(unsigned int skip);
 

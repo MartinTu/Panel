@@ -104,7 +104,7 @@ int Animation::set(uint8_t id, string &param, unsigned int paramSize) {
 		break;
 	case aniInvader:
 		cout << "[INFO] aniInvader";
-		if (paramSize == (unsigned int) lenInvader) {
+		if (paramSize == (unsigned int) lenParamInvader) {
 			parameter = param.substr(0, paramSize);
 			ret = 0;
 			if (runningAni != lastAni) {
@@ -118,7 +118,7 @@ int Animation::set(uint8_t id, string &param, unsigned int paramSize) {
 		break;
 	case aniDirectionFade:
 		cout << "[INFO] aniDirectionFade";
-		if (paramSize == (unsigned int) lenDirectionFade) {
+		if (paramSize == (unsigned int) lenParamDirectionFade) {
 			parameter = param.substr(0, paramSize);
 			//frameSkip = 3;
 			ret = 0;
@@ -135,7 +135,7 @@ int Animation::set(uint8_t id, string &param, unsigned int paramSize) {
 		break;
 	case aniScreenFade:
 		cout << "[INFO] aniScreenFade";
-		if (paramSize == (unsigned int) lenScreenFade) {
+		if (paramSize == (unsigned int) lenParamScreenFade) {
 			parameter = param.substr(0, paramSize);
 			ret = 0;
 			if (runningAni != lastAni) {
@@ -152,7 +152,7 @@ int Animation::set(uint8_t id, string &param, unsigned int paramSize) {
 		break;
 	case aniScreenPulse:
 		cout << "[INFO] aniScreenPulse";
-		if (paramSize == (unsigned int) lenScreenPulse) {
+		if (paramSize == (unsigned int) lenParamScreenPulse) {
 			parameter = param.substr(0, paramSize);
 			ret = 0;
 			if (runningAni != lastAni) {
@@ -167,7 +167,7 @@ int Animation::set(uint8_t id, string &param, unsigned int paramSize) {
 		break;
 	case aniRotateLine:
 		cout << "[INFO] aniRotateLine";
-		if (paramSize == (unsigned int) lenRotateLine) {
+		if (paramSize == (unsigned int) lenParamRotateLine) {
 			parameter = param.substr(0, paramSize);
 			ret = 0;
 			if (runningAni != lastAni) {
@@ -182,7 +182,7 @@ int Animation::set(uint8_t id, string &param, unsigned int paramSize) {
 		break;
 	case aniWaterdrop:
 		cout << "[INFO] aniWaterdrop";
-		if (paramSize == (unsigned int) lenWaterdrop) {
+		if (paramSize == (unsigned int) lenParamWaterdrop) {
 			parameter = param.substr(0, paramSize);
 			ret = 0;
 			if (runningAni != lastAni) {
@@ -198,7 +198,7 @@ int Animation::set(uint8_t id, string &param, unsigned int paramSize) {
 		break;
 	case aniFadingPixels:
 		cout << "[INFO] aniFadingPixels";
-		if (paramSize == (unsigned int) lenFadingPixels) {
+		if (paramSize == (unsigned int) lenParamFadingPixels) {
 			parameter = param.substr(0, paramSize);
 			ret = 0;
 			if (runningAni != lastAni) {
@@ -213,7 +213,7 @@ int Animation::set(uint8_t id, string &param, unsigned int paramSize) {
 		break;
 	case aniDirFallingPixel:
 		cout << "[INFO] aniDirFallingPixel";
-		if (paramSize == (unsigned int) lenDirFallingPixel) {
+		if (paramSize == (unsigned int) lenParamDirFallingPixel) {
 			parameter = param.substr(0, paramSize);
 			ret = 0;
 			if (runningAni != lastAni) {
@@ -229,7 +229,7 @@ int Animation::set(uint8_t id, string &param, unsigned int paramSize) {
 		break;
 	case aniPlasma:
 		cout << "[INFO] aniPlasma";
-		if (paramSize == (unsigned int) lenPlasma) {
+		if (paramSize == (unsigned int) lenParamPlasma) {
 			parameter = param.substr(0, paramSize);
 			ret = 0;
 			if (runningAni != lastAni) {

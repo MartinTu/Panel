@@ -225,7 +225,7 @@ void Display::drawLDP6803()
     buffoffset += 6;
 
     // convert pixel information to an LDP6803 conform byte array
-    position_t pos;
+    int posx,posy;
     int x, y;
     color_t color;
     //pixel[0][0] = topleft corner
@@ -237,8 +237,8 @@ void Display::drawLDP6803()
             y = i + modul[actModul]->getYOffset();
             // bit width conversion
 
-            modul[actModul]->reOrder(x, y, pos);
-            color = master->getPixel(pos.x, pos.y);
+            modul[actModul]->reOrder(x, y, posx, posy);
+            color = master->getPixel(posx, posy);
             red = color.red / 256.0 * 32.0;
             blue = color.blue / 256.0 * 32.0;
             green = color.green / 256.0 * 32.0;
@@ -313,8 +313,17 @@ void Display::drawWS2801()
 int Display::initModulesWithConfigFile()
 {
     //file read
-
-    modul_t par;
+	
+	int modulWidth;
+	int modulHeight;
+	int modulXOffset;
+	int modulYOffset;
+	int modulNumWireing;
+	addressing_t modulAddressing;
+	orientation_t modulOrientation;
+	flip_t modulFlip;
+	chip_t modulChip;
+	correction_t modulCorrection;
 
     xml_document<> doc;    // character type defaults to char
     xml_node<> * root_node;
@@ -455,7 +464,7 @@ int Display::initModulesWithConfigFile()
                                 //++read moduleData
 
                                 //width
-                                par.width = 1;
+                                modulWidth = 1;
                                 key_node = section_node->first_node("width");
                                 if (!key_node)
                                 {
@@ -463,18 +472,18 @@ int Display::initModulesWithConfigFile()
                                 } else
                                 {
                                     stringstream ss(key_node->value());
-                                    if (!(ss >> par.width))
+                                    if (!(ss >> modulWidth))
                                     {
                                         cerr << "* width value is not a number" << endl;
                                     }
-                                    if (par.width < 1)
+                                    if (modulWidth < 1)
                                     {
-                                        par.width = 1;
+                                        modulWidth = 1;
                                     }
                                 }
-                                cout << "* width " << dec << par.width << endl;
+                                cout << "* width " << dec << modulWidth << endl;
                                 //height
-                                par.height = 1;
+                                modulHeight = 1;
                                 key_node = section_node->first_node("height");
                                 if (!key_node)
                                 {
@@ -482,18 +491,18 @@ int Display::initModulesWithConfigFile()
                                 } else
                                 {
                                     stringstream ss(key_node->value());
-                                    if (!(ss >> par.height))
+                                    if (!(ss >> modulHeight))
                                     {
                                         cerr << "* height value is not a number" << endl;
                                     }
-                                    if (par.height < 1)
+                                    if (modulHeight < 1)
                                     {
-                                        par.height = 1;
+                                        modulHeight = 1;
                                     }
                                 }
-                                cout << "* height " << par.height << endl;
+                                cout << "* height " << modulHeight << endl;
                                 //xOffset
-                                par.xOffset = 0;
+                                modulXOffset = 0;
                                 key_node = section_node->first_node("xOffset");
                                 if (!key_node)
                                 {
@@ -501,18 +510,18 @@ int Display::initModulesWithConfigFile()
                                 } else
                                 {
                                     stringstream ss(key_node->value());
-                                    if (!(ss >> par.xOffset))
+                                    if (!(ss >> modulXOffset))
                                     {
                                         cerr << "* xOffset value is not a number" << endl;
                                     }
-                                    if (par.xOffset < 0)
+                                    if (modulXOffset < 0)
                                     {
-                                        par.xOffset = 0;
+                                        modulXOffset = 0;
                                     }
                                 }
-                                cout << "* xOffset " << par.xOffset << endl;
+                                cout << "* xOffset " << modulXOffset << endl;
                                 //yOffset
-                                par.yOffset = 0;
+                                modulYOffset = 0;
                                 key_node = section_node->first_node("yOffset");
                                 if (!key_node)
                                 {
@@ -520,19 +529,19 @@ int Display::initModulesWithConfigFile()
                                 } else
                                 {
                                     stringstream ss(key_node->value());
-                                    if (!(ss >> par.yOffset))
+                                    if (!(ss >> modulYOffset))
                                     {
                                         cerr << "* yOffset value is not a number" << endl;
                                     }
-                                    if (par.yOffset < 0)
+                                    if (modulYOffset < 0)
                                     {
-                                        par.yOffset = 0;
+                                        modulYOffset = 0;
                                     }
                                 }
-                                cout << "* yOffset " << par.yOffset << endl;
+                                cout << "* yOffset " << modulYOffset << endl;
 
                                 //addressing
-                                par.addressing = undef;
+                                modulAddressing = undef;
                                 key_node = section_node->first_node("addressing");
                                 if (!key_node)
                                 {
@@ -542,63 +551,63 @@ int Display::initModulesWithConfigFile()
                                     string val = key_node->value();
                                     if (!(val.compare("xyVBL")))
                                     {
-                                        par.addressing = xyVBL;
+                                        modulAddressing = xyVBL;
                                     } else if (!(val.compare("xyVBR")))
                                     {
-                                        par.addressing = xyVBR;
+                                        modulAddressing = xyVBR;
                                     } else if (!(val.compare("xyVTL")))
                                     {
-                                        par.addressing = xyVTL;
+                                        modulAddressing = xyVTL;
                                     } else if (!(val.compare("xyVTR")))
                                     {
-                                        par.addressing = xyVTR;
+                                        modulAddressing = xyVTR;
                                     } else if (!(val.compare("xyHBL")))
                                     {
-                                        par.addressing = xyHBL;
+                                        modulAddressing = xyHBL;
                                     } else if (!(val.compare("xyHBR")))
                                     {
-                                        par.addressing = xyHBR;
+                                        modulAddressing = xyHBR;
                                     } else if (!(val.compare("xyHTL")))
                                     {
-                                        par.addressing = xyHTL;
+                                        modulAddressing = xyHTL;
                                     } else if (!(val.compare("xyHTR")))
                                     {
-                                        par.addressing = xyHTR;
+                                        modulAddressing = xyHTR;
                                     } else
                                     //snake
                                     if (!(val.compare("snakeVBL")))
                                     {
-                                        par.addressing = snakeVBL;
+                                        modulAddressing = snakeVBL;
                                     } else if (!(val.compare("snakeVBR")))
                                     {
-                                        par.addressing = snakeVBR;
+                                        modulAddressing = snakeVBR;
                                     } else if (!(val.compare("snakeVTL")))
                                     {
-                                        par.addressing = snakeVTL;
+                                        modulAddressing = snakeVTL;
                                     } else if (!(val.compare("snakeVTR")))
                                     {
-                                        par.addressing = snakeVTR;
+                                        modulAddressing = snakeVTR;
                                     } else if (!(val.compare("snakeHBL")))
                                     {
-                                        par.addressing = snakeHBL;
+                                        modulAddressing = snakeHBL;
                                     } else if (!(val.compare("snakeHBR")))
                                     {
-                                        par.addressing = snakeHBR;
+                                        modulAddressing = snakeHBR;
                                     } else if (!(val.compare("snakeHTL")))
                                     {
-                                        par.addressing = snakeHTL;
+                                        modulAddressing = snakeHTL;
                                     } else if (!(val.compare("snakeHTR")))
                                     {
-                                        par.addressing = snakeHTR;
+                                        modulAddressing = snakeHTR;
                                     } else
                                     {
                                         cerr << "* addressing value is not correct" << endl;
                                     }
                                 }
-                                cout << "* addressing 0x" << hex << (int) par.addressing << endl;
+                                cout << "* addressing 0x" << hex << (int) modulAddressing << endl;
 
                                 //orientation
-                                par.orientation = rotateNo;
+                                modulOrientation = rotateNo;
                                 key_node = section_node->first_node("orientation");
                                 if (!key_node)
                                 {
@@ -608,25 +617,25 @@ int Display::initModulesWithConfigFile()
                                     string val = key_node->value();
                                     if (!(val.compare("rotateNo")))
                                     {
-                                        par.orientation = rotateNo;
+                                        modulOrientation = rotateNo;
                                     } else if (!(val.compare("rotateLeft")))
                                     {
-                                        par.orientation = rotateLeft;
+                                        modulOrientation = rotateLeft;
                                     } else if (!(val.compare("rotateHalf")))
                                     {
-                                        par.orientation = rotateHalf;
+                                        modulOrientation = rotateHalf;
                                     } else if (!(val.compare("rotateRight")))
                                     {
-                                        par.orientation = rotateRight;
+                                        modulOrientation = rotateRight;
                                     } else
                                     {
                                         cerr << "* orientation value is not correct" << endl;
                                     }
                                 }
-                                cout << "* orientation 0x" << hex << (int) par.orientation << endl;
+                                cout << "* orientation 0x" << hex << (int) modulOrientation << endl;
 
                                 //flip
-                                par.flip = flipNo;
+                                modulFlip = flipNo;
                                 key_node = section_node->first_node("flip");
                                 if (!key_node)
                                 {
@@ -636,22 +645,22 @@ int Display::initModulesWithConfigFile()
                                     string val = key_node->value();
                                     if (!(val.compare("flipNo")))
                                     {
-                                        par.flip = flipNo;
+                                        modulFlip = flipNo;
                                     } else if (!(val.compare("flipX")))
                                     {
-                                        par.flip = flipX;
+                                        modulFlip = flipX;
                                     } else if (!(val.compare("flipY")))
                                     {
-                                        par.flip = flipY;
+                                        modulFlip = flipY;
                                     } else
                                     {
                                         cerr << "* flip value is not correct" << endl;
                                     }
                                 }
-                                cout << "* flip 0x" << hex << (int) par.flip << endl;
+                                cout << "* flip 0x" << hex << (int) modulFlip << endl;
 
                                 //chip
-                                par.chip = WS2801;
+                                modulChip = WS2801;
                                 key_node = section_node->first_node("chip");
                                 if (!key_node)
                                 {
@@ -661,19 +670,19 @@ int Display::initModulesWithConfigFile()
                                     string val = key_node->value();
                                     if (!(val.compare("WS2801")))
                                     {
-                                        par.chip = WS2801;
+                                        modulChip = WS2801;
                                     } else if (!(val.compare("LDP6803")))
                                     {
-                                        par.chip = LDP6803;
+                                        modulChip = LDP6803;
                                     } else
                                     {
                                         cerr << "* chip value is not correct" << endl;
                                     }
                                 }
-                                cout << "* chip 0x" << hex << (int) par.chip << endl;
+                                cout << "* chip 0x" << hex << (int) modulChip << endl;
 
                                 //correction
-                                par.correction = corrNo;
+                                modulCorrection = corrNo;
                                 key_node = section_node->first_node("correction");
                                 if (!key_node)
                                 {
@@ -683,44 +692,44 @@ int Display::initModulesWithConfigFile()
                                     string val = key_node->value();
                                     if (!(val.compare("corrNo")))
                                     {
-                                        par.correction = corrNo;
+                                        modulCorrection = corrNo;
                                     } else if (!(val.compare("corrGamma")))
                                     {
-                                        par.correction = corrGamma;
+                                        modulCorrection = corrGamma;
                                     } else if (!(val.compare("corrPixel")))
                                     {
-                                        par.correction = corrPixel;
+                                        modulCorrection = corrPixel;
                                     } else if (!(val.compare("corrAll")))
                                     {
-                                        par.correction = corrAll;
+                                        modulCorrection = corrAll;
                                     } else
                                     {
                                         cerr << "* correction value is not correct" << endl;
                                     }
                                 }
-                                cout << "* correction 0x" << hex << (int) par.correction << endl;
+                                cout << "* correction 0x" << hex << (int) modulCorrection << endl;
 
                                 //--read moduleData
 
                                 //append new module
-                                this->modul[i] = new DisplayModul(par);
+                                this->modul[i] = new DisplayModul(modulWidth,modulHeight,modulXOffset,modulYOffset,modulAddressing,modulOrientation,modulFlip,modulChip,modulCorrection);
                                 checker++;
-                                switch (par.chip)
+                                switch (modulChip)
                                 {
                                 case WS2801:
                                     // get memory for 3 byte per pixel
-                                    this->buffersize += par.width * par.height * 3;
+                                    this->buffersize += modulWidth * modulHeight * 3;
                                     break;
                                 case LDP6803:
                                     // get memory for 2 byte per pixel
                                     // there are 8 bytes necessary for the LDP6803 chip: 4 header bytes, 2 additional for
                                     // the first led (of 25) which is black and 2 additional at the end for LDP6803
-                                    this->buffersize += par.width * par.height * 2 + 8;
+                                    this->buffersize += modulWidth * modulHeight * 2 + 8;
                                     break;
                                 }
 
-                                width = Utils::max(width, par.width + par.xOffset);
-                                height = Utils::max(height, par.height + par.yOffset);
+                                width = Utils::max(width, modulWidth + modulXOffset);
+                                height = Utils::max(height, modulHeight + modulYOffset);
 
                                 break;							//next module
                             }
