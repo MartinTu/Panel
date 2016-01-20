@@ -712,7 +712,7 @@ int Display::initModulesWithConfigFile()
                                 //--read moduleData
 
                                 //append new module
-                                this->modul[i] = new DisplayModul(modulWidth,modulHeight,modulXOffset,modulYOffset,modulAddressing,modulOrientation,modulFlip,modulChip,modulCorrection);
+                                this->modul[i] = new DisplayModul(modulWidth, modulHeight, modulXOffset, modulYOffset, modulAddressing, modulOrientation, modulFlip, modulChip, modulCorrection);
                                 checker++;
                                 switch (modulChip)
                                 {
@@ -728,8 +728,8 @@ int Display::initModulesWithConfigFile()
                                     break;
                                 }
 
-                                width = Utils::max(width, modulWidth + modulXOffset);
-                                height = Utils::max(height, modulHeight + modulYOffset);
+                                this->width = Utils::max(width, modulWidth + modulXOffset);
+                                this->height = Utils::max(height, modulHeight + modulYOffset);
 
                                 break;							//next module
                             }
@@ -746,8 +746,9 @@ int Display::initModulesWithConfigFile()
                 }
             }
         }
-    } else
-    {
+    }
+	else
+	{
         cerr << "Unable to find file: " << file << ", in dir: " << filePath << endl;
     }
     //--fileParsing
@@ -757,41 +758,41 @@ int Display::initModulesWithConfigFile()
         {
             delete modul[i];
         }
-        else{
+        else
+		{
             cout << "Display.cpp: modul[" << i << "] didnt exist" << endl;
         }
     }
     numModules = 1;
     this->modul.resize(numModules);
+	
+	modulWidth 			= 1;
+	modulHeight			= 1;
+	modulXOffset		= 0;
+	modulYOffset		= 0;
+	modulAddressing		= xyVBL;
+	modulOrientation	= rotateNo;
+	modulFlip			= flipNo;
+	modulChip			= chipNo;
+	modulCorrection		= corrNo;
 
-    //fill struct with default parameters
-    par.addressing = xyVBL;
-    par.chip = WS2801;
-    par.flip = flipNo;
-    par.orientation = rotateNo;
-    par.correction = corrNo;
-    par.height = 1;
-    par.width = 1;
-    par.xOffset = 0;
-    par.yOffset = 0;
-
-    this->modul[0] = new DisplayModul(par);
-    switch (par.chip)
+    this->modul[0] = new DisplayModul(modulWidth, modulHeight, modulXOffset, modulYOffset, modulAddressing, modulOrientation, modulFlip, modulChip, modulCorrection);
+    switch (modulChip)
     {
     case WS2801:
         // get memory for 3 byte per pixel
-        this->buffersize += par.width * par.height * 3;
+        this->buffersize += modulWidth * modulHeight * 3;
         break;
     case LDP6803:
         // get memory for 2 byte per pixel
         // there are 8 bytes necessary for the LDP6803 chip: 4 header bytes, 2 additional for
         // the first led (of 25) which is black and 2 additional at the end for LDP6803
-        this->buffersize += par.width * par.height * 2 + 8;
+        this->buffersize += modulWidth * modulHeight * 2 + 8;
         break;
     }
 
-    width = Utils::max(width, par.width + par.xOffset);
-    height = Utils::max(height, par.height + par.yOffset);
+    this->width  = Utils::max(modulWidth, modulWidth + xOffset);
+    this->height = Utils::max(modulHeight, modulHeight + yOffset);
 
     return 1;
 }

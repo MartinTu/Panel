@@ -40,8 +40,8 @@ class Game : public Layer
     private:
         void snake();
 		
-		const byte lenParamNone   =0x00;
-		const byte lenParamSnake  =0x01;
+		static const unsigned char lenParamNone   =0x00;
+		static const unsigned char lenParamSnake  =0x01;
 
     protected:
         bool isFrameNotSkipped(unsigned int skip);
