@@ -3,4 +3,5 @@
 ledPanel
 *.o
 .*
+!obj/
 !.gitignore
