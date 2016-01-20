@@ -712,7 +712,7 @@ int Display::initModulesWithConfigFile()
                                 //--read moduleData
 
                                 //append new module
-                                this->modul[i] = new DisplayModul(modulWidth,modulHeight,modulXOffset,modulYOffset,modulAddressing,modulOrientation,modulFlip,modulChip,modulCorrection);
+                                this->modul[i] = new DisplayModul(modulWidth, modulHeight, modulXOffset, modulYOffset, modulAddressing, modulOrientation, modulFlip, modulChip, modulCorrection);
                                 checker++;
                                 switch (modulChip)
                                 {
@@ -764,34 +764,34 @@ int Display::initModulesWithConfigFile()
     numModules = 1;
     this->modul.resize(numModules);
 
-    //fill struct with default parameters
-    par.addressing = xyVBL;
-    par.chip = WS2801;
-    par.flip = flipNo;
-    par.orientation = rotateNo;
-    par.correction = corrNo;
-    par.height = 1;
-    par.width = 1;
-    par.xOffset = 0;
-    par.yOffset = 0;
+    //initialize with default parameters
+    addressing = xyVBL;
+    chip = WS2801;
+    flip = flipNo;
+    orientation = rotateNo;
+    correction = corrNo;
+    height = 1;
+    width = 1;
+    xOffset = 0;
+    yOffset = 0;
 
-    this->modul[0] = new DisplayModul(par);
-    switch (par.chip)
+    this->modul[0] = new DisplayModul(width, height, xOffset, yOffset, addressing, orientation, flip, chip, correction);
+    switch (chip)
     {
     case WS2801:
         // get memory for 3 byte per pixel
-        this->buffersize += par.width * par.height * 3;
+        this->buffersize += width * height * 3;
         break;
     case LDP6803:
         // get memory for 2 byte per pixel
         // there are 8 bytes necessary for the LDP6803 chip: 4 header bytes, 2 additional for
         // the first led (of 25) which is black and 2 additional at the end for LDP6803
-        this->buffersize += par.width * par.height * 2 + 8;
+        this->buffersize += width * height * 2 + 8;
         break;
     }
 
-    width = Utils::max(width, par.width + par.xOffset);
-    height = Utils::max(height, par.height + par.yOffset);
+    width = Utils::max(width, width + xOffset);
+    height = Utils::max(height, height + yOffset);
 
     return 1;
 }
