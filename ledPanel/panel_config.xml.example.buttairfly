@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--correct name: panel_config.xml-->
+<panel>
+	<version>1.0</version>
+	<display>
+		<numModules>2</numModules>
+		<wireingModule id="10x10_1">0</wireingModule>
+		<wireingModule id="10x10_2">1</wireingModule>
+	</display>
+
+	<module id="10x10_1">
+		<width>10</width>
+		<height>10</height>
+		<xOffset>0</xOffset>
+		<yOffset>0</yOffset>
+		<!--	undef,
+				xyVBL,xyVBR,xyVTL,xyVTR,
+				xyHBL,xyHBR,xyHTL,xyHTR,
+				snakeVBL,snakeVBR,snakeVTL,snakeVTR,
+				snakeHBL,snakeHBR,snakeHTL,snakeHTR-->
+		<addressing>snakeHBL</addressing>
+		<!--rotateNo,rotateLeft,rotateHalf,rotateRight-->
+		<orientation>rotateNo</orientation>
+		<!--flipNo,flipX,flipY-->
+		<flip>flipNo</flip>
+		<!--LDP6803,WS2801-->
+		<chip>WS2801</chip>
+		<!--corrNo,corrGamma,corrPixel,corrAll-->
+		<correction>corrAll</correction>
+	</module>
+
+	<module id="10x10_2">
+		<width>10</width>
+		<height>10</height>
+		<xOffset>10</xOffset>
+		<yOffset>0</yOffset>
+		<addressing>snakeHBL</addressing>
+		<orientation>rotateNo</orientation>
+		<flip>flipNo</flip>
+		<chip>WS2801</chip>
+		<correction>corrAll</correction>
+	</module>
+</panel>
