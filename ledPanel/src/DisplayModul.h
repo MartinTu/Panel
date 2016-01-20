@@ -92,9 +92,9 @@ class DisplayModul
         void reOrder(const int x, const int y, int &newPosX, int &newPosY);
 
     private:
-        void rotate90(int &newPosX, int &newPosY, byte angle);
-        int rot90sin(byte angle);
-        int rot90cos(byte angle);
+        void rotate90(int &newPosX, int &newPosY, unsigned char angle);
+        int rot90sin(unsigned char angle);
+        int rot90cos(unsigned char angle);
 
         //module parameters
         int width;
@@ -105,12 +105,11 @@ class DisplayModul
         orientation_t orientation;
         flip_t flip;
         chip_t chip;
-        correction_t correction;
-		
-		const byte	angleGrad0   =0x00;
-		const byte 	angleGrad90  =0x01;
-		const byte 	angleGrad180 =0x02;
-		const byte 	angleGrad270 =0x03;
+		correction_t correction;
+		const unsigned char	angleGrad0   =0x00;
+		const unsigned char angleGrad90  =0x01;
+		const unsigned char angleGrad180 =0x02;
+		const unsigned char angleGrad270 =0x03;
 };
 
 #endif /* DISPLAYMODUL_H_ */

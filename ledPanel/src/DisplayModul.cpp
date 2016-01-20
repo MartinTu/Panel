@@ -197,7 +197,7 @@ void DisplayModul::reOrder(const int x, const int y, int &newPosX, int &newPosY)
 //	cout << "x "<< setw(2) << x << " y "<< setw(2) << y <<" newx "<< setw(2)<< newPosX << " newy "<< setw(2)<< newPosY << " xO "<< setw(2)<< xOffset << " yO "<< setw(2)<< yOffset;
 }
 
-void DisplayModul::rotate90( int &newPosX, int &newPosY, byte angle)
+void DisplayModul::rotate90( int &newPosX, int &newPosY, unsigned char angle)
 {
     if (angleGrad0 == angle)
         return;
@@ -209,7 +209,7 @@ void DisplayModul::rotate90( int &newPosX, int &newPosY, byte angle)
     newPosY = midY + ((newPosY - midY) * rot90cos(angle) + (newPosX - midX) * rot90sin(angle));
 }
 
-int DisplayModul::rot90sin(byte angle)
+int DisplayModul::rot90sin(unsigned char angle)
 {
     switch (angle)
     {
@@ -223,7 +223,7 @@ int DisplayModul::rot90sin(byte angle)
     return 0;
 }
 
-int DisplayModul::rot90cos(byte angle)
+int DisplayModul::rot90cos(unsigned char angle)
 {
     switch (angle)
     {

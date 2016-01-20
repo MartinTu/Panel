@@ -76,16 +76,16 @@ private:
 	void dirFallingPixel();
 	void plasma();
 	
-	const byte	lenParamNone            =0x00;
-	const byte	lenParamInvader         =0x03;
-	const byte	lenParamDirectionFade   =0x05;
-	const byte	lenParamScreenFade      =0x04;
-	const byte	lenParamScreenPulse     =0x05;
-	const byte	lenParamRotateLine      =0x0b;
-	const byte	lenParamWaterdrop       =0x09;
-	const byte	lenParamFadingPixels    =0x07;
-	const byte	lenParamDirFallingPixel =0x08;
-	const byte	lenParamPlasma          =0x03;
+	const unsigned char	lenParamNone            =0x00;
+	const unsigned char	lenParamInvader         =0x03;
+	const unsigned char	lenParamDirectionFade   =0x05;
+	const unsigned char	lenParamScreenFade      =0x04;
+	const unsigned char	lenParamScreenPulse     =0x05;
+	const unsigned char	lenParamRotateLine      =0x0b;
+	const unsigned char	lenParamWaterdrop       =0x09;
+	const unsigned char	lenParamFadingPixels    =0x07;
+	const unsigned char	lenParamDirFallingPixel =0x08;
+	const unsigned char	lenParamPlasma          =0x03;
 
 protected:
 	bool isFrameNotSkipped(unsigned int skip);
