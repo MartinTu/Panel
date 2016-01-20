@@ -269,7 +269,7 @@ void Display::drawWS2801()
 //    cout << dec << "\n" << endl;
 
     // convert pixel information to an WS2801 conform byte array
-    position_t pos;
+    int posx,posy;
     int x, y;
     //pixel[0][0] = topleft corner
     //buffer starts at bottomleft corner
@@ -280,31 +280,31 @@ void Display::drawWS2801()
             x = j + modul[actModul]->getXOffset();
             y = i + modul[actModul]->getYOffset();
 
-            modul[actModul]->reOrder(x, y, pos);
+            modul[actModul]->reOrder(x, y, posx, posy);
 //			cout << setw(4) << x;
 //			cout << setw(4) << y;
-//			cout << setw(4) << pos->x;
-//			cout << setw(4) << pos->y << endl;
+//			cout << setw(4) << posx;
+//			cout << setw(4) << posy << endl;
             if((modul[actModul]->getCorrection() == corrGamma) || (modul[actModul]->getCorrection() == corrAll))
             {
 			//corrPixel
-//				buffer[buffoffset++] = round(pixel[pos.x][pos.y].red	* corrPixMatrix[numModul][pos.x][pos.y].[0]);
-//				buffer[buffoffset++] = round(pixel[pos.x][pos.y].green	* corrPixMatrix[numModul][pos.x][pos.y].[1]);
-//				buffer[buffoffset++] = round(pixel[pos.x][pos.y].blue	* corrPixMatrix[numModul][pos.x][pos.y].[2]);
+//				buffer[buffoffset++] = round(pixel[posx][posy].red	* corrPixMatrix[numModul][posx][posy].[0]);
+//				buffer[buffoffset++] = round(pixel[posx][posy].green	* corrPixMatrix[numModul][posx][posy].[1]);
+//				buffer[buffoffset++] = round(pixel[posx][posy].blue	* corrPixMatrix[numModul][posx][posy].[2]);
 			}
 			if(((modul[actModul]->getCorrection() == corrGamma) || (modul[actModul]->getCorrection() == corrAll)) && gamma)
 			{
 			//corrGamma
-                buffer[buffoffset++] = gamma_samples[master->getPixel(pos.x, pos.y).red];
-                buffer[buffoffset++] = gamma_samples[master->getPixel(pos.x, pos.y).green];
-                buffer[buffoffset++] = gamma_samples[master->getPixel(pos.x, pos.y).blue];
+                buffer[buffoffset++] = gamma_samples[master->getPixel(posx, posy).red];
+                buffer[buffoffset++] = gamma_samples[master->getPixel(posx, posy).green];
+                buffer[buffoffset++] = gamma_samples[master->getPixel(posx, posy).blue];
 			}
 			if(modul[actModul]->getCorrection() == corrNo)
 			{
 			//corrNo
-                buffer[buffoffset++] = master->getPixel(pos.x, pos.y).red;
-                buffer[buffoffset++] = master->getPixel(pos.x, pos.y).green;
-                buffer[buffoffset++] = master->getPixel(pos.x, pos.y).blue;
+                buffer[buffoffset++] = master->getPixel(posx, posy).red;
+                buffer[buffoffset++] = master->getPixel(posx, posy).green;
+                buffer[buffoffset++] = master->getPixel(posx, posy).blue;
             }
         }
     }
