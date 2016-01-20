@@ -7,10 +7,10 @@
 
 #include "DisplayModul.h"
 
-DisplayModul::DisplayModul(struct modul_t &modul) :
-        width(modul.width), height(modul.height), xOffset(modul.xOffset), yOffset(modul.yOffset), addressing(
-                modul.addressing), orientation(modul.orientation), flip(modul.flip), chip(modul.chip), correction(
-                modul.correction)
+DisplayModul::DisplayModul(int modulWidth, int modulHeight, int modulXOffset, int modulYOffset, addressing_t modulAddressing, orientation_t modulOrientation, flip_t modulFlip, chip_t modulChip, correction_t modulCorrection) :
+        width(modulWidth), height(modulHeight), xOffset(modulXOffset), yOffset(modulYOffset), addressing(
+                modulAddressing), orientation(modulOrientation), flip(modulFlip), chip(modulChip), correction(
+                modulCorrection)
 {
 
 }
