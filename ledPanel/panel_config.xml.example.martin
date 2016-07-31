@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--correct name: panel_config.xml-->
+<panel>
+	<version>1.0</version>
+	<display>
+		<numModules>1</numModules>
+		<wireingModule id="martin16x9">0</wireingModule>
+	</display>
+	<module id="martin16x9">
+		<width>16</width>
+		<height>9</height>
+		<xOffset>0</xOffset>
+		<yOffset>0</yOffset>
+		<!--	undef,
+				xyVBL,xyVBR,xyVTL,xyVTR,
+				xyHBL,xyHBR,xyHTL,xyHTR,
+				snakeVBL,snakeVBR,snakeVTL,snakeVTR,
+				snakeHBL,snakeHBR,snakeHTL,snakeHTR-->
+		<addressing>snakeHBL</addressing>
+		<!--rotateNo,rotateLeft,rotateHalf,rotateRight-->
+		<orientation>rotateNo</orientation>
+		<!--flipNo,flipX,flipY-->
+		<flip>flipNo</flip>
+		<!--LDP6803,WS2801-->
+		<chip>WS2801</chip>
+		<!--corrNo,corrGamma,corrPixel,corrAll-->
+		<correction>corrAll</correction>
+	</module>
+</panel>
