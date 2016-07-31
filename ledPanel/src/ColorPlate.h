@@ -19,7 +19,7 @@ public:
 	Plate();
 	
 	void clear(void);
-	void removeLast(void);
+	void update(color_t c);
 	void append(color_t c);
 	color_t getColor(float p);
 	color_t getPrimeColor(unsigned int i);
@@ -30,5 +30,8 @@ public:
 private:
 	vector<color_t> plate;
 };
+
+static const color_t color_default1 		= color_black;
+static const color_t color_default2 		= color_dark_blue;
 
 #endif /* COLOR_PLATE_H_ */

@@ -27,6 +27,12 @@ class Painting : public Layer
         void reset();
 
     private:
+	static const unsigned char	lenParamSetColor 	=0x03;
+	static const unsigned char	lenParamSetPixel 	=0x05;
+	static const unsigned char	lenParamDrawLine 	=0x08;
+	static const unsigned char	lenParamDrawCircle 	=0x06;
+	static const unsigned char	lenParamDrawRect 	=0x07;
+	
         void setColor(unsigned int paramLen, string& param);
         void setPixel(unsigned int paramLen, string& param);
         void drawLine(unsigned int paramLen, string& param);

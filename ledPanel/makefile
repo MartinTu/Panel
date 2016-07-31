@@ -8,7 +8,7 @@ CFLAGSDBG = -g3 -Wall -D__GXX_EXPERIMENTAL_CXX0X__=1 -std=c++0x -pedantic -g
 PROGRAMDIR = led/
 BINDIR = /usr/bin/$(PROGRAMDIR)
 
-RUNLVLSCRIPT = /etc/init.d/autoLedPanel
+RUNLVLSCRIPT = /etc/init.d/ledPanel
 NAME = ledPanel
 INSTALL = ledPanel panel_config.xml
 

@@ -288,19 +288,41 @@ void ServerDisplayHandler::manipulateColorPlate(uint8_t cmd, unsigned int paramL
 			animation->getPlate()->clear();
 		}
 		else
-			cerr << "manipulateColorPlate paramLen out of bounds(0) " << paramLen << endl;
+			cerr << "manipulateColorPlate clear paramLen out of bounds(1) " << paramLen << endl;
 		break;
 
 	case SPCMD__PLATE_APPEND:
 		if(paramLen == 3){
-			cout << "append: 0x" << hex << (int) param[0] << hex << (int) param[1] << hex << (int) param[2];
+			cout << "append";
+			if (!param.empty()) {
+				cout << ": param(0x";
+				for (unsigned int i = 0; i < param.length(); i++) {
+					cout << hex << setw(3) << (int) param[i];
+				}
+				cout << ") ";
+			}
 			color_t c((uint8_t) param[0],(uint8_t) param[1],(uint8_t) param[2]);
 			animation->getPlate()->append(c);
 		}
 		else
-			cerr << "manipulateColorPlate paramLen out of bounds(3) " << paramLen << endl;
+			cerr << "manipulateColorPlate append paramLen out of bounds(3) " << paramLen << endl;
 		break;
-
+	case SPCMD__PLATE_UPDATE:
+		if(paramLen == 3){
+				cout << "update";
+				if (!param.empty()) {
+					cout << ": param(0x";
+					for (unsigned int i = 0; i < param.length(); i++) {
+						cout << hex << setw(3) << (int) param[i];
+					}
+					cout << ") ";
+				}
+				color_t c((uint8_t) param[0],(uint8_t) param[1],(uint8_t) param[2]);
+				animation->getPlate()->update(c);
+			}
+			else
+				cerr << "manipulateColorPlate update paramLen out of bounds(3) " << paramLen << endl;
+			break;
 	default:
 		cerr << "PaleteCommand 0x" << hex << cmd << "unknown" << endl;
 		break;
@@ -315,11 +337,13 @@ void ServerDisplayHandler::systemAdministration(uint8_t cmd, unsigned int paramL
         // some redundancy since its just UDP
         switch (cmd)
         {
-        case SPCMD__REBOOT:  // 0xreboot
+        case SPCMD__REBOOT:
+			cout << "reboot" << endl;
             system("sudo reboot");
             break;
 
-        case SPCMD__SUTDOWN:    // 0xhalt
+        case SPCMD__SUTDOWN:
+			cout << "shutdown" << endl;
             system("sudo halt");
             break;
 
@@ -349,22 +373,22 @@ string ServerDisplayHandler::executeTpm2SpecialCmd(uint8_t ctl, uint8_t cmd, uin
         break;
 
     case SPCMD_ANI_SET:
-        cout << "set animation: ";
+        cout << "[INFO] set animation: ";
         animation->set(subCmd, param, paramLen);
         break;
 
     case SPCMD_ANI_MIXER:
-        cout << "animation mixer" << endl;
+        cout << "[INFO] animation mixer: " << endl;
         animation->setMixer(subCmd);
         break;
 	
 	case SPCMD_COLORPLATE:
-		cout << "color plate: ";
+		cout << "[INFO] color plate: ";
         manipulateColorPlate(subCmd, paramLen, param);
         break;
 	
     case SPCMD_SYSTEM_ADMIN:
-		cout << " system administration" << endl;
+		cout << "[INFO] system administration: ";
         systemAdministration(subCmd, paramLen, param);
         break;
 

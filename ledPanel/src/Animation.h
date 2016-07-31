@@ -49,7 +49,7 @@ enum animation_t {
 	aniWaterdrop = 0x06,
 	aniFadingPixels = 0x07,
 	aniDirFallingPixel = 0x08,
-	aniPlasma = 0x0a,
+	aniPlasma = 0x09,
 	_aniNUM  //numbers of ani (if enum values are not doubled or spaced)
 };
 
@@ -80,11 +80,11 @@ private:
 	static const unsigned char	lenParamInvader         =0x03;
 	static const unsigned char	lenParamDirectionFade   =0x05;
 	static const unsigned char	lenParamScreenFade      =0x04;
-	static const unsigned char	lenParamScreenPulse     =0x05;
-	static const unsigned char	lenParamRotateLine      =0x0b;
-	static const unsigned char	lenParamWaterdrop       =0x09;
-	static const unsigned char	lenParamFadingPixels    =0x07;
-	static const unsigned char	lenParamDirFallingPixel =0x08;
+	static const unsigned char	lenParamScreenPulse     =0x02;
+	static const unsigned char	lenParamRotateLine      =0x05;
+	static const unsigned char	lenParamWaterdrop       =0x03;
+	static const unsigned char	lenParamFadingPixels    =0x04;
+	static const unsigned char	lenParamDirFallingPixel =0x05;
 	static const unsigned char	lenParamPlasma          =0x03;
 
 protected:

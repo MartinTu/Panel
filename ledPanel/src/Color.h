@@ -92,10 +92,19 @@ inline color_t operator+(color_t lhs, const color_t& rhs) {
 
 static const color_t color_black 		= {   0,   0,   0};
 static const color_t color_white 		= {0xff,0xff,0xff};
-static const color_t color_red 			= {0xff,   0,   0};
-static const color_t color_green 		= {   0,0xff,   0};
-static const color_t color_blue 		= {   0,   0,0xff};
-static const color_t color_dark_grey 	= {  20,  20,  20};
-static const color_t color_dark_blue 	= {   0,   0,  20};
 
+static const color_t color_red 			= {0xff,   0,   0};
+static const color_t color_yellow 		= {0xff,0xff,   0};
+static const color_t color_green 		= {   0,0xff,   0};
+static const color_t color_cyan 		= {   0,0xff,0xff};
+static const color_t color_blue 		= {   0,   0,0xff};
+static const color_t color_purple 		= {0xff,   0,0xff};
+
+static const color_t color_dark_grey 	= {  20,  20,  20};
+static const color_t color_dark_red 	= {  20,   0,   0};
+static const color_t color_dark_yellow 	= {  20,  20,   0};
+static const color_t color_dark_green 	= {   0,  20,   0};
+static const color_t color_dark_cyan 	= {   0,  20,  20};
+static const color_t color_dark_blue 	= {   0,   0,  20};
+static const color_t color_dark_purple 	= {  20,   0,  20};
 #endif /* COLOR_H_ */

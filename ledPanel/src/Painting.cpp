@@ -55,7 +55,7 @@ void Painting::reset()
 
 void Painting::setColor(unsigned int paramLen, string &param)
 {
-    cout << "Color";
+    cout << "[INFO] color";
     cout << ": param(0x";
     for (unsigned int i = 0; i < param.length(); i++)
     {
@@ -63,19 +63,22 @@ void Painting::setColor(unsigned int paramLen, string &param)
     }
     cout << ")" << endl;
 
-    if (paramLen == 3)
+    if (paramLen == lenParamSetColor)
     {
-        color_t color {(uint8_t) param[0], (uint8_t) param[1], (uint8_t) param[2]};
+		color_t c((uint8_t) param[0],(uint8_t) param[1],(uint8_t) param[2]);
+		plate->clear();
+		plate->append(c);
+        color_t color {plate->getLastColor()};
         frame->setColor(color);
     } else
     {
-        cerr << "paramLen out of bounds(3) " << paramLen << endl;
+        cerr << "paramLen out of bounds(" << lenParamSetColor << ") " << paramLen << endl;
     }
 }
 
 void Painting::setPixel(unsigned int paramLen, string &param)
 {
-    cout << "Pixel";
+    cout << "[INFO] pixel";
     cout << ": param(0x";
     for (unsigned int i = 0; i < param.length(); i++)
     {
@@ -83,72 +86,80 @@ void Painting::setPixel(unsigned int paramLen, string &param)
     }
     cout << ")" << endl;
 
-    if (paramLen == 5)
+    if (paramLen == lenParamSetPixel)
     {
-        color_t color {(uint8_t) param[2], (uint8_t) param[3], (uint8_t) param[4]};
+		color_t c((uint8_t) param[2],(uint8_t) param[3],(uint8_t) param[4]);
+		plate->append(c);
+        color_t color {plate->getLastColor()};
         frame->setPixel(param[0], param[1], color, 1);
     } else
     {
-        cerr << "paramLen out of bounds(5) " << paramLen << endl;
+        cerr << "paramLen out of bounds(" << lenParamSetPixel << ") " << paramLen << endl;
     }
 }
 
 void Painting::drawLine(unsigned int paramLen, string& param)
 {
-    cout << "Line";
+    cout << "[INFO] line";
     cout << ": param(0x";
     for (unsigned int i = 0; i < param.length(); i++)
     {
         cout << hex << setw(3) << (int) (param[i]);
     }
     cout << ")" << endl;
-    if (paramLen == 7)
+    if (paramLen == lenParamDrawLine)
     {
-        color_t color {(uint8_t) param[4], (uint8_t) param[5], (uint8_t) param[6]};
+		color_t c((uint8_t) param[4],(uint8_t) param[5],(uint8_t) param[6]);
+		plate->append(c);
+        color_t color {plate->getLastColor()};
         //FIXME line width
         frame->drawLine(param[0], param[1], param[2], param[3], color, 1);
     } else
     {
-        cerr << "paramLen out of bounds(7) " << paramLen << endl;
+        cerr << "paramLen out of bounds(" << lenParamDrawLine << ") " << paramLen << endl;
     }
 }
 
 void Painting::drawCircle(unsigned int paramLen, string& param)
 {
-    cout << "Circle";
+    cout << "[INFO] circle";
     cout << ": param(0x";
     for (unsigned int i = 0; i < param.length(); i++)
     {
         cout << hex << setw(3) << (int) (param[i]);
     }
     cout << ")" << endl;
-    if (paramLen == 6)
+    if (paramLen == lenParamDrawCircle)
     {
-        color_t color {(uint8_t) param[3], (uint8_t) param[4], (uint8_t) param[5]};
+		color_t c((uint8_t) param[3],(uint8_t) param[4],(uint8_t) param[5]);
+		plate->append(c);
+        color_t color {plate->getLastColor()};
         //FIXME circle width
         frame->drawCircle(param[0], param[1], param[2], color, 1);
     } else
     {
-        cerr << "paramLen out of bounds(6) " << paramLen << endl;
+        cerr << "paramLen out of bounds(" << lenParamDrawCircle << ") " << paramLen << endl;
     }
 }
 
 void Painting::drawRect(unsigned int paramLen, string& param)
 {
-    cout << "Rect";
+    cout << "[INFO] rect";
     cout << ": param(0x";
     for (unsigned int i = 0; i < param.length(); i++)
     {
         cout << hex << setw(3) << (int) (param[i]);
     }
     cout << ")" << endl;
-    if (paramLen == 7)
+    if (paramLen == lenParamDrawRect)
     {
-    	color_t color {(uint8_t) param[4], (uint8_t) param[5], (uint8_t) param[6]};
+		color_t c((uint8_t) param[4],(uint8_t) param[5],(uint8_t) param[6]);
+		plate->append(c);
+    	color_t color {plate->getLastColor()};
     	//FIXME line width
     	frame->drawRect(param[0], param[1], param[2], param[3], color);
     } else
     {
-        cerr << "paramLen out of bounds(7) " << paramLen << endl;
+        cerr << "paramLen out of bounds(" << lenParamDrawRect << ") " << paramLen << endl;
     }
 }

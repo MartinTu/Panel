@@ -23,17 +23,21 @@ void Plate::append(color_t c)
 	plate.push_back(c);
 }
 
-void Plate::removeLast()
+void Plate::update(color_t c)
 {
-	if(plate.size())
-		plate.pop_back();
+	if(!plate.size()){
+		//append color to empty plate
+		plate.push_back(c);
+		return;
+	}
+	plate[plate.size()-1] = c;
 }
 
 
 
 color_t Plate::getColor(float p)
 {
-	color_t r = color_black;
+	color_t r = color_default1;
 	int number = plate.size();
 	if(number == 0){
 		return r;
@@ -67,7 +71,7 @@ color_t Plate::getPrimeColor(unsigned int i)
 {
 	if(i < plate.size())
 		return plate[i];
-	color_t c(color_black);
+	color_t c(color_default1);
 	return c;
 }
 
@@ -75,7 +79,7 @@ color_t Plate::getLastColor(void)
 {
 	if(plate.size())
 		return plate.back();
-	color_t c(color_black);
+	color_t c(color_default1);
 	return c;
 }
 
@@ -83,7 +87,7 @@ color_t Plate::get2LastColor(void)
 {
 	if(plate.size() > 1)
 		return plate[plate.size()-2];
-	color_t c(color_black);
+	color_t c(color_default2);
 	return c;
 }
 

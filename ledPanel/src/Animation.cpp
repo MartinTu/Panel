@@ -383,7 +383,6 @@ void Animation::invader() {
 								pictureWheel -= 1.0;
 					}
 				}
-			//	color.wheel(pictureWheel);
 				color = plate->getColor(pictureWheel);
 				color.setDimmer(colorDimmer);
 				color.setMinSaturation(saturation);
@@ -573,9 +572,6 @@ void Animation::screenPulse() {
 	 * paramSize: 2
 	 * [0]: skipFrame
 	 * [1]: delta//should be 1
-	 * [2]: red
-	 * [3]: green
-	 * [4]: blue
 	 * internPar: 2
 	 * [0]: brightness//0xff
 	 * [1]: getsBrighter//false
@@ -610,12 +606,6 @@ void Animation::rotateLine() {
 	 * [ 2]: width
 	 * [ 3]: rotate_x//TODO implement
 	 * [ 4]: rotate_y//TODO implement
-	 * [ 5]: rotorRed
-	 * [ 6]: rotorGreen
-	 * [ 7]: rotorBlue
-	 * [ 8]: backgroundRed
-	 * [ 9]: backgroundGreen
-	 * [10]: backgroundBlue
 	 * internPar: 2
 	 * [0]: p_x1//0x00
 	 * [1]: p_y1//0x00
@@ -655,12 +645,6 @@ void Animation::waterdrop() {
 	 * [0]: frameSkip
 	 * [1]: antiAliasing//TODO implement
 	 * [2]: width
-	 * [3]: dropRed
-	 * [4]: dropGreen
-	 * [5]: dropBlue
-	 * [6]: backgroundRed
-	 * [7]: backgroundGreen
-	 * [8]: backgroundBlue
 	 * internPar: 3
 	 * [0]: x//rand % width
 	 * [1]: y//rand % height
@@ -698,9 +682,6 @@ void Animation::fadingPixels() {
 	 * [1]: targetPixHigh
 	 * [2]: targetPixLow
 	 * [3]: fadeSpeed
-	 * [4]: pixRed
-	 * [5]: pixGreen
-	 * [6]: pixBlue
 	 * internPar: 2
 	 * [0]: targetPixOldHigh//0x00
 	 * [1]: targetPixOldLow//0x00
@@ -780,10 +761,7 @@ void Animation::dirFallingPixel() {
 	 * [2]: length
 	 * [3]: direction//todo: implement
 	 * [4]: dropDiff//random parameter in falling
-	 * [5]: pixRed
-	 * [6]: pixGreen
-	 * [7]: pixBlue
-	 * internPar: 3
+	 * internPar: 2
 	 * [0]: targetPixOld//0x00
 	 * [1]: directionOld//0x00
 	 */
@@ -883,7 +861,7 @@ void Animation::dirFallingPixel() {
 
 void Animation::plasma() {
 	/* ani 0x0a
-	 * paramSize: 8
+	 * paramSize: 3
 	 * [0]: frameSkip
 	 * [1]: colorDimmer
 	 * [2]: saturation
